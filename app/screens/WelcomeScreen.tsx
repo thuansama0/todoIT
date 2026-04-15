@@ -3,6 +3,7 @@ import React, { FC } from "react"
 import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
 import {
   Text,
+  Button, // Nhập thêm component Button của Ignite
 } from "app/components"
 import { isRTL } from "../i18n"
 import { AppStackScreenProps } from "../navigators"
@@ -15,9 +16,12 @@ const welcomeFace = require("../../assets/images/welcome-face.png")
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
 export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen(
+  _props, // Khai báo _props để lấy hàm navigation
 ) {
-
   const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
+  
+  // Rút trích hàm navigation từ _props để dùng chuyển trang
+  const { navigation } = _props 
 
   return (
     <View style={$container}>
@@ -35,6 +39,15 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
 
       <View style={[$bottomContainer, $bottomContainerInsets]}>
         <Text tx="welcomeScreen.postscript" size="md" />
+        
+        {/* Nút bấm chuyển sang trang Login */}
+        <Button
+          testID="next-screen-button"
+          preset="reversed"
+          text="Go to Login"
+          onPress={() => navigation.navigate("Login")} // Điều hướng đến trang Login
+          style={{ marginTop: spacing.lg }} // Tạo khoảng cách với đoạn text ở trên
+        />
       </View>
     </View>
   )
@@ -63,6 +76,7 @@ const $bottomContainer: ViewStyle = {
   paddingHorizontal: spacing.lg,
   justifyContent: "space-around",
 }
+
 const $welcomeLogo: ImageStyle = {
   height: 88,
   width: "100%",
