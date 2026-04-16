@@ -48,7 +48,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
         style={$fieldContainer1}
       />
       <Button text="Sign In" 
-      onPress={onLogin} 
+      onPress={() =>  navigation.navigate("MainTabs")}
       style={$loginButton} 
       textStyle={$ButtonText}
       />
@@ -57,7 +57,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
         </Text>
       <Text style ={$footerText}>
         Don't have an account? 
-        <Text text="Sign Up"
+        <Text text=" Sign Up"
         style={$signUpText}
          onPress={() => navigation.navigate("SignUp")}
             />

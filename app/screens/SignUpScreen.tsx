@@ -62,9 +62,9 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
               <Text style ={$footerText}>
                 Already have an account?
                       <Text text=" Sign In"
-                      style={$signInText}
-                      
-                       onPress={() => navigation.navigate("SignIn")}
+                      style={$signInText2}
+                        textStyle={$signInText1}
+                       onPress={() => navigation.navigate("Login")}
                           />
                     </Text>
               
@@ -96,7 +96,7 @@ const $title: TextStyle = {
 }
 const $subtitle: TextStyle = {
   fontSize: 16,
-  color: colors.text,
+  color: colors.text, 
 }
 const $name: ViewStyle = {
   marginBottom: spacing.lg,
@@ -127,11 +127,17 @@ const $signInButton: ViewStyle = {
 const $signInText: TextStyle = {
   color: "white",
   fontWeight: "bold",
-  color :"white",
-  
 }
 const $footerText: TextStyle = {
   marginTop: spacing.md,
   textAlign: "center", 
   color: colors.palette.neutral600,
+}
+const $signInText1: TextStyle = {
+    color: "blue",
+}
+const $signInText2: TextStyle = { 
+    color : "blue", 
+    fontWeight: "bold",
+    height: 20,
 }

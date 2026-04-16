@@ -17,6 +17,7 @@ import * as Screens from "app/screens"
 import Config from "../config"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
+import { TabNavigator } from "./TabNavigator"
 
 
 /**
@@ -36,6 +37,7 @@ export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
   SignUp: undefined
+  MainTabs: undefined
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -62,6 +64,7 @@ const AppStack = observer(function AppStack() {
           <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
           <Stack.Screen name="Login" component={Screens.LoginScreen} />
           <Stack.Screen name="SignUp" component={Screens.SignUpScreen} />
+          <Stack.Screen name="MainTabs" component={TabNavigator} />
       {/** 🔥 Your screens go here */}
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
