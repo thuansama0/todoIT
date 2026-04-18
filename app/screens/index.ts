@@ -6,4 +6,5 @@ export * from "./TodoScreen"
 export * from "./Profile"
 export * from "./Notifications"
 export * from "./CategoriesScreen"
+export * from "./NewTodoScreen"
 // export other screens here
