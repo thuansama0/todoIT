@@ -8,15 +8,26 @@ export interface TodoItemProps {
   category: string;
   timeText: string;
   notes : string;
+  onToggle?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export const TodoItem: FC<TodoItemProps> = ({ title, isCompleted, category, timeText , notes}) => {
+export const TodoItem: FC<TodoItemProps> = ({ 
+  title, 
+  isCompleted, 
+  category, 
+  timeText, 
+  notes, 
+  onToggle, 
+  onEdit,   
+  onDelete  
+}) => {
   return (
-    // Ghép 2 mảng style: 1 cái mặc định, 1 cái có điều kiện khi hoàn thành
     <View style={[$container, isCompleted && $containerCompleted]}>
       
-      {/* 1. Nút Checkbox */}
-      <TouchableOpacity style={$checkboxContainer}>
+      {/* 2. Gắn sự kiện onPress={onToggle} vào nút Checkbox */}
+      <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
         {isCompleted ? (
           <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
         ) : (
@@ -24,7 +35,6 @@ export const TodoItem: FC<TodoItemProps> = ({ title, isCompleted, category, time
         )}
       </TouchableOpacity>
 
-      {/* 2. Cột nội dung ở giữa (Title, Time, Category) */}
       <View style={$contentContainer}>
         <Text style={[$title, isCompleted && $titleCompleted]}>
           {title}
@@ -42,15 +52,16 @@ export const TodoItem: FC<TodoItemProps> = ({ title, isCompleted, category, time
             <Text style={$badgeText}>{category}</Text>
           </View>
         </View>
-        
       </View>
 
-      {/* 3. Cột nút bấm bên phải (Sửa, Xóa) */}
       <View style={$actionsContainer}>
-        <TouchableOpacity style={$actionButton}>
+        {/* 3. Gắn sự kiện onPress={onEdit} vào nút Sửa */}
+        <TouchableOpacity style={$actionButton} onPress={onEdit}>
           <Feather name="edit-2" size={18} color="#78909c" />
         </TouchableOpacity>
-        <TouchableOpacity style={$actionButton}>
+
+        {/* 4. Gắn sự kiện onPress={onDelete} vào nút Xóa */}
+        <TouchableOpacity style={$actionButton} onPress={onDelete}>
           <Feather name="trash-2" size={18} color="#e53935" />
         </TouchableOpacity>
       </View>
@@ -59,6 +70,7 @@ export const TodoItem: FC<TodoItemProps> = ({ title, isCompleted, category, time
   );
 };
 
+// ... (Phần Style bên dưới bạn giữ nguyên 100%, mình không copy lại để code đỡ dài nhé) ...
 const $container: ViewStyle = {
   flexDirection: 'row',
   backgroundColor: '#ffffff',

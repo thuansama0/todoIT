@@ -1,0 +1,14 @@
+import { StyleProp, ViewStyle } from "react-native"
+
+export type <%= props.pascalCaseName %>Preset = "default"
+
+export interface <%= props.pascalCaseName %>Props {
+  /**
+   * Preset determines the visual variation.
+   */
+  preset?: <%= props.pascalCaseName %>Preset
+  /**
+   * Optional style override.
+   */
+  style?: StyleProp<ViewStyle>
+}

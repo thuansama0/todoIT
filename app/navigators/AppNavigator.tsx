@@ -39,6 +39,11 @@ export type AppStackParamList = {
   SignUp: undefined
   MainTabs: undefined
   NewTodo: undefined
+  TodoDetail: undefined
+  NewCategory: undefined
+  EditCategory: undefined
+  EditTodo: undefined
+  NotificationDetail: undefined
   // 🔥 Your screens go here
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
@@ -54,7 +59,7 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStack
   T
 >
 
-// Documentation: https://reactnavigation.org/docs/stack-navigator/
+// Documentation: https://reactnavigation.org/docs/stack-navigator
 const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = observer(function AppStack() {
@@ -67,7 +72,12 @@ const AppStack = observer(function AppStack() {
           <Stack.Screen name="SignUp" component={Screens.SignUpScreen} />
           <Stack.Screen name="MainTabs" component={TabNavigator} />
           <Stack.Screen name="NewTodo" component={Screens.NewTodoScreen} />
-
+          <Stack.Screen name="TodoDetail" component={Screens.TodoDetailScreen} />
+          <Stack.Screen name="NewCategory" component={Screens.NewCategoryScreen} />
+          <Stack.Screen name="EditCategory" component={Screens.EditCategoryScreen} />
+          <Stack.Screen name="EditTodo" component={Screens.EditTodoScreen} />
+          <Stack.Screen name="Notifications" component={Screens.NotificationsScreen} />
+          <Stack.Screen name="NotificationDetail" component={Screens.NotificationDetailScreen} />
       {/** 🔥 Your screens go here */}
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>

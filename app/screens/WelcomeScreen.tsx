@@ -1,14 +1,18 @@
 import { observer } from "mobx-react-lite"
 import React, { FC } from "react"
-import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
-import {
-  Text,
-  Button, // Nhập thêm component Button của Ignite
-} from "app/components"
-import { isRTL } from "../i18n"
+import { Image, View } from "react-native"
+import { Text, Button } from "app/components"
 import { AppStackScreenProps } from "../navigators"
-import { colors, spacing } from "../theme"
 import { useSafeAreaInsetsStyle } from "../utils/useSafeAreaInsetsStyle"
+import {
+  $bottomContainer,
+  $container,
+  $loginButton,
+  $topContainer,
+  $welcomeFace,
+  $welcomeHeading,
+  $welcomeLogo,
+} from "./WelcomeScreen.styles"
 
 const welcomeLogo = require("../../assets/images/logo.png")
 const welcomeFace = require("../../assets/images/welcome-face.png")
@@ -16,12 +20,11 @@ const welcomeFace = require("../../assets/images/welcome-face.png")
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
 export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen(
-  _props, // Khai báo _props để lấy hàm navigation
+  _props,
 ) {
   const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
-  
-  // Rút trích hàm navigation từ _props để dùng chuyển trang
-  const { navigation } = _props 
+
+  const { navigation } = _props
 
   return (
     <View style={$container}>
@@ -39,59 +42,16 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
 
       <View style={[$bottomContainer, $bottomContainerInsets]}>
         <Text tx="welcomeScreen.postscript" size="md" />
-        
+
         {/* Nút bấm chuyển sang trang Login */}
         <Button
           testID="next-screen-button"
           preset="reversed"
           text="Go to Login"
-          onPress={() => navigation.navigate("Login")} // Điều hướng đến trang Login
-          style={{ marginTop: spacing.lg }} // Tạo khoảng cách với đoạn text ở trên
+          onPress={() => navigation.navigate("Login")}
+          style={$loginButton}
         />
       </View>
     </View>
   )
 })
-
-const $container: ViewStyle = {
-  flex: 1,
-  backgroundColor: colors.background,
-}
-
-const $topContainer: ViewStyle = {
-  flexShrink: 1,
-  flexGrow: 1,
-  flexBasis: "57%",
-  justifyContent: "center",
-  paddingHorizontal: spacing.lg,
-}
-
-const $bottomContainer: ViewStyle = {
-  flexShrink: 1,
-  flexGrow: 0,
-  flexBasis: "43%",
-  backgroundColor: colors.palette.neutral100,
-  borderTopLeftRadius: 16,
-  borderTopRightRadius: 16,
-  paddingHorizontal: spacing.lg,
-  justifyContent: "space-around",
-}
-
-const $welcomeLogo: ImageStyle = {
-  height: 88,
-  width: "100%",
-  marginBottom: spacing.xxl,
-}
-
-const $welcomeFace: ImageStyle = {
-  height: 169,
-  width: 269,
-  position: "absolute",
-  bottom: -47,
-  right: -80,
-  transform: [{ scaleX: isRTL ? -1 : 1 }],
-}
-
-const $welcomeHeading: TextStyle = {
-  marginBottom: spacing.md,
-}

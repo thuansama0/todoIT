@@ -5,38 +5,22 @@ patch:
   skip: <%= props.skipIndexFile %>
 ---
 import * as React from "react"
-import { StyleProp, TextStyle, View, ViewStyle } from "react-native"
+import { View } from "react-native"
 import { observer } from "mobx-react-lite"
-import { colors, typography } from "app/theme"
 import { Text } from "app/components/Text"
-
-export interface <%= props.pascalCaseName %>Props {
-  /**
-   * An optional style override useful for padding & margin.
-   */
-  style?: StyleProp<ViewStyle>
-}
+import type { <%= props.pascalCaseName %>Props } from "./<%= props.pascalCaseName %>.props"
+import { $presets } from "./<%= props.pascalCaseName %>.presets"
 
 /**
  * Describe your component here
  */
 export const <%= props.pascalCaseName %> = observer(function <%= props.pascalCaseName %>(props: <%= props.pascalCaseName %>Props) {
-  const { style } = props
-  const $styles = [$container, style]
+  const { preset = "default", style } = props
+  const $styles = [$presets[preset], style]
 
   return (
     <View style={$styles}>
-      <Text style={$text}>Hello</Text>
+      <Text>Hello</Text>
     </View>
   )
 })
-
-const $container: ViewStyle = {
-  justifyContent: "center",
-}
-
-const $text: TextStyle = {
-  fontFamily: typography.primary.normal,
-  fontSize: 14,
-  color: colors.palette.primary500,
-}

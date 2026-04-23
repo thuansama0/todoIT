@@ -76,7 +76,13 @@
     ],
     "experiments": {
       "tsconfigPaths": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d7a7174a-b29f-4fc2-b197-023c5a01664d"
+      }
+    },
+    "owner": "thuansama0"
   },
   "ignite": {
     "version": "9.6.3"

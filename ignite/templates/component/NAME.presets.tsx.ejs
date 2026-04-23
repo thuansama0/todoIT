@@ -1,0 +1,12 @@
+import { ViewStyle } from "react-native"
+import { spacing } from "app/theme"
+import type { <%= props.pascalCaseName %>Preset } from "./<%= props.pascalCaseName %>.props"
+
+const $base: ViewStyle = {
+  justifyContent: "center",
+  paddingVertical: spacing.xs,
+}
+
+export const $presets: Record<<%= props.pascalCaseName %>Preset, ViewStyle> = {
+  default: $base,
+}

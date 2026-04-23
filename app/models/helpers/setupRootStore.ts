@@ -28,8 +28,28 @@ export async function setupRootStore(rootStore: RootStore) {
   try {
     // load the last known state from AsyncStorage
     restoredState = ((await storage.load(ROOT_STATE_STORAGE_KEY)) ?? {}) as RootStoreSnapshot
-    applySnapshot(rootStore, restoredState)
+    // #region agent log
+    fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H5", location: "setupRootStore.ts:restored", message: "restored root snapshot loaded", data: { hasSnapshot: !!restoredState, hasCategoryStore: !!restoredState?.categoryStore, hasAuthStore: !!restoredState?.authenticationStore }, timestamp: Date.now() }) }).catch(() => {})
+    // #endregion
+    const snapshotToApply = {
+      ...(restoredState ?? {}),
+      authenticationStore: restoredState?.authenticationStore ?? {},
+      categoryStore: {
+        items: restoredState?.categoryStore?.items ?? [],
+        // Không persist trạng thái loading để tránh kẹt spinner sau khi app restart.
+        isLoading: false,
+        // Ép fetch lại sau khi mở app để dữ liệu luôn fresh.
+        isLoaded: false,
+      },
+    } as RootStoreSnapshot
+    // #region agent log
+    fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H5", location: "setupRootStore.ts:apply", message: "applying normalized root snapshot", data: { categoryItemsCount: snapshotToApply.categoryStore?.items?.length ?? 0, categoryIsLoading: snapshotToApply.categoryStore?.isLoading ?? null, categoryIsLoaded: snapshotToApply.categoryStore?.isLoaded ?? null }, timestamp: Date.now() }) }).catch(() => {})
+    // #endregion
+    applySnapshot(rootStore, snapshotToApply)
   } catch (e) {
+    // #region agent log
+    fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H5", location: "setupRootStore.ts:catch", message: "setupRootStore failed", data: { errorName: e instanceof Error ? e.name : "UnknownError", errorMessage: e instanceof Error ? e.message : "unknown" }, timestamp: Date.now() }) }).catch(() => {})
+    // #endregion
     // if there's any problems loading, then inform the dev what happened
     if (__DEV__) {
       if (e instanceof Error) console.error(e.message)

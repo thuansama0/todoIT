@@ -8,13 +8,12 @@ import {
   TextInput,
   Alert,
 } from "react-native"
-import { AppStackScreenProps } from "../navigators"
 import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 
-import { todoApi } from "app/services/api/todoApi"
+import { todoApi, Todo } from "app/services/api/todoApi"
 import { categoryApi, Category } from "app/services/api/categoryApi"
 import {
   $disabledButton,
@@ -44,27 +43,35 @@ import {
   $screenFill,
   $submitButton,
   $submitButtonText,
-} from "./NewTodoScreen.styles"
+} from "./EditTodoScreen.styles"
 
-interface NewTodoScreenProps extends AppStackScreenProps<"NewTodo"> {}
-
-export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
+export const EditTodoScreen: FC<any> = ({ route }) => {
   const navigation = useNavigation()
 
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [imageUrl] = useState(
-    "https://res.cloudinary.com/demo/image/upload/sample.jpg",
-  )
+  const { todoData } = route.params as { todoData: Todo }
+
+  const getInitialDateString = (timestamp: number) => {
+    if (!timestamp || timestamp === 0) return ""
+    const date = new Date(timestamp)
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd}`
+  }
+
+  const [title, setTitle] = useState(todoData.title || "")
+  const [content, setContent] = useState(todoData.content || "")
   const [isLoading, setIsLoading] = useState(false)
 
-  const [hasDueDate, setHasDueDate] = useState(false)
-  const [dueDateString, setDueDateString] = useState("")
+  const [hasDueDate, setHasDueDate] = useState(!!todoData.dueDate && todoData.dueDate > 0)
+  const [dueDateString, setDueDateString] = useState(getInitialDateString(todoData.dueDate))
 
   const [categories, setCategories] = useState<Category[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [categoryId, setCategoryId] = useState("")
-  const [selectedCategoryName, setSelectedCategoryName] = useState("No category")
+  const [categoryId, setCategoryId] = useState(todoData.category?.id || "")
+  const [selectedCategoryName, setSelectedCategoryName] = useState(
+    todoData.category?.name || "No category",
+  )
 
   useEffect(() => {
     async function fetchCats() {
@@ -73,7 +80,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
         setCategories(response.data.data?.items || [])
       }
     }
-    // Lấy category sớm để người dùng không phải chờ lúc mở dropdown.
+    // Nạp danh sách để cho phép đổi category ngay cả khi todo cũ không có category.
     fetchCats()
   }, [])
 
@@ -88,16 +95,16 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
-      // Điền ngày hiện tại làm mốc để giảm thao tác nhập tay.
+      // Bật due date thì gán sẵn hôm nay để tránh field rỗng gây lỗi parse.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
     }
   }
 
-  async function handleCreateTodo() {
+  async function handleSaveChanges() {
     if (!title.trim()) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập tiêu đề (Title) cho công việc.")
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập tiêu đề (Title).")
       return
     }
 
@@ -111,23 +118,26 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
       }
     }
 
-    const payload = {
+    const payload: any = {
       title,
       content,
-      // Giữ contract backend ổn định cho tới khi có luồng upload ảnh thật.
-      imageUrl,
+      // Tạm khóa đổi ảnh để không phá dữ liệu cũ khi backend chưa mở API riêng.
+      imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
       dueDate: finalDueDate,
-      categoryId,
     }
 
-    const response = await todoApi.createTodo(payload)
+    if (categoryId !== "") {
+      payload.categoryId = categoryId
+    }
+
+    const response = await todoApi.updateTodo(todoData.id, payload)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
-      Alert.alert("Thành công", "Đã tạo công việc mới!")
+      Alert.alert("Thành công", "Đã cập nhật công việc!")
       navigation.goBack()
     } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể tạo Todo lúc này.")
+      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
       console.log("Chi tiết lỗi:", response.problem, response.data)
     }
   }
@@ -139,7 +149,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
       style={$screenFill}
       contentContainerStyle={$screenContainer}
     >
-      <AppSectionHeader title="New Todo" showRefresh={false} leftIcon="x" onLeftPress={() => navigation.goBack()} />
+      <AppSectionHeader title="Edit Todo" showRefresh={false} leftIcon="x" onLeftPress={() => navigation.goBack()} />
 
       <ScrollView
         style={$formContainer}
@@ -243,14 +253,13 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
 
       <View style={$footerContainer}>
         <Button
-          text={isLoading ? "Creating..." : "Create Todo"}
+          text={isLoading ? "Saving..." : "Save Changes"}
           disabled={isLoading}
           style={[$submitButton, isLoading && $disabledButton]}
           textStyle={$submitButtonText}
-          onPress={handleCreateTodo}
+          onPress={handleSaveChanges}
         />
       </View>
     </Screen>
   )
 }
-

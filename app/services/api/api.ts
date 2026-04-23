@@ -13,7 +13,7 @@ import Config from "../../config"
 import type {
   ApiConfig,
 } from "./api.types"
-
+import { loadString } from "../../utils/storage"
 /**
  * Configuring the apisauce instance.
  */
@@ -41,6 +41,15 @@ export class Api {
       headers: {
         Accept: "application/json",
       },
+    })
+    this.apisauce.addAsyncRequestTransform(async (request) => {
+    
+      const token = await loadString("accessToken")
+
+      // Nếu có token, tự động gắn vào Header (chuẩn Bearer Token)
+      if (token) {
+        request.headers.Authorization = `Bearer ${token}`
+      }
     })
   }
 

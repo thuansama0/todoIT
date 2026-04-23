@@ -1,0 +1,264 @@
+import { FC, useEffect, useState } from "react"
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native"
+import { AppSectionHeader, Screen } from "app/components"
+import { colors } from "app/theme"
+import { Feather } from "@expo/vector-icons"
+import { useNavigation, useIsFocused } from "@react-navigation/native"
+import {
+  $accountBtn,
+  $accountSection,
+  $actionBtn,
+  $actionRow,
+  $avatarCircle,
+  $avatarSection,
+  $avatarText,
+  $cameraBadge,
+  $cancelBtn,
+  $cancelText,
+  $contentWrapper,
+  $deleteBtn,
+  $deleteText,
+  $editProfileBtn,
+  $editProfileText,
+  $emailText,
+  $formSection,
+  $input,
+  $label,
+  $loadingContainer,
+  $nameText,
+  $saveBtn,
+  $saveText,
+  $screenContainer,
+  $sectionTitle,
+  $signOutBtn,
+  $signOutText,
+  $tapToChangeText,
+} from "./ProfileScreen.styles"
+
+import { userApi, UserProfile } from "app/services/api/userApi"
+
+export const ProfileScreen: FC<any> = () => {
+  const navigation = useNavigation()
+  const isFocused = useIsFocused()
+
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+
+  const [isEditing, setIsEditing] = useState(false)
+
+  const [editName, setEditName] = useState("")
+  const [editEmail, setEditEmail] = useState("")
+  const [editPassword, setEditPassword] = useState("")
+
+  useEffect(() => {
+    if (isFocused) {
+      // Nạp lại khi màn hình được focus để phản ánh dữ liệu mới nhất sau khi edit.
+      fetchProfile()
+    }
+  }, [isFocused])
+
+  const fetchProfile = async () => {
+    setIsLoading(true)
+    const response = await userApi.getMe()
+    if (response.ok && response.data?.success && response.data.data) {
+      setProfile(response.data.data)
+      setEditName(response.data.data.name)
+      setEditEmail(response.data.data.email)
+    }
+    setIsLoading(false)
+  }
+
+  const handleStartEdit = () => {
+    setIsEditing(true)
+    // Không giữ lại mật khẩu cũ để tránh submit nhầm dữ liệu nhạy cảm.
+    setEditPassword("")
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    if (profile) {
+      setEditName(profile.name)
+      setEditEmail(profile.email)
+    }
+  }
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim() || !editEmail.trim()) {
+      Alert.alert("Lỗi", "Tên và Email không được để trống!")
+      return
+    }
+
+    setIsSaving(true)
+    const payload: any = {
+      name: editName,
+      email: editEmail,
+    }
+    // Chỉ gửi password khi người dùng chủ động nhập để tránh reset ngoài ý muốn.
+    if (editPassword.trim() !== "") {
+      payload.password = editPassword
+    }
+
+    const response = await userApi.updateProfile(payload)
+    setIsSaving(false)
+
+    if (response.ok && response.data?.success) {
+      Alert.alert("Thành công", "Đã cập nhật thông tin cá nhân!")
+      setIsEditing(false)
+      fetchProfile()
+    } else {
+      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
+    }
+  }
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "CẢNH BÁO",
+      "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này không? Hành động này không thể hoàn tác.",
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa vĩnh viễn",
+          style: "destructive",
+          onPress: async () => {
+            setIsLoading(true)
+            await userApi.deleteAccount()
+            ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
+          },
+        },
+      ],
+    )
+  }
+
+  const handleSignOut = () => {
+    Alert.alert("Đăng xuất", "Bạn muốn đăng xuất khỏi ứng dụng?", [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Đăng xuất",
+        style: "destructive",
+        onPress: () => {
+          // Reset stack để không thể back về màn hình đã đăng nhập.
+          ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
+        },
+      },
+    ])
+  }
+
+  const getInitials = (name: string) => {
+    if (!name) return "U"
+    const words = name.split(" ")
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
+    return name.substring(0, 2).toUpperCase()
+  }
+
+  if (isLoading) {
+    return (
+      <View style={$loadingContainer}>
+        <ActivityIndicator size="large" color={colors.palette.secondary400} />
+      </View>
+    )
+  }
+
+  return (
+    <Screen preset="scroll" safeAreaEdges={["top"]} style={$screenContainer}>
+      <AppSectionHeader title="Profile" showRefresh={false} />
+
+      <View style={$contentWrapper}>
+        <View style={$avatarSection}>
+          <View style={$avatarCircle}>
+            <Text style={$avatarText}>{getInitials(profile?.name || "")}</Text>
+            {isEditing && (
+              <View style={$cameraBadge}>
+                <Feather name="camera" size={14} color={colors.palette.neutral500} />
+              </View>
+            )}
+          </View>
+
+          {!isEditing ? (
+            <>
+              <Text style={$nameText}>{profile?.name}</Text>
+              <Text style={$emailText}>{profile?.email}</Text>
+            </>
+          ) : (
+            <Text style={$tapToChangeText}>Tap photo to change</Text>
+          )}
+        </View>
+
+        {!isEditing ? (
+          <>
+            <TouchableOpacity style={$editProfileBtn} onPress={handleStartEdit}>
+              <Feather name="edit-2" size={16} color={colors.palette.secondary400} />
+              <Text style={$editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={$formSection}>
+            <Text style={$label}>Name *</Text>
+            <TextInput
+              style={$input}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Your name"
+            />
+
+            <Text style={$label}>Email *</Text>
+            <TextInput
+              style={$input}
+              value={editEmail}
+              onChangeText={setEditEmail}
+              placeholder="Your email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Text style={$label}>New password (optional)</Text>
+            <TextInput
+              style={$input}
+              value={editPassword}
+              onChangeText={setEditPassword}
+              placeholder="Leave blank to keep current"
+              secureTextEntry
+            />
+
+            <View style={$actionRow}>
+              <TouchableOpacity style={[$actionBtn, $cancelBtn]} onPress={handleCancelEdit}>
+                <Text style={$cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[$actionBtn, $saveBtn]}
+                onPress={handleSaveProfile}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color={colors.palette.neutral100} />
+                ) : (
+                  <Text style={$saveText}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        <View style={$accountSection}>
+          <Text style={$sectionTitle}>ACCOUNT</Text>
+
+          <TouchableOpacity style={[$accountBtn, $signOutBtn]} onPress={handleSignOut}>
+            <Text style={$signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[$accountBtn, $deleteBtn]} onPress={handleDeleteAccount}>
+            <Text style={$deleteText}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Screen>
+  )
+}
