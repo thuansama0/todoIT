@@ -11,8 +11,9 @@ import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { useStores } from "app/models"
 
-import { categoryApi, Category } from "app/services/api/categoryApi"
+import { Category } from "app/services/api/categoryApi"
 import {
   $deleteContainer,
   $deleteInnerCircle,
@@ -32,6 +33,7 @@ import {
 
 export const EditCategoryScreen: FC<any> = ({ route }) => {
   const navigation = useNavigation()
+  const { categoryStore } = useStores()
 
   const { categoryData } = route.params as { categoryData: Category }
   const [name, setName] = useState(categoryData.name)
@@ -45,7 +47,7 @@ export const EditCategoryScreen: FC<any> = ({ route }) => {
     }
 
     setIsLoading(true)
-    const response = await categoryApi.updateCategory(categoryData.id, name.trim(), isPublic)
+    const response = await categoryStore.updateCategory(categoryData.id, name.trim(), isPublic)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
@@ -64,7 +66,7 @@ export const EditCategoryScreen: FC<any> = ({ route }) => {
         style: "destructive",
         onPress: async () => {
           setIsLoading(true)
-          const response = await categoryApi.deleteCategory(categoryData.id)
+          const response = await categoryStore.deleteCategory(categoryData.id)
           if (response.ok && response.data?.success) {
             navigation.goBack()
           } else {

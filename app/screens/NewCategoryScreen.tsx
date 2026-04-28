@@ -4,6 +4,7 @@ import { AppStackScreenProps } from "../navigators"
 import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
 import { useNavigation } from "@react-navigation/native"
+import { useStores } from "app/models"
 import {
   $disabledButton,
   $formContainer,
@@ -17,7 +18,6 @@ import {
   $switchTextContainer,
   $switchTitle,
 } from "./NewCategoryScreen.styles"
-import { categoryApi } from "app/services/api/categoryApi"
 
 
 
@@ -25,6 +25,7 @@ interface NewCategoryScreenProps extends AppStackScreenProps<"NewCategory"> {}
 
 export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
   const navigation = useNavigation()
+  const { categoryStore } = useStores()
   const [name, setName] = useState("")
   const [isPublic, setIsPublic] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -37,7 +38,7 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
 
     setIsLoading(true)
     try {
-      const response = await categoryApi.createCategory(finalName, isPublic)
+      const response = await categoryStore.createCategory(finalName, isPublic)
 
       if (response.ok && response.data?.success) {
         Alert.alert("Thành công", "Đã tạo danh mục mới!")

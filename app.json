@@ -23,6 +23,7 @@
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
       "package": "com.todoit",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.DETECT_SCREEN_CAPTURE",
         "android.permission.CAMERA",
@@ -60,6 +61,7 @@
     },
     "plugins": [
       "expo-localization",
+      "expo-notifications",
       [
         "expo-build-properties",
         {

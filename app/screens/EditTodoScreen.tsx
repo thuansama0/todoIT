@@ -12,9 +12,10 @@ import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { useStores } from "app/models"
+import { observer } from "mobx-react-lite"
 
-import { todoApi, Todo } from "app/services/api/todoApi"
-import { categoryApi, Category } from "app/services/api/categoryApi"
+import { CreateTodoPayload, Todo } from "app/services/api/todoApi"
 import {
   $disabledButton,
   $dropdownButton,
@@ -45,8 +46,9 @@ import {
   $submitButtonText,
 } from "./EditTodoScreen.styles"
 
-export const EditTodoScreen: FC<any> = ({ route }) => {
+export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route }) {
   const navigation = useNavigation()
+  const { todoStore, categoryStore } = useStores()
 
   const { todoData } = route.params as { todoData: Todo }
 
@@ -66,7 +68,6 @@ export const EditTodoScreen: FC<any> = ({ route }) => {
   const [hasDueDate, setHasDueDate] = useState(!!todoData.dueDate && todoData.dueDate > 0)
   const [dueDateString, setDueDateString] = useState(getInitialDateString(todoData.dueDate))
 
-  const [categories, setCategories] = useState<Category[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [categoryId, setCategoryId] = useState(todoData.category?.id || "")
   const [selectedCategoryName, setSelectedCategoryName] = useState(
@@ -74,15 +75,8 @@ export const EditTodoScreen: FC<any> = ({ route }) => {
   )
 
   useEffect(() => {
-    async function fetchCats() {
-      const response = await categoryApi.getCategories()
-      if (response.ok && response.data?.success) {
-        setCategories(response.data.data?.items || [])
-      }
-    }
-    // Nạp danh sách để cho phép đổi category ngay cả khi todo cũ không có category.
-    fetchCats()
-  }, [])
+    categoryStore.loadIfNeeded()
+  }, [categoryStore])
 
   const getCurrentDateString = () => {
     const today = new Date()
@@ -118,19 +112,15 @@ export const EditTodoScreen: FC<any> = ({ route }) => {
       }
     }
 
-    const payload: any = {
+    const payload: CreateTodoPayload = {
       title,
       content,
       // Tạm khóa đổi ảnh để không phá dữ liệu cũ khi backend chưa mở API riêng.
       imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
       dueDate: finalDueDate,
+      categoryId,
     }
-
-    if (categoryId !== "") {
-      payload.categoryId = categoryId
-    }
-
-    const response = await todoApi.updateTodo(todoData.id, payload)
+    const response = await todoStore.updateTodo(todoData.id, payload)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
@@ -227,7 +217,7 @@ export const EditTodoScreen: FC<any> = ({ route }) => {
               <Text style={$dropdownItemText}>No category</Text>
             </TouchableOpacity>
 
-            {categories.map((cat) => (
+            {categoryStore.sortedItems.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 style={[$dropdownItem, categoryId === cat.id && $dropdownItemActive]}
@@ -262,4 +252,4 @@ export const EditTodoScreen: FC<any> = ({ route }) => {
       </View>
     </Screen>
   )
-}
+})

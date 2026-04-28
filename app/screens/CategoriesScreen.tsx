@@ -1,7 +1,8 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect } from "react"
 import {
   FlatList,
   TouchableOpacity,
+  View,
   ActivityIndicator,
   Alert,
 } from "react-native"
@@ -20,40 +21,16 @@ import {
   $screenFill,
   $screenInner,
 } from "./CategoriesScreen.styles"
-import { categoryApi, Category } from "app/services/api/categoryApi"
+import { useStores } from "app/models"
 
 
 export const CategoriesScreen: FC = observer(function CategoriesScreen() {
   const navigation = useNavigation()
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { categoryStore } = useStores()
 
   useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  async function fetchCategories() {
-    setIsLoading(true)
-    // #region agent log
-    fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "local-category", hypothesisId: "H6", location: "CategoriesScreen.tsx:fetch:start", message: "fetch categories started", data: { isLoadingBefore: isLoading, itemsCountBefore: categories.length }, timestamp: Date.now() }) }).catch(() => {})
-    // #endregion
-    try {
-      const response = await categoryApi.getCategories()
-      // #region agent log
-      fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "local-category", hypothesisId: "H6", location: "CategoriesScreen.tsx:fetch:response", message: "fetch categories response", data: { ok: response?.ok ?? false, problem: response?.problem ?? null, success: response?.data?.success ?? null, itemsCount: response?.data?.data?.items?.length ?? 0 }, timestamp: Date.now() }) }).catch(() => {})
-      // #endregion
-      if (response.ok && response.data?.success) {
-        setCategories(response.data.data?.items || [])
-      } else {
-        Alert.alert("Lỗi", response.data?.message || "Không thể tải danh mục.")
-      }
-    } catch (error) {
-      Alert.alert("Lỗi", "Không thể tải danh mục.")
-      console.log("Lỗi tải danh mục:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    categoryStore.loadIfNeeded()
+  }, [categoryStore])
 
   function handleDelete(id: string) {
     Alert.alert("Xác nhận", "Xóa danh mục này?", [
@@ -62,11 +39,8 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
         text: "Xóa",
         style: "destructive",
         onPress: async () => {
-          const backup = [...categories]
-          setCategories(categories.filter((c) => c.id !== id))
-          const response = await categoryApi.deleteCategory(id)
+          const response = await categoryStore.deleteCategory(id)
           if (!response.ok || !response.data?.success) {
-            setCategories(backup)
             Alert.alert("Lỗi", "Không thể xóa danh mục.")
           }
         }
@@ -82,18 +56,20 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
       contentContainerStyle={$screenInner}
     >
       {/* 1. Header ĐÃ ĐƯỢC CHỈNH LẠI GIỐNG TRANG TODO */}
-      <AppSectionHeader title="Categories" onRefresh={fetchCategories} />
+      <AppSectionHeader title="Categories" onRefresh={() => categoryStore.fetchCategories()} />
 
       {/* 2. Danh sách (FlatList) */}
-      {isLoading ? (
-        <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
+      {categoryStore.isLoading ? (
+        <View>
+          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
+        </View>
       ) : (
         <FlatList
           style={$list}
-          data={categories}
+          data={categoryStore.sortedItems}
           keyExtractor={(item) => item.id}
-          refreshing={isLoading}
-          onRefresh={fetchCategories}
+          refreshing={categoryStore.isLoading}
+          onRefresh={() => categoryStore.fetchCategories()}
           contentContainerStyle={$flatListContent}
           renderItem={({ item }) => (
             <CategoryItem

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect } from "react"
 import {
   FlatList,
   TouchableOpacity,
@@ -16,6 +16,7 @@ import { CompositeScreenProps } from "@react-navigation/native"
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TabParamList } from "../navigators/TabNavigator"
+import { useStores } from "app/models"
 import {
   $fab,
   $flatListContent,
@@ -25,7 +26,6 @@ import {
   $todoItemContainer,
 } from "./TodoScreen.styles"
 
-import { todoApi, Todo } from "app/services/api/todoApi"
 
 type TodoScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, "Todo">,
@@ -33,21 +33,15 @@ type TodoScreenProps = CompositeScreenProps<
 >
 
 export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ navigation }) {
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { todoStore } = useStores()
 
   useEffect(() => {
-    fetchTodos()
-  }, [])
+    todoStore.loadIfNeeded()
+  }, [todoStore])
   async function handleToggleStatus(id: string, currentStatus: boolean) {
     const newStatus = !currentStatus
-
-    // Cập nhật trước ở UI để giảm cảm giác trễ khi mạng chậm.
-    setTodos(todos.map((t) => (t.id === id ? { ...t, isCompleted: newStatus } : t)))
-
-    const response = await todoApi.toggleTodoStatus(id, newStatus)
+    const response = await todoStore.toggleTodoStatus(id, newStatus)
     if (!response.ok || !response.data?.success) {
-      setTodos(todos.map((t) => (t.id === id ? { ...t, isCompleted: currentStatus } : t)))
       Alert.alert("Lỗi", "Không thể cập nhật trạng thái.")
     }
   }
@@ -59,29 +53,13 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
         text: "Xóa",
         style: "destructive",
         onPress: async () => {
-          // Giữ snapshot để có đường lui nếu API lỗi.
-          const backupTodos = [...todos]
-          setTodos(todos.filter((t) => t.id !== id))
-
-          const response = await todoApi.deleteTodo(id)
+          const response = await todoStore.deleteTodo(id)
           if (!response.ok || !response.data?.success) {
-            setTodos(backupTodos)
             Alert.alert("Lỗi", "Không thể xóa công việc.")
           }
         },
       },
     ])
-  }
-  async function fetchTodos() {
-    setIsLoading(true)
-    const response = await todoApi.getTodos()
-
-    if (response.ok && response.data?.success) {
-      setTodos(response.data.data?.items || [])
-    } else {
-      console.log("Lỗi tải danh sách:", response.problem, response.data)
-    }
-    setIsLoading(false)
   }
 
   const formatTime = (timestamp: number) => {
@@ -97,19 +75,19 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
       style={$screenInner}
       contentContainerStyle={$screenInner}
     >
-      <AppSectionHeader title="My Todos" onRefresh={fetchTodos} />
+      <AppSectionHeader title="My Todos" onRefresh={() => todoStore.fetchTodos()} />
 
-      {isLoading ? (
+      {todoStore.isLoading ? (
         <View style={$loading}>
           <ActivityIndicator size="large" color={colors.palette.secondary400} />
         </View>
       ) : (
         <FlatList
           style={$list}
-          data={todos}
+          data={todoStore.items}
           keyExtractor={(item) => item.id}
-          refreshing={isLoading}
-          onRefresh={fetchTodos}
+          refreshing={todoStore.isLoading}
+          onRefresh={() => todoStore.fetchTodos()}
           renderItem={({ item }) => (
             <View style={$todoItemContainer}>
               <Pressable

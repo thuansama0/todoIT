@@ -13,9 +13,9 @@ import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { useStores } from "app/models"
+import { observer } from "mobx-react-lite"
 
-import { todoApi } from "app/services/api/todoApi"
-import { categoryApi, Category } from "app/services/api/categoryApi"
 import {
   $disabledButton,
   $dropdownButton,
@@ -48,8 +48,9 @@ import {
 
 interface NewTodoScreenProps extends AppStackScreenProps<"NewTodo"> {}
 
-export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
+export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoScreen() {
   const navigation = useNavigation()
+  const { todoStore, categoryStore } = useStores()
 
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
@@ -61,21 +62,13 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
   const [hasDueDate, setHasDueDate] = useState(false)
   const [dueDateString, setDueDateString] = useState("")
 
-  const [categories, setCategories] = useState<Category[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [categoryId, setCategoryId] = useState("")
   const [selectedCategoryName, setSelectedCategoryName] = useState("No category")
 
   useEffect(() => {
-    async function fetchCats() {
-      const response = await categoryApi.getCategories()
-      if (response.ok && response.data?.success) {
-        setCategories(response.data.data?.items || [])
-      }
-    }
-    // Lấy category sớm để người dùng không phải chờ lúc mở dropdown.
-    fetchCats()
-  }, [])
+    categoryStore.loadIfNeeded()
+  }, [categoryStore])
 
   const getCurrentDateString = () => {
     const today = new Date()
@@ -120,7 +113,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
       categoryId,
     }
 
-    const response = await todoApi.createTodo(payload)
+    const response = await todoStore.createTodo(payload)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
@@ -217,7 +210,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
               <Text style={$dropdownItemText}>No category</Text>
             </TouchableOpacity>
 
-            {categories.map((cat) => (
+            {categoryStore.sortedItems.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 style={[$dropdownItem, categoryId === cat.id && $dropdownItemActive]}
@@ -252,5 +245,5 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = () => {
       </View>
     </Screen>
   )
-}
+})
 

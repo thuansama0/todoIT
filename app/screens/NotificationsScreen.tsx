@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect } from "react"
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import { NotificationItem } from "app/components/NotificationItem"
 import { colors } from "app/theme"
 import { Feather, Feather as Icon } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
+import { useStores } from "app/models"
+import { observer } from "mobx-react-lite"
 import {
   $btnGreen,
   $btnRed,
@@ -32,45 +34,20 @@ import {
   $topBtnText,
 } from "./NotificationsScreen.styles" 
 
-import { notificationApi, Notification } from "app/services/api/notificationApi"
-
-export const NotificationsScreen: FC<any> = () => {
+export const NotificationsScreen: FC<any> = observer(function NotificationsScreen() {
   const navigation = useNavigation()
   const isFocused = useIsFocused()
-
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const { notificationStore } = useStores()
 
   useEffect(() => {
     if (isFocused) {
       // Re-fetch khi quay lại tab để đồng bộ số unread sau khi xem chi tiết.
-      fetchData()
+      notificationStore.fetchNotifications()
     }
-  }, [isFocused])
-
-  async function fetchData() {
-    setIsLoading(true)
-    const [listRes, countRes] = await Promise.all([
-      notificationApi.getNotifications(0, 50),
-      notificationApi.getUnreadCount(),
-    ])
-
-    if (listRes.ok && listRes.data?.success) {
-      const itemsArray = listRes.data.data?.items || []
-      setNotifications(itemsArray)
-    }
-    if (countRes.ok && countRes.data?.success) {
-      setUnreadCount(countRes.data.data || 0)
-    }
-    setIsLoading(false)
-  }
+  }, [isFocused, notificationStore])
 
   const handleMarkAllRead = async () => {
-    // Ưu tiên cảm giác "đã xử lý xong" ngay lập tức trước khi chờ server.
-    setNotifications(notifications.map((n) => ({ ...n, isRead: true })))
-    setUnreadCount(0)
-    await notificationApi.markAllAsRead()
+    await notificationStore.markAllRead()
   }
 
   const handleDeleteAll = () => {
@@ -80,26 +57,18 @@ export const NotificationsScreen: FC<any> = () => {
         text: "Xóa",
         style: "destructive",
         onPress: async () => {
-          setNotifications([])
-          setUnreadCount(0)
-          await notificationApi.deleteAllNotifications()
+          await notificationStore.deleteAllNotifications()
         },
       },
     ])
   }
 
   const handleMarkRead = async (id: string) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)))
-    setUnreadCount((prev) => Math.max(0, prev - 1))
-    await notificationApi.markAsRead(id)
+    await notificationStore.markRead(id)
   }
 
   const handleDelete = async (id: string) => {
-    const target = notifications.find((n) => n.id === id)
-    setNotifications(notifications.filter((n) => n.id !== id))
-    // Chỉ giảm unread nếu item vừa xóa trước đó chưa đọc.
-    if (target && !target.isRead) setUnreadCount((prev) => Math.max(0, prev - 1))
-    await notificationApi.deleteNotification(id)
+    await notificationStore.deleteNotification(id)
   }
 
   const formatTimeAgo = (timestamp: number) => {
@@ -112,7 +81,7 @@ export const NotificationsScreen: FC<any> = () => {
   }
 
   const renderEmpty = () => {
-    if (isLoading) return null
+    if (notificationStore.isLoading) return null
     return (
       <View style={$emptyContainer}>
         <View style={$emptyIconWrapper}>
@@ -133,11 +102,11 @@ export const NotificationsScreen: FC<any> = () => {
     >
       <AppSectionHeader
         title="Notifications"
-        subtitle={unreadCount > 0 ? `${unreadCount} unread` : undefined}
-        onRefresh={fetchData}
+        subtitle={notificationStore.unreadCount > 0 ? `${notificationStore.unreadCount} unread` : undefined}
+        onRefresh={() => notificationStore.fetchNotifications()}
       />
 
-      {notifications.length > 0 && (
+      {notificationStore.items.length > 0 && (
         <View style={$topActions}>
           <TouchableOpacity style={[$topBtn, $btnGreen]} onPress={handleMarkAllRead}>
             <Feather name="check-circle" size={16} color={colors.palette.secondary400} />
@@ -151,13 +120,13 @@ export const NotificationsScreen: FC<any> = () => {
         </View>
       )}
 
-      {isLoading ? (
+      {notificationStore.isLoading ? (
         <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
       ) : (
         <FlatList
           style={$list}
-          contentContainerStyle={notifications.length === 0 ? $emptyListContent : $listContent}
-          data={notifications}
+          contentContainerStyle={notificationStore.items.length === 0 ? $emptyListContent : $listContent}
+          data={notificationStore.items}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={renderEmpty}
           renderItem={({ item }) => (
@@ -178,4 +147,4 @@ export const NotificationsScreen: FC<any> = () => {
       )}
     </Screen>
   )
-}
+})

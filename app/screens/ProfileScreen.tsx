@@ -11,6 +11,8 @@ import { AppSectionHeader, Screen } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
+import { useStores } from "app/models"
+import { observer } from "mobx-react-lite"
 import {
   $accountBtn,
   $accountSection,
@@ -42,14 +44,10 @@ import {
   $tapToChangeText,
 } from "./ProfileScreen.styles"
 
-import { userApi, UserProfile } from "app/services/api/userApi"
-
-export const ProfileScreen: FC<any> = () => {
+export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
   const navigation = useNavigation()
   const isFocused = useIsFocused()
-
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { profileStore } = useStores()
   const [isSaving, setIsSaving] = useState(false)
 
   const [isEditing, setIsEditing] = useState(false)
@@ -61,20 +59,16 @@ export const ProfileScreen: FC<any> = () => {
   useEffect(() => {
     if (isFocused) {
       // Nạp lại khi màn hình được focus để phản ánh dữ liệu mới nhất sau khi edit.
-      fetchProfile()
+      profileStore.fetchProfile()
     }
-  }, [isFocused])
+  }, [isFocused, profileStore])
 
-  const fetchProfile = async () => {
-    setIsLoading(true)
-    const response = await userApi.getMe()
-    if (response.ok && response.data?.success && response.data.data) {
-      setProfile(response.data.data)
-      setEditName(response.data.data.name)
-      setEditEmail(response.data.data.email)
+  useEffect(() => {
+    if (profileStore.profile) {
+      setEditName(profileStore.profile.name)
+      setEditEmail(profileStore.profile.email)
     }
-    setIsLoading(false)
-  }
+  }, [profileStore.profile])
 
   const handleStartEdit = () => {
     setIsEditing(true)
@@ -84,9 +78,9 @@ export const ProfileScreen: FC<any> = () => {
 
   const handleCancelEdit = () => {
     setIsEditing(false)
-    if (profile) {
-      setEditName(profile.name)
-      setEditEmail(profile.email)
+    if (profileStore.profile) {
+      setEditName(profileStore.profile.name)
+      setEditEmail(profileStore.profile.email)
     }
   }
 
@@ -106,13 +100,12 @@ export const ProfileScreen: FC<any> = () => {
       payload.password = editPassword
     }
 
-    const response = await userApi.updateProfile(payload)
+    const response = await profileStore.updateProfile(payload)
     setIsSaving(false)
 
     if (response.ok && response.data?.success) {
       Alert.alert("Thành công", "Đã cập nhật thông tin cá nhân!")
       setIsEditing(false)
-      fetchProfile()
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
     }
@@ -128,8 +121,7 @@ export const ProfileScreen: FC<any> = () => {
           text: "Xóa vĩnh viễn",
           style: "destructive",
           onPress: async () => {
-            setIsLoading(true)
-            await userApi.deleteAccount()
+            await profileStore.deleteAccount()
             ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
           },
         },
@@ -158,7 +150,7 @@ export const ProfileScreen: FC<any> = () => {
     return name.substring(0, 2).toUpperCase()
   }
 
-  if (isLoading) {
+  if (profileStore.isLoading) {
     return (
       <View style={$loadingContainer}>
         <ActivityIndicator size="large" color={colors.palette.secondary400} />
@@ -173,7 +165,7 @@ export const ProfileScreen: FC<any> = () => {
       <View style={$contentWrapper}>
         <View style={$avatarSection}>
           <View style={$avatarCircle}>
-            <Text style={$avatarText}>{getInitials(profile?.name || "")}</Text>
+            <Text style={$avatarText}>{getInitials(profileStore.profile?.name || "")}</Text>
             {isEditing && (
               <View style={$cameraBadge}>
                 <Feather name="camera" size={14} color={colors.palette.neutral500} />
@@ -183,8 +175,8 @@ export const ProfileScreen: FC<any> = () => {
 
           {!isEditing ? (
             <>
-              <Text style={$nameText}>{profile?.name}</Text>
-              <Text style={$emailText}>{profile?.email}</Text>
+              <Text style={$nameText}>{profileStore.profile?.name}</Text>
+              <Text style={$emailText}>{profileStore.profile?.email}</Text>
             </>
           ) : (
             <Text style={$tapToChangeText}>Tap photo to change</Text>
@@ -261,4 +253,4 @@ export const ProfileScreen: FC<any> = () => {
       </View>
     </Screen>
   )
-}
+})

@@ -30,6 +30,8 @@ import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { ViewStyle } from "react-native"
+import { usePushNotifications } from "./utils/usePushNotifications";
+import Toast from "react-native-toast-message"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -64,6 +66,7 @@ interface AppProps {
  * @returns {JSX.Element} The rendered `App` component.
  */
 function App(props: AppProps) {
+  usePushNotifications()
   const { hideSplashScreen } = props
   const {
     initialNavigationState,
@@ -110,6 +113,7 @@ function App(props: AppProps) {
           </GestureHandlerRootView>
         </ErrorBoundary>
       </RootStoreProvider>
+      <Toast />
     </SafeAreaProvider>
   )
 }

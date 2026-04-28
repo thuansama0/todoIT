@@ -1,8 +1,11 @@
 import { FC, useState } from "react"
-import { View } from "react-native"
+import { Alert, View } from "react-native"
 import { Button, Screen, Text, TextField } from "app/components"
 import { AppStackScreenProps } from "../navigators"
 import { observer } from "mobx-react-lite"
+import { authApi } from "app/services/api/authApi"
+import { saveString } from "app/utils/storage"
+import { useStores } from "app/models"
 import {
   $email,
   $footerText,
@@ -25,6 +28,31 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const { authenticationStore } = useStores()
+
+  async function onSignUp() {
+    if (!username || !email || !password) {
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập đầy đủ tên, email và mật khẩu.")
+      return
+    }
+
+    setIsLoading(true)
+    const response = await authApi.signUp(email, password, username)
+    setIsLoading(false)
+
+    if (response.ok && response.data?.success) {
+      const accessToken = response.data.data?.accessToken
+      if (accessToken) {
+        authenticationStore.setAuthToken(accessToken)
+        await saveString("accessToken", accessToken)
+      }
+      navigation.navigate("MainTabs")
+    } else {
+      Alert.alert("Đăng ký thất bại", response.data?.message || "Không thể tạo tài khoản.")
+    }
+  }
+
   return (
     <Screen
       preset="scroll"
@@ -62,8 +90,9 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
         style={$password}
       />
       <Button
-        text="Create Account"
-        onPress={() => console.log("Sign Up pressed")}
+        text={isLoading ? "Đang tạo tài khoản..." : "Create Account"}
+        onPress={onSignUp}
+        disabled={isLoading}
         style={$signInButton}
         textStyle={$signInText}
       />

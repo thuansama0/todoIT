@@ -1,5 +1,5 @@
 import { Instance, SnapshotOut, flow, types } from "mobx-state-tree"
-import { categoryApi } from "app/services/api/categoryApi"
+import { Category, categoryApi } from "app/services/api/categoryApi"
 
 const CategoryModel = types.model("Category", {
   id: types.identifier,
@@ -21,52 +21,75 @@ export const CategoryStoreModel = types
     },
   }))
   .actions((store) => {
+    const normalizeCategory = (input: Partial<Category> & { id: string }) => ({
+      id: input.id,
+      name: input.name ?? "",
+      isPublic: input.isPublic ?? false,
+      isOwner: input.isOwner ?? true,
+    })
+
     const fetchCategories = flow(function* fetchCategories() {
-      // #region agent log
-      fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H2", location: "CategoryStore.ts:fetchCategories:start", message: "fetchCategories started", data: { isLoading: store.isLoading, isLoaded: store.isLoaded, itemsCount: store.items.length }, timestamp: Date.now() }) }).catch(() => {})
-      // #endregion
       store.isLoading = true
-      const response = yield categoryApi.getCategories()
-      // #region agent log
-      fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H3", location: "CategoryStore.ts:fetchCategories:response", message: "fetchCategories response", data: { ok: response?.ok ?? false, problem: response?.problem ?? null, success: response?.data?.success ?? null, hasData: !!response?.data }, timestamp: Date.now() }) }).catch(() => {})
-      // #endregion
-      if (response.ok && response.data?.success) {
-        store.items.replace(response.data.data?.items ?? [])
-        store.isLoaded = true
+      try {
+        const response = yield categoryApi.getCategories()
+        if (response.ok && response.data?.success) {
+          store.items.replace((response.data.data?.items ?? []).map(normalizeCategory))
+          store.isLoaded = true
+        }
+        return response
+      } finally {
+        store.isLoading = false
       }
-      store.isLoading = false
-      // #region agent log
-      fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H2", location: "CategoryStore.ts:fetchCategories:end", message: "fetchCategories finished", data: { isLoading: store.isLoading, isLoaded: store.isLoaded, itemsCount: store.items.length }, timestamp: Date.now() }) }).catch(() => {})
-      // #endregion
-      return response
     })
 
     const loadIfNeeded = flow(function* loadIfNeeded() {
-      // #region agent log
-      fetch("http://127.0.0.1:7942/ingest/6b989365-f233-4ed8-9075-a0afcb68671f", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "1209eb" }, body: JSON.stringify({ sessionId: "1209eb", runId: "initial", hypothesisId: "H4", location: "CategoryStore.ts:loadIfNeeded", message: "loadIfNeeded called", data: { isLoading: store.isLoading, isLoaded: store.isLoaded, itemsCount: store.items.length }, timestamp: Date.now() }) }).catch(() => {})
-      // #endregion
       if (store.isLoaded || store.isLoading) return
       yield fetchCategories()
     })
 
     const createCategory = flow(function* createCategory(name: string, isPublic: boolean) {
+      const normalizedName = name.trim()
+      const tempId = `temp-${Date.now()}`
+      store.items.unshift(
+        normalizeCategory({
+          id: tempId,
+          name: normalizedName,
+          isPublic,
+          isOwner: true,
+        }) as any,
+      )
+
       const response = yield categoryApi.createCategory(name.trim(), isPublic)
       if (response.ok && response.data?.success) {
-        // Nếu API create không trả item đầy đủ thì fetch lại cho chắc
         yield fetchCategories()
+      } else {
+        store.items.replace(store.items.filter((category) => category.id !== tempId))
       }
       return response
     })
 
     const updateCategory = flow(function* updateCategory(id: string, name: string, isPublic: boolean) {
+      const idx = store.items.findIndex((x) => x.id === id)
+      const backup =
+        idx >= 0
+          ? {
+              id: store.items[idx].id,
+              name: store.items[idx].name,
+              isPublic: store.items[idx].isPublic,
+              isOwner: store.items[idx].isOwner,
+            }
+          : null
+      if (idx >= 0) {
+        store.items[idx] = normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }) as any
+      }
+
       const response = yield categoryApi.updateCategory(id, name.trim(), isPublic)
-      if (response.ok && response.data?.success) {
-        const idx = store.items.findIndex((x) => x.id === id)
-        if (idx >= 0) {
-          store.items[idx] = { ...store.items[idx], name: name.trim(), isPublic } as any
-        } else {
-          yield fetchCategories()
+      if (!response.ok || !response.data?.success) {
+        if (idx >= 0 && backup) {
+          store.items[idx] = backup as any
         }
+      } else if (idx < 0) {
+        yield fetchCategories()
       }
       return response
     })
