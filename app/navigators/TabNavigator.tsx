@@ -43,13 +43,10 @@ export function TabNavigator() {
             return (
               <View style={{ 
                 backgroundColor: '#e8eaf6', 
-                // paddingHorizontal: 16,      
-                // paddingVertical: 4,         
-                // borderRadius: 0,     
-                width: 56,                // Cố định chiều rộng để không lẹm sang 2 bên
-                height: 32,               // Cố định chiều cao để không lẹm lên trên
-                justifyContent: 'center', // Căn icon ra giữa theo chiều dọc
-                alignItems: 'center',     // Căn icon ra giữa theo chiều ngang
+                width: 56,
+                height: 32,
+                justifyContent: 'center',
+                alignItems: 'center',
                 borderRadius: 8,
               }}>
                 <Ionicons name={iconName} size={size} color={color} />
@@ -68,7 +65,7 @@ export function TabNavigator() {
         
         tabBarStyle: {
           height: 95, 
-          paddingBottom: 35, //
+          paddingBottom: 35,
           paddingTop: 10, 
         }
       })}

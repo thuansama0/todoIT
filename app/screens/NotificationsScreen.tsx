@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useState } from "react"
 import {
   View,
   Text,
@@ -38,10 +38,16 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
   const navigation = useNavigation()
   const isFocused = useIsFocused()
   const { notificationStore } = useStores()
+  const [, setTimeTick] = useState(0)
+
+  useEffect(() => {
+    if (!isFocused) return
+    const id = setInterval(() => setTimeTick((n) => n + 1), 15000)
+    return () => clearInterval(id)
+  }, [isFocused])
 
   useEffect(() => {
     if (isFocused) {
-      // Re-fetch khi quay lại tab để đồng bộ số unread sau khi xem chi tiết.
       notificationStore.fetchNotifications()
     }
   }, [isFocused, notificationStore])

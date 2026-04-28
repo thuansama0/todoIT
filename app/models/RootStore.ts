@@ -4,9 +4,7 @@ import { CategoryStoreModel } from "./CategoryStore"
 import { NotificationStoreModel } from "./NotificationStore"
 import { ProfileStoreModel } from "./ProfileStore"
 import { TodoStoreModel } from "./TodoStore"
-/**
- * A RootStore model.
- */
+
 export const RootStoreModel = types.model("RootStore").props({
   authenticationStore: types.optional(AuthenticationStoreModel, {}),
   categoryStore: types.optional(CategoryStoreModel, {}),
@@ -15,11 +13,5 @@ export const RootStoreModel = types.model("RootStore").props({
   profileStore: types.optional(ProfileStoreModel, {}),
 })
 
-/**
- * The RootStore instance.
- */
 export interface RootStore extends Instance<typeof RootStoreModel> {}
-/**
- * The data of a RootStore.
- */
 export interface RootStoreSnapshot extends SnapshotOut<typeof RootStoreModel> {}

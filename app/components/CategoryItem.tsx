@@ -13,8 +13,6 @@ export interface CategoryItemProps {
 export const CategoryItem: FC<CategoryItemProps> = ({ name, isPublic, isOwner, onEdit, onDelete }) => {
   return (
     <View style={$container}>
-      
-      {/* 1. Khu vực bên trái: Icon + Tên */}
       <View style={$leftContent}>
         <Feather 
           name={isPublic ? "globe" : "lock"} 
@@ -25,7 +23,6 @@ export const CategoryItem: FC<CategoryItemProps> = ({ name, isPublic, isOwner, o
         <Text style={$nameText}>{name}</Text>
       </View>
 
-      {/* 2. Khu vực bên phải: Tùy biến theo quyền Owner */}
       {isOwner ? (
         <View style={$actionsContainer}>
           <TouchableOpacity style={$actionBtn} onPress={onEdit}>
@@ -43,7 +40,6 @@ export const CategoryItem: FC<CategoryItemProps> = ({ name, isPublic, isOwner, o
   );
 };
 
-// --- STYLES ---
 const $container: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
@@ -55,7 +51,7 @@ const $container: ViewStyle = {
   marginBottom: 12,
   borderWidth: 1,
   borderColor: '#f0f0f0',
-  elevation: 1, // Đổ bóng nhẹ
+  elevation: 1,
 };
 const $leftContent: ViewStyle = { flexDirection: 'row', alignItems: 'center', flex: 1 };
 const $iconLeft: TextStyle = { marginRight: 12 };

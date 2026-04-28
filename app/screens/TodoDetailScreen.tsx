@@ -42,22 +42,29 @@ import {
 
 export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = ({ route }) => {
   const navigation = useNavigation()
-  // Giữ fallback rỗng để màn hình không crash nếu route bị gọi thiếu params.
   const id = (route.params as { id: string } | undefined)?.id ?? ""
   const [todo, setTodo] = useState<Todo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Chỉ tải 1 lần khi mở màn để tránh request lặp khi state nội bộ thay đổi.
     fetchDetail()
   }, [])
   async function fetchDetail() {
     setIsLoading(true)
+    if (!id) {
+      setIsLoading(false)
+      Alert.alert("Lỗi", "Không tìm thấy công việc.", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ])
+      return
+    }
     const response = await todoApi.getTodoById(id)
     if (response.ok && response.data?.success) {
       setTodo(response.data.data)
     } else {
-      Alert.alert("Lỗi", "Không thể tải dữ liệu chi tiết.")
+      Alert.alert("Lỗi", "Không thể tải dữ liệu chi tiết.", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ])
     }
     setIsLoading(false)
   }
@@ -66,7 +73,6 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = ({ route 
     if (!todo) return
     const newStatus = !todo.isCompleted
 
-    // Đổi trạng thái trước ở UI để thao tác phản hồi tức thì.
     setTodo({ ...todo, isCompleted: newStatus })
 
     const response = await todoApi.toggleTodoStatus(id, newStatus)
@@ -129,7 +135,6 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = ({ route 
             size={22}
             color={colors.palette.secondary400}
             style={$rightEditIcon}
-            // Để lại log tạm cho tới khi chốt luồng navigate sang màn Edit theo id.
             onPress={() => console.log("Sang trang Edit")}
           />
         }

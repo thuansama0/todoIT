@@ -25,6 +25,11 @@
       "package": "com.todoit",
       "googleServicesFile": "./google-services.json",
       "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.DETECT_SCREEN_CAPTURE",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

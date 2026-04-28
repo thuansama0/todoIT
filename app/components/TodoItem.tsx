@@ -25,8 +25,6 @@ export const TodoItem: FC<TodoItemProps> = ({
 }) => {
   return (
     <View style={[$container, isCompleted && $containerCompleted]}>
-      
-      {/* 2. Gắn sự kiện onPress={onToggle} vào nút Checkbox */}
       <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
         {isCompleted ? (
           <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
@@ -55,12 +53,10 @@ export const TodoItem: FC<TodoItemProps> = ({
       </View>
 
       <View style={$actionsContainer}>
-        {/* 3. Gắn sự kiện onPress={onEdit} vào nút Sửa */}
         <TouchableOpacity style={$actionButton} onPress={onEdit}>
           <Feather name="edit-2" size={18} color="#78909c" />
         </TouchableOpacity>
 
-        {/* 4. Gắn sự kiện onPress={onDelete} vào nút Xóa */}
         <TouchableOpacity style={$actionButton} onPress={onDelete}>
           <Feather name="trash-2" size={18} color="#e53935" />
         </TouchableOpacity>
@@ -70,7 +66,6 @@ export const TodoItem: FC<TodoItemProps> = ({
   );
 };
 
-// ... (Phần Style bên dưới bạn giữ nguyên 100%, mình không copy lại để code đỡ dài nhé) ...
 const $container: ViewStyle = {
   flexDirection: 'row',
   backgroundColor: '#ffffff',
@@ -86,7 +81,6 @@ const $containerCompleted: ViewStyle = {
   backgroundColor: '#fafafa',
 };
 
-// --- Style cho Checkbox ---
 const $checkboxContainer: ViewStyle = {
   marginRight: 12,
   marginTop: 2,
@@ -100,8 +94,7 @@ const $circleUnchecked: ViewStyle = {
   borderColor: '#cfd8dc',
 };
 
-// --- Style cho Nội dung (Title) ---
-const $contentContainer: ViewStyle = { // Bọc tất cả nội dung ở giữa
+const $contentContainer: ViewStyle = {
   flex: 1,
   justifyContent: 'center',
 };
@@ -118,7 +111,6 @@ const $titleCompleted: TextStyle = {
   color: '#90a4ae',
 };
 
-// --- Style cho Dòng phụ (Thời gian & Tag) ---
 const $metaRow: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
@@ -150,7 +142,6 @@ const $badgeText: TextStyle = {
   fontWeight: '600',
 };
 
-// --- Style cho Các nút Hành động ---
 const $actionsContainer: ViewStyle = { 
   justifyContent: 'space-between', 
   paddingLeft: 4,  

@@ -17,8 +17,6 @@ export const NotificationItem: FC<NotificationItemProps> = ({
 }) => {
   return (
     <TouchableOpacity style={[$container, !isRead && $containerUnread]} onPress={onPress} activeOpacity={0.8}>
-      
-      {/* 1. Icon bên trái (Chấm xanh nếu chưa đọc, Chuông nếu đã đọc) */}
       <View style={$leftIcon}>
         {!isRead ? (
           <View style={$unreadDot} />
@@ -27,14 +25,12 @@ export const NotificationItem: FC<NotificationItemProps> = ({
         )}
       </View>
 
-      {/* 2. Nội dung ở giữa */}
       <View style={$contentContainer}>
         <Text style={[$title, !isRead && $titleUnread]} numberOfLines={1}>{title}</Text>
         <Text style={$content} numberOfLines={2}>{content}</Text>
         <Text style={$timeText}>{timeAgo}</Text>
       </View>
 
-      {/* 3. Các nút hành động bên phải */}
       <View style={$actionsContainer}>
         {!isRead && (
           <TouchableOpacity style={$actionBtn} onPress={onMarkRead}>
@@ -50,9 +46,8 @@ export const NotificationItem: FC<NotificationItemProps> = ({
   );
 };
 
-// --- STYLES ---
 const $container: ViewStyle = { flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#f0f0f0' };
-const $containerUnread: ViewStyle = { backgroundColor: '#f8f9ff', borderColor: '#e8eaf6' }; // Nền xanh nhạt cho tin chưa đọc
+const $containerUnread: ViewStyle = { backgroundColor: '#f8f9ff', borderColor: '#e8eaf6' };
 const $leftIcon: ViewStyle = { width: 24, alignItems: 'center', marginTop: 2, marginRight: 12 };
 const $unreadDot: ViewStyle = { width: 10, height: 10, borderRadius: 5, backgroundColor: '#3b5998', marginTop: 6 };
 const $contentContainer: ViewStyle = { flex: 1, justifyContent: 'center' };

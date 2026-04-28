@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite"
 import { authApi } from "app/services/api/authApi"
 import { saveString } from "app/utils/storage"
 import { useStores } from "app/models"
+import { syncDevicePushTokenWithServer } from "app/utils/usePushNotifications"
 import {
   $email,
   $footerText,
@@ -46,6 +47,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
       if (accessToken) {
         authenticationStore.setAuthToken(accessToken)
         await saveString("accessToken", accessToken)
+        void syncDevicePushTokenWithServer().catch(() => {})
       }
       navigation.navigate("MainTabs")
     } else {

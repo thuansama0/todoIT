@@ -110,6 +110,23 @@ export const $dropdownItem: ViewStyle = {
 export const $dropdownItemActive: ViewStyle = { backgroundColor: colors.palette.secondary100 }
 export const $dropdownItemText: TextStyle = { fontSize: 16, color: colors.text }
 export const $dueDateWrap: ViewStyle = { marginBottom: 16 }
+export const $reminderRow: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 8 }
+export const $reminderChip: ViewStyle = {
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 16,
+  backgroundColor: colors.palette.neutral100,
+  borderWidth: 1,
+  borderColor: colors.palette.neutral300,
+  marginRight: 8,
+  marginBottom: 8,
+}
+export const $reminderChipActive: ViewStyle = {
+  backgroundColor: colors.palette.secondary400,
+  borderColor: colors.palette.secondary400,
+}
+export const $reminderChipText: TextStyle = { color: colors.palette.neutral700, fontWeight: "600" }
+export const $reminderChipTextActive: TextStyle = { color: colors.palette.neutral100 }
 export const $labelNoTop: TextStyle = { marginTop: 0 }
 export const $labelSmallTop: TextStyle = { marginTop: 8 }
 export const $labelLargeTop: TextStyle = { marginTop: 24 }

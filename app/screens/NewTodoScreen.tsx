@@ -29,6 +29,11 @@ import {
   $dueDateLabel,
   $dueDateRow,
   $dueDateWrap,
+  $reminderChip,
+  $reminderChipActive,
+  $reminderChipText,
+  $reminderChipTextActive,
+  $reminderRow,
   $footerContainer,
   $formContainer,
   $formContent,
@@ -61,6 +66,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
   const [hasDueDate, setHasDueDate] = useState(false)
   const [dueDateString, setDueDateString] = useState("")
+  const [reminderMinutes, setReminderMinutes] = useState(0)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [categoryId, setCategoryId] = useState("")
@@ -75,16 +81,28 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
     const yyyy = today.getFullYear()
     const mm = String(today.getMonth() + 1).padStart(2, "0")
     const dd = String(today.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
+    const hh = String(today.getHours()).padStart(2, "0")
+    const min = String(today.getMinutes()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`
+  }
+
+  const parseDateTime = (value: string) => {
+    const [datePart, timePart] = value.trim().split(" ")
+    if (!datePart || !timePart) return NaN
+    const [yyyy, mm, dd] = datePart.split("-").map(Number)
+    const [hh, min] = timePart.split(":").map(Number)
+    if (!yyyy || !mm || !dd || hh === undefined || min === undefined) return NaN
+    return new Date(yyyy, mm - 1, dd, hh, min, 0, 0).getTime()
   }
 
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
-      // Điền ngày hiện tại làm mốc để giảm thao tác nhập tay.
+      // Có giá trị mặc định để người dùng không phải nhập từ đầu.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
+      setReminderMinutes(0)
     }
   }
 
@@ -98,22 +116,26 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
     let finalDueDate = 0
     if (hasDueDate && dueDateString) {
-      const parsedDate = new Date(dueDateString).getTime()
+      const parsedDate = parseDateTime(dueDateString)
       if (!isNaN(parsedDate)) {
         finalDueDate = parsedDate
+      } else {
+        Alert.alert("Sai định dạng", "Vui lòng nhập đúng dạng YYYY-MM-DD HH:mm.")
+        setIsLoading(false)
+        return
       }
     }
 
     const payload = {
       title,
       content,
-      // Giữ contract backend ổn định cho tới khi có luồng upload ảnh thật.
+      // Backend đang yêu cầu imageUrl, tạm giữ ảnh mặc định đến khi có upload thật.
       imageUrl,
       dueDate: finalDueDate,
       categoryId,
     }
 
-    const response = await todoStore.createTodo(payload)
+    const response = await todoStore.createTodo(payload, reminderMinutes)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
@@ -171,14 +193,34 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
         {hasDueDate && (
           <View style={$dueDateWrap}>
-            <Text style={[$label, $labelNoTop]}>Due Date (YYYY-MM-DD)</Text>
+            <Text style={[$label, $labelNoTop]}>Due Date (YYYY-MM-DD HH:mm)</Text>
             <TextInput
               style={$input}
-              placeholder="2026-04-22"
+              placeholder="2026-04-22 14:30"
               value={dueDateString}
               onChangeText={setDueDateString}
               placeholderTextColor={colors.palette.neutral400}
             />
+
+            <Text style={$label}>Remind before</Text>
+            <View style={$reminderRow}>
+              {[0, 5, 15, 30, 60].map((minute) => (
+                <TouchableOpacity
+                  key={minute}
+                  style={[$reminderChip, reminderMinutes === minute && $reminderChipActive]}
+                  onPress={() => setReminderMinutes(minute)}
+                >
+                  <Text
+                    style={[
+                      $reminderChipText,
+                      reminderMinutes === minute && $reminderChipTextActive,
+                    ]}
+                  >
+                    {minute === 0 ? "Off" : minute >= 60 ? "1h" : `${minute}m`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 

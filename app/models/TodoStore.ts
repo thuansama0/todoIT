@@ -1,5 +1,10 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { CreateTodoPayload, Todo, todoApi } from "app/services/api/todoApi"
+import {
+  cancelTodoReminder,
+  loadTodoReminderMinutesMap,
+  scheduleTodoReminder,
+} from "app/utils/todoReminder"
 
 const TodoCategoryModel = types.model("TodoCategory", {
   id: types.string,
@@ -15,6 +20,7 @@ const TodoModel = types.model("Todo", {
   imageUrl: types.optional(types.string, ""),
   dueDate: types.optional(types.number, 0),
   isCompleted: types.optional(types.boolean, false),
+  reminderMinutes: types.optional(types.number, 0),
   category: types.maybeNull(TodoCategoryModel),
 })
 
@@ -26,6 +32,7 @@ function normalizeTodo(input: Partial<Todo> & { id: string }): any {
     imageUrl: input.imageUrl ?? "",
     dueDate: input.dueDate ?? 0,
     isCompleted: input.isCompleted ?? false,
+    reminderMinutes: input.reminderMinutes ?? 0,
     category: input.category
       ? {
           id: input.category.id ?? "",
@@ -45,12 +52,77 @@ export const TodoStoreModel = types
     isLoaded: types.optional(types.boolean, false),
   })
   .actions((store) => {
+    const syncCreateTodoInBackground = flow(function* syncCreateTodoInBackground(
+      tempId: string,
+      payload: CreateTodoPayload,
+      reminderMinutes: number,
+    ) {
+      const response = yield todoApi.createTodo(payload)
+      if (response.ok && response.data?.success) {
+        const createdTodo = response.data?.data
+        if (createdTodo?.id) {
+          const normalized = normalizeTodo({
+            ...createdTodo,
+            reminderMinutes,
+          })
+          const idx = store.items.findIndex((todo) => todo.id === tempId)
+          if (idx >= 0) {
+            store.items[idx] = normalized
+          } else if (!store.items.some((todo) => todo.id === normalized.id)) {
+            store.items.unshift(normalized)
+          }
+          if (reminderMinutes > 0) {
+            yield cancelTodoReminder(tempId)
+            yield scheduleTodoReminder({
+              todoId: normalized.id,
+              title: normalized.title,
+              dueDate: normalized.dueDate,
+              reminderMinutes,
+            })
+          }
+          return response
+        }
+
+        yield fetchTodos()
+        const matchedTodo = [...store.items]
+          .reverse()
+          .find(
+            (todo) =>
+              todo.title === payload.title &&
+              todo.content === payload.content &&
+              todo.dueDate === payload.dueDate,
+          )
+        if (matchedTodo && reminderMinutes > 0) {
+          matchedTodo.reminderMinutes = reminderMinutes
+          yield cancelTodoReminder(tempId)
+          yield scheduleTodoReminder({
+            todoId: matchedTodo.id,
+            title: matchedTodo.title,
+            dueDate: matchedTodo.dueDate,
+            reminderMinutes,
+          })
+        }
+        store.items.replace(store.items.filter((todo) => todo.id !== tempId))
+        return response
+      }
+
+      yield cancelTodoReminder(tempId)
+      store.items.replace(store.items.filter((todo) => todo.id !== tempId))
+      return response
+    })
+
     const fetchTodos = flow(function* fetchTodos() {
       store.isLoading = true
       try {
         const response = yield todoApi.getTodos(0, 50)
         if (response.ok && response.data?.success) {
-          const items = (response.data.data?.items ?? []).map((todo: Todo) => normalizeTodo(todo))
+          const reminderMinutesMap = yield loadTodoReminderMinutesMap()
+          const items = (response.data.data?.items ?? []).map((todo: Todo) =>
+            normalizeTodo({
+              ...todo,
+              reminderMinutes: reminderMinutesMap?.[todo.id] ?? 0,
+            }),
+          )
           store.items.replace(items)
           store.isLoaded = true
         }
@@ -65,7 +137,7 @@ export const TodoStoreModel = types
       yield fetchTodos()
     })
 
-    const createTodo = flow(function* createTodo(payload: CreateTodoPayload) {
+    const createTodo = (payload: CreateTodoPayload, reminderMinutes = 0) => {
       const tempId = `temp-${Date.now()}`
       const optimisticTodo = normalizeTodo({
         id: tempId,
@@ -74,19 +146,27 @@ export const TodoStoreModel = types
         imageUrl: payload.imageUrl,
         dueDate: payload.dueDate,
         isCompleted: false,
+        reminderMinutes,
       })
       store.items.unshift(optimisticTodo)
-
-      const response = yield todoApi.createTodo(payload)
-      if (response.ok && response.data?.success) {
-        yield fetchTodos()
-      } else {
-        store.items.replace(store.items.filter((todo) => todo.id !== tempId))
+      if (reminderMinutes > 0 && optimisticTodo.dueDate > 0) {
+        void scheduleTodoReminder({
+          todoId: tempId,
+          title: optimisticTodo.title,
+          dueDate: optimisticTodo.dueDate,
+          reminderMinutes,
+        })
       }
-      return response
-    })
 
-    const updateTodo = flow(function* updateTodo(id: string, payload: CreateTodoPayload) {
+      void syncCreateTodoInBackground(tempId, payload, reminderMinutes)
+      return { ok: true, data: { success: true, message: "Todo saved locally and syncing..." } } as any
+    }
+
+    const updateTodo = flow(function* updateTodo(
+      id: string,
+      payload: CreateTodoPayload,
+      reminderMinutes = 0,
+    ) {
       const idx = store.items.findIndex((todo) => todo.id === id)
       const backup = idx >= 0 ? getSnapshotTodo(store.items[idx]) : null
       if (idx >= 0) {
@@ -96,6 +176,7 @@ export const TodoStoreModel = types
           content: payload.content,
           imageUrl: payload.imageUrl,
           dueDate: payload.dueDate,
+          reminderMinutes,
         } as any
       }
 
@@ -106,6 +187,17 @@ export const TodoStoreModel = types
         }
       } else if (idx < 0) {
         yield fetchTodos()
+      } else {
+        if (reminderMinutes > 0) {
+          yield scheduleTodoReminder({
+            todoId: id,
+            title: payload.title,
+            dueDate: payload.dueDate,
+            reminderMinutes,
+          })
+        } else {
+          yield cancelTodoReminder(id)
+        }
       }
       return response
     })
@@ -125,8 +217,10 @@ export const TodoStoreModel = types
     })
 
     const deleteTodo = flow(function* deleteTodo(id: string) {
-      const backup = store.items.slice()
-      store.items.replace(store.items.filter((todo) => todo.id !== id))
+      const backup = store.items.map(getSnapshotTodo)
+      const nextItems = store.items.map(getSnapshotTodo).filter((todo) => todo.id !== id)
+      store.items.replace(nextItems as any)
+      yield cancelTodoReminder(id)
 
       const response = yield todoApi.deleteTodo(id)
       if (!response.ok || !response.data?.success) {
@@ -135,7 +229,15 @@ export const TodoStoreModel = types
       return response
     })
 
-    return { fetchTodos, loadIfNeeded, createTodo, updateTodo, toggleTodoStatus, deleteTodo }
+    return {
+      fetchTodos,
+      loadIfNeeded,
+      createTodo,
+      updateTodo,
+      toggleTodoStatus,
+      deleteTodo,
+      syncCreateTodoInBackground,
+    }
   })
 
 function getSnapshotTodo(todo: any) {
@@ -146,6 +248,7 @@ function getSnapshotTodo(todo: any) {
     imageUrl: todo.imageUrl,
     dueDate: todo.dueDate,
     isCompleted: todo.isCompleted,
+    reminderMinutes: todo.reminderMinutes ?? 0,
     category: todo.category
       ? {
           id: todo.category.id,

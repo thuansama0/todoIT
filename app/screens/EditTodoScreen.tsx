@@ -29,6 +29,11 @@ import {
   $dueDateLabel,
   $dueDateRow,
   $dueDateWrap,
+  $reminderChip,
+  $reminderChipActive,
+  $reminderChipText,
+  $reminderChipTextActive,
+  $reminderRow,
   $footerContainer,
   $formContainer,
   $formContent,
@@ -58,7 +63,9 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
     const yyyy = date.getFullYear()
     const mm = String(date.getMonth() + 1).padStart(2, "0")
     const dd = String(date.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
+    const hh = String(date.getHours()).padStart(2, "0")
+    const min = String(date.getMinutes()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`
   }
 
   const [title, setTitle] = useState(todoData.title || "")
@@ -67,6 +74,7 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
 
   const [hasDueDate, setHasDueDate] = useState(!!todoData.dueDate && todoData.dueDate > 0)
   const [dueDateString, setDueDateString] = useState(getInitialDateString(todoData.dueDate))
+  const [reminderMinutes, setReminderMinutes] = useState(todoData.reminderMinutes ?? 0)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [categoryId, setCategoryId] = useState(todoData.category?.id || "")
@@ -83,16 +91,28 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
     const yyyy = today.getFullYear()
     const mm = String(today.getMonth() + 1).padStart(2, "0")
     const dd = String(today.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
+    const hh = String(today.getHours()).padStart(2, "0")
+    const min = String(today.getMinutes()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`
+  }
+
+  const parseDateTime = (value: string) => {
+    const [datePart, timePart] = value.trim().split(" ")
+    if (!datePart || !timePart) return NaN
+    const [yyyy, mm, dd] = datePart.split("-").map(Number)
+    const [hh, min] = timePart.split(":").map(Number)
+    if (!yyyy || !mm || !dd || hh === undefined || min === undefined) return NaN
+    return new Date(yyyy, mm - 1, dd, hh, min, 0, 0).getTime()
   }
 
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
-      // Bật due date thì gán sẵn hôm nay để tránh field rỗng gây lỗi parse.
+      // Có giá trị mặc định để người dùng không phải nhập từ đầu.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
+      setReminderMinutes(0)
     }
   }
 
@@ -106,21 +126,25 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
 
     let finalDueDate = 0
     if (hasDueDate && dueDateString) {
-      const parsedDate = new Date(dueDateString).getTime()
+      const parsedDate = parseDateTime(dueDateString)
       if (!isNaN(parsedDate)) {
         finalDueDate = parsedDate
+      } else {
+        Alert.alert("Sai định dạng", "Vui lòng nhập đúng dạng YYYY-MM-DD HH:mm.")
+        setIsLoading(false)
+        return
       }
     }
 
     const payload: CreateTodoPayload = {
       title,
       content,
-      // Tạm khóa đổi ảnh để không phá dữ liệu cũ khi backend chưa mở API riêng.
+      // Backend chưa có luồng upload riêng nên giữ ảnh mặc định.
       imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
       dueDate: finalDueDate,
       categoryId,
     }
-    const response = await todoStore.updateTodo(todoData.id, payload)
+    const response = await todoStore.updateTodo(todoData.id, payload, reminderMinutes)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
@@ -178,14 +202,34 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
 
         {hasDueDate && (
           <View style={$dueDateWrap}>
-            <Text style={[$label, $labelNoTop]}>Due Date (YYYY-MM-DD)</Text>
+            <Text style={[$label, $labelNoTop]}>Due Date (YYYY-MM-DD HH:mm)</Text>
             <TextInput
               style={$input}
-              placeholder="2026-04-22"
+              placeholder="2026-04-22 14:30"
               value={dueDateString}
               onChangeText={setDueDateString}
               placeholderTextColor={colors.palette.neutral400}
             />
+
+            <Text style={$label}>Remind before</Text>
+            <View style={$reminderRow}>
+              {[0, 5, 15, 30, 60].map((minute) => (
+                <TouchableOpacity
+                  key={minute}
+                  style={[$reminderChip, reminderMinutes === minute && $reminderChipActive]}
+                  onPress={() => setReminderMinutes(minute)}
+                >
+                  <Text
+                    style={[
+                      $reminderChipText,
+                      reminderMinutes === minute && $reminderChipTextActive,
+                    ]}
+                  >
+                    {minute === 0 ? "Off" : minute >= 60 ? "1h" : `${minute}m`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 

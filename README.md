@@ -1,164 +1,350 @@
-# Welcome to your new ignited app!
+# todoIT
 
-[![CircleCI](https://circleci.com/gh/infinitered/ignite.svg?style=svg)](https://circleci.com/gh/infinitered/ignite)
+`todoIT` là ứng dụng quản lý công việc cá nhân được xây dựng bằng React Native + Expo. App hỗ trợ đăng nhập/đăng ký, quản lý Todo, Category, Profile, Notification, local cache, optimistic UI và nhắc việc bằng local notification.
 
-## The latest and greatest boilerplate for Infinite Red opinions
+## Công Nghệ Chính
 
-This is the boilerplate that [Infinite Red](https://infinite.red) uses as a way to test bleeding-edge changes to our React Native stack.
+- `React Native`: xây dựng giao diện mobile.
+- `Expo`: chạy, build và tích hợp các module native như notification, device, constants.
+- `TypeScript`: kiểm tra kiểu dữ liệu và giảm lỗi runtime.
+- `Ignite`: bộ khung project, cấu trúc thư mục và generator template.
+- `React Navigation`: điều hướng Stack + Bottom Tabs.
+- `MobX-State-Tree`: quản lý state tập trung cho Todo, Category, Notification, Profile, Auth.
+- `AsyncStorage`: lưu cache local thông qua helper `app/utils/storage`.
+- `apisauce`: gọi REST API.
+- `expo-notifications`: push/local notification, lấy push token, schedule reminder.
+- `react-native-toast-message`: hiển thị toast khi app đang active.
+- `@expo/vector-icons`: icon UI.
+- `react-native-safe-area-context`, `react-native-screens`, `react-native-gesture-handler`: nền tảng navigation/UI mobile.
 
-Currently includes:
+## Cấu Trúc Thư Mục
 
-- React Native
-- React Navigation
-- MobX State Tree
-- TypeScript
-- And more!
-
-## Quick Start
-
-The Ignite boilerplate project's structure will look similar to this:
-
-```
-ignite-project
-├── app
-│   ├── components
-│   ├── config
-│   ├── i18n
-│   ├── models
-│   ├── navigators
-│   ├── screens
-│   ├── services
-│   ├── theme
-│   ├── utils
-│   └── app.tsx
-├── assets
-│   ├── icons
-│   └── images
-├── test
-│   ├── __snapshots__
-│   ├── mockFile.ts
-│   └── setup.ts
-├── README.md
-├── android
-│   ├── app
-│   ├── build.gradle
-│   ├── gradle
-│   ├── gradle.properties
-│   ├── gradlew
-│   ├── gradlew.bat
-│   ├── keystores
-│   └── settings.gradle
-├── ignite
-│   └── templates
-|       |── app-icon
-│       ├── component
-│       ├── model
-│       ├── navigator
-│       └── screen
-├── index.js
-├── ios
-│   ├── IgniteProject
-│   ├── IgniteProject-tvOS
-│   ├── IgniteProject-tvOSTests
-│   ├── IgniteProject.xcodeproj
-│   └── IgniteProjectTests
-├── .env
-└── package.json
-
+```text
+app/
+├── app.tsx                  # Entry app, RootStoreProvider, Toast, push notification hook
+├── components/              # Component dùng chung
+├── config/                  # API URL và config môi trường
+├── models/                  # MobX-State-Tree stores
+├── navigators/              # App stack + bottom tab navigation
+├── screens/                 # Màn hình chức năng
+├── services/api/            # API clients
+├── theme/                   # Colors, spacing, typography
+└── utils/                   # Storage, notification, reminder helpers
 ```
 
-### ./app directory
+## Luồng Khởi Động App
 
-Included in an Ignite boilerplate project is the `app` directory. This is a directory you would normally have to create when using vanilla React Native.
+1. `app/app.tsx` gọi `useInitialRootStore()` để khởi tạo MST root store.
+2. `setupRootStore.ts` load snapshot từ storage để phục hồi cache local.
+3. `RootStoreProvider` bọc toàn app để các màn hình dùng `useStores()`.
+4. `AppNavigator` dựng Stack navigation.
+5. `TabNavigator` hiển thị 4 tab chính: `Categories`, `Todos`, `Notifications`, `Profile`.
+6. `usePushNotifications()` đăng ký push token, listener nhận notification và xử lý điều hướng khi bấm notification.
 
-The inside of the `app` directory looks similar to the following:
+## Luồng Đăng Nhập / Đăng Ký
 
+Màn hình chính:
+
+- `LoginScreen`
+- `SignUpScreen`
+
+Luồng hoạt động:
+
+1. Người dùng nhập thông tin đăng nhập hoặc đăng ký.
+2. App gọi API trong `app/services/api/authApi.ts`.
+3. Nếu thành công, `accessToken` được lưu vào `AuthenticationStore`.
+4. API client trong `app/services/api/api.ts` tự gắn token vào header `Authorization`.
+5. App điều hướng vào `MainTabs`.
+
+Thư viện liên quan:
+
+- `apisauce`: gọi API auth.
+- `mobx-state-tree`: lưu token trong store.
+- `AsyncStorage`: persist token qua `setupRootStore`.
+- `React Navigation`: điều hướng sau login/signup.
+
+## Luồng Todo
+
+Màn hình chính:
+
+- `TodoScreen`
+- `NewTodoScreen`
+- `EditTodoScreen`
+- `TodoDetailScreen`
+
+Store/API:
+
+- `app/models/TodoStore.ts`
+- `app/services/api/todoApi.ts`
+- `app/utils/todoReminder.ts`
+
+Luồng tải danh sách:
+
+1. `TodoScreen` gọi `todoStore.loadIfNeeded()`.
+2. Nếu store chưa có data, `TodoStore.fetchTodos()` gọi `todoApi.getTodos()`.
+3. Data được normalize rồi lưu vào `todoStore.items`.
+4. UI đọc trực tiếp từ `todoStore.items`.
+
+Luồng tạo Todo:
+
+1. Người dùng nhập title, content, category, due date và reminder.
+2. `NewTodoScreen` gọi `todoStore.createTodo(payload, reminderMinutes)`.
+3. Store thêm Todo tạm vào local ngay để UI hiện liền (optimistic UI).
+4. API tạo Todo chạy nền.
+5. Khi API trả về Todo thật, store đổi `tempId` thành `id` thật.
+6. Nếu có reminder, app schedule local notification.
+
+Luồng sửa Todo:
+
+1. `EditTodoScreen` nhận plain todo data từ navigation.
+2. Người dùng sửa thông tin.
+3. `todoStore.updateTodo()` cập nhật UI trước.
+4. API cập nhật chạy sau.
+5. Nếu API lỗi, store rollback dữ liệu cũ.
+
+Luồng xóa Todo:
+
+1. Người dùng bấm xóa ở `TodoScreen` hoặc `TodoDetailScreen`.
+2. Store remove item khỏi local trước để UI phản hồi nhanh.
+3. App hủy reminder local nếu Todo có reminder.
+4. API xóa chạy sau.
+5. Nếu API lỗi, store rollback list từ snapshot.
+
+Lưu ý kỹ thuật:
+
+- Không truyền trực tiếp MST node qua navigation. App chuyển Todo sang plain object trước khi qua `EditTodoScreen` để tránh lỗi detached node.
+- `deleteTodo()` dùng snapshot plain object để tránh đọc node đã bị xóa khỏi MST tree.
+
+## Luồng Category
+
+Màn hình chính:
+
+- `CategoriesScreen`
+- `NewCategoryScreen`
+- `EditCategoryScreen`
+
+Store/API:
+
+- `app/models/CategoryStore.ts`
+- `app/services/api/categoryApi.ts`
+
+Luồng hoạt động:
+
+1. `CategoriesScreen` gọi `categoryStore.loadIfNeeded()`.
+2. Store gọi API lấy danh sách category.
+3. Tạo/sửa/xóa category dùng optimistic UI.
+4. Nếu API fail, store rollback lại dữ liệu trước đó.
+
+Validation:
+
+- Tên category được trim.
+- App kiểm tra trùng tên local trước khi gọi API để tránh lỗi `Category already exists`.
+
+## Luồng Notifications
+
+Màn hình chính:
+
+- `NotificationsScreen`
+- `NotificationDetailScreen`
+
+Store/API/Utils:
+
+- `app/models/NotificationStore.ts`
+- `app/services/api/notificationApi.ts`
+- `app/utils/localNotificationLog.ts`
+- `app/utils/usePushNotifications.ts`
+
+Luồng tải notification:
+
+1. `NotificationsScreen` gọi `notificationStore.fetchNotifications()` khi focus.
+2. Store gọi API `/notification/all` và `/notification/unread-count`.
+3. Store merge notification từ backend với local notification log.
+4. Danh sách được sort theo `sentAt` mới nhất.
+
+Luồng nhận push notification:
+
+1. `usePushNotifications()` đăng ký listener qua `expo-notifications`.
+2. Nếu app active, app hiển thị toast bằng `react-native-toast-message`.
+3. Nếu user bấm notification, app điều hướng tới tab `Notifications`.
+4. Notification được lưu vào `NotificationStore`.
+
+Luồng local notification log:
+
+1. Local reminder hoặc push fallback được lưu bằng `appendLocalNotificationLog()`.
+2. Log được lưu vào AsyncStorage.
+3. `NotificationStore.fetchNotifications()` merge local log vào danh sách.
+
+## Luồng Nhắc Việc Todo Reminder
+
+File chính:
+
+- `app/utils/todoReminder.ts`
+- `app/utils/usePushNotifications.ts`
+- `app/models/TodoStore.ts`
+
+Khi tạo Todo có reminder:
+
+1. App tính `triggerAt = dueDate - reminderMinutes`.
+2. App gọi `Notifications.scheduleNotificationAsync()`.
+3. Nội dung notification:
+   - `title`: `Nhắc việc: <Tên Todo>`
+   - `body`: `Còn n phút/giờ nữa đến lịch của bạn`
+4. App lưu mapping local:
+   - `todoId -> notificationId`
+   - `todoId -> reminderMinutes`
+   - `notificationId -> displayTitle/displayBody/fireAtMs`
+
+Khi sửa/xóa Todo:
+
+1. App hủy reminder cũ bằng `cancelScheduledNotificationAsync()`.
+2. Nếu vẫn còn reminder, app schedule lại bằng thông tin mới.
+
+Giới hạn Android cần biết:
+
+- Local scheduled notification có thể không bắn system notification nếu app bị kill trên một số hãng Android như HONOR, Oppo, Xiaomi.
+- Project đã thêm quyền Android liên quan trong `AndroidManifest.xml` và `app.json`, gồm `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM`, `WAKE_LOCK`, `RECEIVE_BOOT_COMPLETED`.
+- Trên máy HONOR test thực tế, notification vẫn có thể bị OS chặn khi app bị vuốt kill.
+- App có cơ chế recovery: khi mở app lại, nếu thấy reminder đã quá hạn nhưng chưa bắn, app tự thêm notification vào `NotificationsScreen`.
+- Nếu yêu cầu bắt buộc kill app vẫn hiện system notification ổn định trên mọi máy, hướng đúng là server-side scheduled push qua Expo/FCM.
+
+## Luồng Profile
+
+Màn hình chính:
+
+- `ProfileScreen`
+
+Store/API:
+
+- `app/models/ProfileStore.ts`
+- `app/services/api/userApi.ts`
+
+Luồng hoạt động:
+
+1. `ProfileScreen` gọi `profileStore.loadIfNeeded()` hoặc `fetchProfile()`.
+2. Store gọi API lấy thông tin user.
+3. Người dùng sửa name/email.
+4. Store update local trước, API chạy sau.
+5. Nếu API fail, store rollback profile cũ.
+
+## State Management
+
+Root store:
+
+- `RootStore.ts` gom các store con:
+  - `authenticationStore`
+  - `categoryStore`
+  - `todoStore`
+  - `notificationStore`
+  - `profileStore`
+
+Persist/rehydration:
+
+- `setupRootStore.ts` load snapshot từ storage.
+- Khi app mở lại, dữ liệu cache được phục hồi.
+- Các flag như `isLoading`, `isLoaded` được reset để tránh app boot lên ở trạng thái loading sai.
+
+## Navigation
+
+File chính:
+
+- `app/navigators/AppNavigator.tsx`
+- `app/navigators/TabNavigator.tsx`
+- `app/navigators/navigationUtilities.ts`
+
+Stack chính:
+
+- `Welcome`
+- `Login`
+- `SignUp`
+- `MainTabs`
+- `NewTodo`
+- `TodoDetail`
+- `NewCategory`
+- `EditCategory`
+- `EditTodo`
+- `NotificationDetail`
+
+Tabs:
+
+- `Categories`
+- `Todo`
+- `Notifications`
+- `Profile`
+
+App dùng `navigationRef` để điều hướng từ notification listener, vì listener không nằm trực tiếp trong screen component.
+
+## API Layer
+
+Các file API nằm trong `app/services/api/`:
+
+- `api.ts`: cấu hình apisauce instance và gắn token.
+- `authApi.ts`: login/signup.
+- `todoApi.ts`: CRUD Todo.
+- `categoryApi.ts`: CRUD Category.
+- `notificationApi.ts`: danh sách, unread count, mark read, delete, create notification.
+- `userApi.ts`: profile user.
+
+API response thường có dạng:
+
+```ts
+{
+  success: boolean
+  message: string
+  data?: ...
+}
 ```
-app
-├── components
-├── config
-├── i18n
-├── models
-├── navigators
-├── screens
-├── services
-├── theme
-├── utils
-└── app.tsx
+
+## UI Components Dùng Chung
+
+Một số component quan trọng:
+
+- `AppSectionHeader`: header dùng chung cho các màn chính và màn add/edit/detail.
+- `Screen`: layout wrapper từ Ignite.
+- `Button`: button dùng chung.
+- `TodoItem`: hiển thị Todo trong list.
+- `CategoryItem`: hiển thị Category.
+- `NotificationItem`: hiển thị Notification.
+
+## Theme Và Style
+
+- Màu sắc nằm trong `app/theme/colors`.
+- Các screen đã tách style riêng như `TodoScreen.styles.ts`, `NewTodoScreen.styles.ts`, `EditTodoScreen.styles.ts`.
+- Hạn chế inline style để code dễ đọc và dễ bảo trì.
+
+## Scripts Hay Dùng
+
+```bash
+npm run compile
+npm run lint
+npm run test
+npm run start
+npm run start:dev
+npm run android
+npm run ios
 ```
 
-**components**
-This is where your reusable components live which help you build your screens.
+Build Android/iOS với EAS local:
 
-**i18n**
-This is where your translations will live if you are using `react-native-i18n`.
-
-**models**
-This is where your app's models will live. Each model has a directory which will contain the `mobx-state-tree` model file, test file, and any other supporting files like actions, types, etc.
-
-**navigators**
-This is where your `react-navigation` navigators will live.
-
-**screens**
-This is where your screen components will live. A screen is a React component which will take up the entire screen and be part of the navigation hierarchy. Each screen will have a directory containing the `.tsx` file, along with any assets or other helper files.
-
-**services**
-Any services that interface with the outside world will live here (think REST APIs, Push Notifications, etc.).
-
-**theme**
-Here lives the theme for your application, including spacing, colors, and typography.
-
-**utils**
-This is a great place to put miscellaneous helpers and utilities. Things like date helpers, formatters, etc. are often found here. However, it should only be used for things that are truly shared across your application. If a helper or utility is only used by a specific component or model, consider co-locating your helper with that component or model.
-
-**app.tsx** This is the entry point to your app. This is where you will find the main App component which renders the rest of the application.
-
-### ./assets directory
-
-This directory is designed to organize and store various assets, making it easy for you to manage and use them in your application. The assets are further categorized into subdirectories, including `icons` and `images`:
-
-```
-assets
-├── icons
-└── images
+```bash
+npm run build:android:dev
+npm run build:android:prod
+npm run build:ios:dev
+npm run build:ios:prod
 ```
 
-**icons**
-This is where your icon assets will live. These icons can be used for buttons, navigation elements, or any other UI components. The recommended format for icons is PNG, but other formats can be used as well.
+## Ghi Chú Khi Test Notification
 
-Ignite comes with a built-in `Icon` component. You can find detailed usage instructions in the [docs](https://github.com/infinitered/ignite/blob/master/docs/Components-Icon.md).
+- Sau khi sửa `app.json` hoặc `android/app/src/main/AndroidManifest.xml`, cần rebuild/reinstall app native. Reload Metro không đủ.
+- Test notification active/background trước, sau đó mới test killed.
+- Với các máy Android có chính sách pin mạnh, nên kiểm tra:
+  - Notification permission.
+  - Battery optimization.
+  - Auto-start/background permission.
+  - App có bị force stop từ Settings không.
 
-**images**
-This is where your images will live, such as background images, logos, or any other graphics. You can use various formats such as PNG, JPEG, or GIF for your images.
+## Trạng Thái Hiện Tại
 
-Another valuable built-in component within Ignite is the `AutoImage` component. You can find detailed usage instructions in the [docs](https://github.com/infinitered/ignite/blob/master/docs/Components-AutoImage.md).
-
-How to use your `icon` or `image` assets:
-
-```
-import { Image } from 'react-native';
-
-const MyComponent = () => {
-  return (
-    <Image source={require('../assets/images/my_image.png')} />
-  );
-};
-```
-
-### ./ignite directory
-
-The `ignite` directory stores all things Ignite, including CLI and boilerplate items. Here you will find templates you can customize to help you get started with React Native.
-
-### ./test directory
-
-This directory will hold your Jest configs and mocks.
-
-## Running Maestro end-to-end tests
-
-Follow our [Maestro Setup](https://ignitecookbook.com/docs/recipes/MaestroSetup) recipe from the [Ignite Cookbook](https://ignitecookbook.com/)!
-
-## Previous Boilerplates
-
-- [2018 aka Bowser](https://github.com/infinitered/ignite-bowser)
-- [2017 aka Andross](https://github.com/infinitered/ignite-andross)
-- [2016 aka Ignite 1.0](https://github.com/infinitered/ignite-ir-boilerplate-2016)
+- Todo/Category/Notification/Profile đã có local cache và optimistic UI.
+- Todo reminder đã schedule local notification và recovery missed reminder khi mở app lại.
+- App đã xử lý detached MST node khi xóa Todo bằng cách dùng snapshot/plain object.
+- Case system notification khi app bị kill phụ thuộc chính sách OS/OEM; để đảm bảo tuyệt đối cần server push notification theo lịch.

@@ -58,24 +58,20 @@ export const NotificationDetailScreen: FC<any> = ({ route }) => {
 
       <View style={$contentWrapper}>
         <View style={$card}>
-          {/* Dòng Header của thẻ: Icon, Time, Trạng thái */}
           <View style={$cardHeader}>
             <View style={$iconCircle}>
               <Feather name="bell" size={24} color={colors.palette.secondary400} />
             </View>
             <View style={$metaInfo}>
               <Text style={$timeText}>{formatTimeAgo(notificationData.sentAt)}</Text>
-              {/* Nếu vào màn này thì coi như đã đọc luôn */}
               <Text style={$readText}>Read</Text>
             </View>
           </View>
 
-          {/* Nội dung chính */}
           <Text style={$title}>{notificationData.title}</Text>
           <Text style={$content}>{notificationData.content}</Text>
         </View>
 
-        {/* Nút Xóa đỏ to */}
         <TouchableOpacity style={$deleteBtn} onPress={handleDelete}>
           <Feather name="trash-2" size={20} color={colors.palette.angry500} />
           <Text style={$deleteBtnText}>Delete Notification</Text>

@@ -68,6 +68,24 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   }
 
+  const toPlainTodo = (todo: any) => ({
+    id: todo.id,
+    title: todo.title,
+    content: todo.content,
+    imageUrl: todo.imageUrl,
+    dueDate: todo.dueDate,
+    isCompleted: todo.isCompleted,
+    reminderMinutes: todo.reminderMinutes ?? 0,
+    category: todo.category
+      ? {
+          id: todo.category.id,
+          name: todo.category.name,
+          isPublic: todo.category.isPublic,
+          isOwner: todo.category.isOwner,
+        }
+      : null,
+  })
+
   return (
     <Screen
       preset="fixed"
@@ -102,7 +120,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
                   onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
                   onDelete={() => handleDelete(item.id)}
                   onEdit={() => {
-                    ;(navigation.navigate as any)("EditTodo", { todoData: item })
+                    ;(navigation.navigate as any)("EditTodo", { todoData: toPlainTodo(item) })
                   }}
                 />
               </Pressable>
@@ -112,7 +130,6 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
         />
       )}
 
-      {/* Nút cộng nổi */}
       <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewTodo")}>
         <Feather name="plus" size={24} color={colors.palette.neutral100} />
       </TouchableOpacity>

@@ -55,10 +55,8 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
       style={$screenFill}
       contentContainerStyle={$screenInner}
     >
-      {/* 1. Header ĐÃ ĐƯỢC CHỈNH LẠI GIỐNG TRANG TODO */}
       <AppSectionHeader title="Categories" onRefresh={() => categoryStore.fetchCategories()} />
 
-      {/* 2. Danh sách (FlatList) */}
       {categoryStore.isLoading ? (
         <View>
           <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
@@ -85,7 +83,6 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
         />
       )}
 
-      {/* 3. Nút Thêm nổi (FAB) */}
       <TouchableOpacity style={$fab} onPress={() => (navigation.navigate as any)("NewCategory")}>
         <Feather name="plus" size={24} color={colors.palette.neutral100} />
       </TouchableOpacity>

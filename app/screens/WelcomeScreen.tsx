@@ -43,7 +43,6 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
       <View style={[$bottomContainer, $bottomContainerInsets]}>
         <Text tx="welcomeScreen.postscript" size="md" />
 
-        {/* Nút bấm chuyển sang trang Login */}
         <Button
           testID="next-screen-button"
           preset="reversed"

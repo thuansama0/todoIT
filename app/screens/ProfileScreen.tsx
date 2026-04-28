@@ -58,7 +58,6 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
   useEffect(() => {
     if (isFocused) {
-      // Nạp lại khi màn hình được focus để phản ánh dữ liệu mới nhất sau khi edit.
       profileStore.fetchProfile()
     }
   }, [isFocused, profileStore])
@@ -72,7 +71,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
   const handleStartEdit = () => {
     setIsEditing(true)
-    // Không giữ lại mật khẩu cũ để tránh submit nhầm dữ liệu nhạy cảm.
+    // Mật khẩu chỉ được gửi khi người dùng nhập lại.
     setEditPassword("")
   }
 
@@ -95,7 +94,6 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
       name: editName,
       email: editEmail,
     }
-    // Chỉ gửi password khi người dùng chủ động nhập để tránh reset ngoài ý muốn.
     if (editPassword.trim() !== "") {
       payload.password = editPassword
     }
@@ -136,7 +134,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
         text: "Đăng xuất",
         style: "destructive",
         onPress: () => {
-          // Reset stack để không thể back về màn hình đã đăng nhập.
+          // Xóa lịch sử điều hướng để không quay lại màn hình đã đăng nhập.
           ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
         },
       },

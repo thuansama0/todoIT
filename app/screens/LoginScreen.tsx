@@ -6,6 +6,7 @@ import { Button, Screen, Text, TextField } from "app/components"
 import { AppStackScreenProps } from "../navigators"
 import { authApi } from "app/services/api/authApi"
 import { useStores } from "app/models"
+import { syncDevicePushTokenWithServer } from "app/utils/usePushNotifications"
 import {
   $ButtonText,
   $disabledButton,
@@ -46,6 +47,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
         if (accessToken) {
           authenticationStore.setAuthToken(accessToken)
           await saveString("accessToken", accessToken)
+          void syncDevicePushTokenWithServer().catch(() => {})
           console.log("Đã cất Token vào Store và Ổ cứng thành công!")
         }
         navigation.navigate("MainTabs")
