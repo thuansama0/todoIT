@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native"
+import * as ImagePicker from "expo-image-picker"
 import { AppSectionHeader, Screen } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
@@ -42,6 +44,7 @@ import {
   $signOutBtn,
   $signOutText,
   $tapToChangeText,
+  $avatarImage,
 } from "./ProfileScreen.styles"
 
 export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
@@ -52,6 +55,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
   const [isEditing, setIsEditing] = useState(false)
 
+  const [editImageUrl, setEditImageUrl] = useState("")
   const [editName, setEditName] = useState("")
   const [editEmail, setEditEmail] = useState("")
   const [editPassword, setEditPassword] = useState("")
@@ -66,6 +70,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
+      setEditImageUrl(profileStore.profile.imageUrl ?? "")
     }
   }, [profileStore.profile])
 
@@ -74,15 +79,65 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
     // Không giữ password cũ trong form để tránh gửi nhầm dữ liệu nhạy cảm.
     setEditPassword("")
   }
-
+  // hủy edit
   const handleCancelEdit = () => {
     setIsEditing(false)
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
+      setEditImageUrl(profileStore.profile.imageUrl ?? "")
     }
   }
+  // chọn ảnh từ thư viện
+  async function pickImageFromLibrary() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
+    if (!permission.granted) {
+      Alert.alert("Cần quyền truy cập", "Vui lòng cho phép app truy cập thư viện ảnh.")
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    })
+
+    if (!result.canceled) {
+      setEditImageUrl(result.assets[0].uri)
+    }
+  }
+  // chụp ảnh
+  async function takePhoto() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync()
+
+    if (!permission.granted) {
+      Alert.alert("Cần quyền camera", "Vui lòng cho phép app sử dụng camera.")
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    })
+
+    if (!result.canceled) {
+      setEditImageUrl(result.assets[0].uri)
+    }
+  }
+  // đổi ảnh đại diện
+  function handleChangePhoto() {
+    if (!isEditing) return
+
+    Alert.alert("Đổi ảnh đại diện", "Chọn nguồn ảnh", [
+      { text: "Thư viện", onPress: pickImageFromLibrary },
+      { text: "Chụp ảnh", onPress: takePhoto },
+      { text: "Hủy", style: "cancel" },
+    ])
+  }
+  // lưu profile
   const handleSaveProfile = async () => {
     if (!editName.trim() || !editEmail.trim()) {
       Alert.alert("Lỗi", "Tên và Email không được để trống!")
@@ -162,15 +217,21 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
       <View style={$contentWrapper}>
         <View style={$avatarSection}>
-          <View style={$avatarCircle}>
-            <Text style={$avatarText}>{getInitials(profileStore.profile?.name || "")}</Text>
-            {isEditing && (
-              <View style={$cameraBadge}>
-                <Feather name="camera" size={14} color={colors.palette.neutral500} />
-              </View>
-            )}
-          </View>
+          <TouchableOpacity disabled={!isEditing} onPress={handleChangePhoto}>
+            <View style={$avatarCircle}>
+              {editImageUrl ? (
+                <Image source={{ uri: editImageUrl }} style={$avatarImage} />
+              ) : (
+                <Text style={$avatarText}>{getInitials(profileStore.profile?.name || "")}</Text>
+              )}
 
+              {isEditing && (
+                <View style={$cameraBadge}>
+                  <Feather name="camera" size={14} color={colors.palette.neutral500} />
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
           {!isEditing ? (
             <>
               <Text style={$nameText}>{profileStore.profile?.name}</Text>

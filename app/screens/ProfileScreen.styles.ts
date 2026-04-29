@@ -1,8 +1,12 @@
-import { TextStyle, ViewStyle } from "react-native"
+import { TextStyle, ViewStyle, ImageStyle } from "react-native"
 import { colors } from "app/theme"
 
 export const $screenContainer: ViewStyle = { flex: 1, backgroundColor: colors.palette.neutral100 }
-export const $loadingContainer: ViewStyle = { flex: 1, justifyContent: "center", alignItems: "center" }
+export const $loadingContainer: ViewStyle = {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+}
 
 export const $contentWrapper: ViewStyle = { padding: 24 }
 export const $avatarSection: ViewStyle = { alignItems: "center", marginBottom: 24 }
@@ -16,7 +20,11 @@ export const $avatarCircle: ViewStyle = {
   marginBottom: 16,
   position: "relative",
 }
-export const $avatarText: TextStyle = { fontSize: 36, fontWeight: "bold", color: colors.palette.neutral100 }
+export const $avatarText: TextStyle = {
+  fontSize: 36,
+  fontWeight: "bold",
+  color: colors.palette.neutral100,
+}
 export const $cameraBadge: ViewStyle = {
   position: "absolute",
   bottom: 0,
@@ -38,7 +46,11 @@ export const $nameText: TextStyle = {
   marginBottom: 4,
 }
 export const $emailText: TextStyle = { fontSize: 16, color: colors.palette.neutral500 }
-export const $tapToChangeText: TextStyle = { fontSize: 14, color: colors.palette.neutral500, marginTop: 8 }
+export const $tapToChangeText: TextStyle = {
+  fontSize: 14,
+  color: colors.palette.neutral500,
+  marginTop: 8,
+}
 
 export const $editProfileBtn: ViewStyle = {
   flexDirection: "row",
@@ -86,7 +98,10 @@ export const $actionBtn: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",
 }
-export const $cancelBtn: ViewStyle = { backgroundColor: colors.palette.secondary100, marginRight: 8 }
+export const $cancelBtn: ViewStyle = {
+  backgroundColor: colors.palette.secondary100,
+  marginRight: 8,
+}
 export const $saveBtn: ViewStyle = { backgroundColor: colors.palette.secondary400, marginLeft: 8 }
 export const $cancelText: TextStyle = {
   color: colors.palette.secondary400,
@@ -127,4 +142,13 @@ export const $signOutText: TextStyle = {
   fontSize: 16,
   fontWeight: "bold",
 }
-export const $deleteText: TextStyle = { color: colors.palette.angry500, fontSize: 16, fontWeight: "bold" }
+export const $deleteText: TextStyle = {
+  color: colors.palette.angry500,
+  fontSize: 16,
+  fontWeight: "bold",
+}
+export const $avatarImage: ImageStyle = {
+  width: "100%",
+  height: "100%",
+  borderRadius: 50,
+}
