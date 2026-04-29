@@ -7,6 +7,7 @@ const ProfileModel = types.model("Profile", {
   name: types.string,
   imageUrl: types.maybeNull(types.string),
   accessToken: types.maybeNull(types.string),
+  pushToken: types.maybeNull(types.string),
 })
 
 export const ProfileStoreModel = types
@@ -28,6 +29,7 @@ export const ProfileStoreModel = types
             name: response.data.data.name ?? "",
             imageUrl: response.data.data.imageUrl,
             accessToken: response.data.data.accessToken,
+            pushToken: response.data.data.pushToken,
           } as any
           store.isLoaded = true
         }
@@ -50,6 +52,7 @@ export const ProfileStoreModel = types
             name: store.profile.name,
             imageUrl: store.profile.imageUrl,
             accessToken: store.profile.accessToken,
+            pushToken: store.profile.pushToken,
           }
         : undefined
 
@@ -72,6 +75,7 @@ export const ProfileStoreModel = types
           name: response.data.data.name ?? "",
           imageUrl: response.data.data.imageUrl,
           accessToken: response.data.data.accessToken,
+          pushToken: response.data.data.pushToken,
         } as any
       }
       return response

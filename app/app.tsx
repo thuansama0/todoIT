@@ -45,8 +45,12 @@ interface AppProps {
   hideSplashScreen: () => Promise<boolean>
 }
 
-function App(props: AppProps) {
+function PushNotificationHandler() {
   usePushNotifications()
+  return null
+}
+
+function App(props: AppProps) {
   const { hideSplashScreen } = props
   const {
     initialNavigationState,
@@ -72,6 +76,7 @@ function App(props: AppProps) {
       <RootStoreProvider value={rootStore}>
         <ErrorBoundary catchErrors={Config.catchErrors}>
           <GestureHandlerRootView style={$container}>
+            <PushNotificationHandler />
             <AppNavigator
               linking={linking}
               initialState={initialNavigationState}

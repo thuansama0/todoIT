@@ -135,7 +135,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = ({ route 
             size={22}
             color={colors.palette.secondary400}
             style={$rightEditIcon}
-            onPress={() => console.log("Sang trang Edit")}
+            onPress={() => (navigation.navigate as any)("EditTodo", { todoData: todo })}
           />
         }
       />

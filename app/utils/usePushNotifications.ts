@@ -3,21 +3,43 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Toast from 'react-native-toast-message';
+import Constants from 'expo-constants';
 
-import { navigate, navigationRef } from '../navigators/navigationUtilities';
+import { navigationRef } from '../navigators/navigationUtilities';
 import { useStores } from "app/models";
 import { formatLeadTime, getNearestReminderPayload, getReminderPayloadByNotificationId } from "./todoReminder";
 import { normalizeNotificationData } from "./notificationPayload";
-import { load, save } from "app/utils/storage";
+import { load, loadString, save } from "app/utils/storage";
 import { userApi } from "app/services/api/userApi";
 
 function navigateToNotificationsTab() {
   if (!navigationRef.isReady()) return
-  navigationRef.navigate("MainTabs", { screen: "Notifications" })
+  navigationRef.resetRoot({
+    index: 0,
+    routes: [
+      {
+        name: "MainTabs",
+        state: {
+          index: 2,
+          routes: [
+            { name: "Categories" },
+            { name: "Todo" },
+            { name: "Notifications" },
+            { name: "Profile" },
+          ],
+        },
+      },
+    ],
+  } as never)
+  setTimeout(() => {
+    if (navigationRef.isReady()) {
+      ;(navigationRef.navigate as any)("MainTabs", { screen: "Notifications" })
+    }
+  }, 250)
 }
 
 function navigateToNotificationsWhenReady() {
-  const maxWaitMs = 10000
+  const maxWaitMs = 15000
   const started = Date.now()
   const id = setInterval(() => {
     if (navigationRef.isReady()) {
@@ -26,7 +48,7 @@ function navigateToNotificationsWhenReady() {
     } else if (Date.now() - started > maxWaitMs) {
       clearInterval(id)
     }
-  }, 50)
+  }, 300)
   return () => clearInterval(id)
 }
 
@@ -71,7 +93,7 @@ Notifications.setNotificationHandler({
 const LAST_HANDLED_RESPONSE_KEY = "last-handled-notification-response"
 
 export const usePushNotifications = () => {
-  const { notificationStore, profileStore } = useStores()
+  const { authenticationStore, notificationStore, profileStore } = useStores()
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
   const handledResponseIds = useRef<Set<string>>(new Set())
@@ -212,7 +234,9 @@ export const usePushNotifications = () => {
       } catch {}
     })()
 
-    syncDevicePushTokenWithServer().catch(() => {})
+    if (authenticationStore.authToken) {
+      syncExpoPushTokenWithServer(authenticationStore.authToken).catch(() => {})
+    }
 
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       void pushIncomingReminder(notification)
@@ -233,7 +257,7 @@ export const usePushNotifications = () => {
       if (handledResponseIds.current.has(id)) return
       handledResponseIds.current.add(id)
       void pushIncomingReminder(response.notification)
-      navigate("MainTabs", { screen: "Notifications" })
+      navigateToNotificationsTab()
     });
 
     return () => {
@@ -245,17 +269,17 @@ export const usePushNotifications = () => {
   }, []);
 };
 
-export async function syncDevicePushTokenWithServer() {
+export async function syncExpoPushTokenWithServer(accessToken?: string) {
   const token = await registerForPushNotificationsAsync()
-  if (!token) return
+  if (!token) return undefined
 
-  const response = await userApi.updatePushToken(token)
-  if (!response.ok || !response.data?.success) {
-    console.log("Không thể cập nhật FCM token:", response.problem, response.data)
-    return
-  }
+  const tokenForRequest = accessToken ?? (await loadString("accessToken")) ?? undefined
+  if (!tokenForRequest) return undefined
 
-  console.log("Đã cập nhật FCM token lên server.")
+  const response = await userApi.updatePushToken(token, tokenForRequest)
+  if (!response.ok || !response.data?.success) return undefined
+
+  return token
 }
 
 async function registerForPushNotificationsAsync() {
@@ -278,15 +302,13 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      console.log('❌ Người dùng từ chối cấp quyền thông báo!');
       return;
     }
 
-    // Backend gửi qua FCM nên không dùng ExpoPushToken ở đây.
-    const devicePushToken = await Notifications.getDevicePushTokenAsync()
-    token = String(devicePushToken.data)
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
   } else {
-    console.log('⚠️ Phải dùng điện thoại thật để lấy Push Token (Máy ảo không hỗ trợ)');
+    return;
   }
 
   return token;

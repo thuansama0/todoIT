@@ -152,7 +152,6 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
       navigation.goBack()
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
-      console.log("Chi tiết lỗi:", response.problem, response.data)
     }
   }
 

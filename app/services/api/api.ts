@@ -27,10 +27,9 @@ export class Api {
       },
     })
     this.apisauce.addAsyncRequestTransform(async (request) => {
-    
       const token = await loadString("accessToken")
 
-      if (token) {
+      if (token && !request.headers?.Authorization) {
         request.headers = request.headers ?? {}
         request.headers.Authorization = `Bearer ${token}`
       }

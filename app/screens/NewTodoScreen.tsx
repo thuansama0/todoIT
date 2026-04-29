@@ -143,7 +143,6 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       navigation.goBack()
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể tạo Todo lúc này.")
-      console.log("Chi tiết lỗi:", response.problem, response.data)
     }
   }
 

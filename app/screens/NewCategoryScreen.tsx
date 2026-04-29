@@ -49,11 +49,9 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
             ? "Tên danh mục đã tồn tại."
             : response.data?.message || "Không thể tạo danh mục lúc này."
         Alert.alert("Lỗi", message)
-        console.log("Chi tiết lỗi:", response.problem, response.data)
       }
     } catch (error) {
       Alert.alert("Lỗi", "Có lỗi xảy ra, vui lòng thử lại.")
-      console.log("Lỗi tạo category:", error)
     } finally {
       setIsLoading(false)
     }

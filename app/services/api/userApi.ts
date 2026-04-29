@@ -7,6 +7,7 @@ export interface UserProfile {
   name: string
   imageUrl?: string
   accessToken?: string
+  pushToken?: string
 }
 
 export interface UpdateUserPayload {
@@ -45,7 +46,14 @@ export const userApi = {
     return await api.apisauce.delete<GenericResult>("/user")
   },
 
-  updatePushToken: async (pushToken: string): Promise<ApiResponse<GenericResult>> => {
-    return await api.apisauce.patch<GenericResult>("/user/update-push-token", { pushToken })
+  updatePushToken: async (
+    pushToken: string,
+    accessToken?: string,
+  ): Promise<ApiResponse<GenericResult>> => {
+    return await api.apisauce.patch<GenericResult>(
+      "/user/update-push-token",
+      { pushToken },
+      accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined,
+    )
   },
 }
