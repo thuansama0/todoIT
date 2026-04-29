@@ -1,4 +1,4 @@
-// Android có thể stringify notification data, nên gom về string map trước khi đọc.
+// Expo/Android đôi khi stringify data, nên chuẩn hóa trước để không mất payload khi mở từ notification.
 export function normalizeNotificationData(raw: unknown): Record<string, string> {
   if (raw == null) return {}
 

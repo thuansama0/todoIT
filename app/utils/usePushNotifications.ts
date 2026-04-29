@@ -221,7 +221,7 @@ export const usePushNotifications = () => {
       }
     })()
 
-    // Android có thể bỏ qua listener khi app mở lại từ killed state.
+    // Một số máy Android không gọi listener khi app mở từ notification, nên cần đọc response cuối cùng từ Expo.
     ;(async () => {
       try {
         const last = await Notifications.getLastNotificationResponseAsync()

@@ -113,7 +113,7 @@ export async function scheduleTodoReminder(params: {
       title: displayTitle,
       body: displayBody,
       sound: true,
-      // Android: mọi value trong data phải là string, nếu không object có thể bị bỏ — lúc mở app sẽ mất tên todo.
+      // Android dễ làm rơi object payload, nên ép về string để lúc mở app vẫn đọc được tên todo.
       data: {
         kind: "todo-reminder",
         todoTitle: String(title),

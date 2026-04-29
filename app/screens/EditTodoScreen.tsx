@@ -108,7 +108,7 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
-      // Có giá trị mặc định để người dùng không phải nhập từ đầu.
+      // Chọn sẵn thời điểm hiện tại để người dùng chỉ cần chỉnh phần khác.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
@@ -139,7 +139,7 @@ export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route 
     const payload: CreateTodoPayload = {
       title,
       content,
-      // Backend chưa có luồng upload riêng nên giữ ảnh mặc định.
+      // BE chưa có upload riêng, nên giữ ảnh mặc định để payload luôn hợp lệ.
       imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
       dueDate: finalDueDate,
       categoryId,

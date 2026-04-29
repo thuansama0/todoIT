@@ -193,7 +193,7 @@ export const NotificationStoreModel = types
         const serverRaw = response.data.data
         const normalized = normalizeNotification({
           ...serverRaw,
-          // Có lúc BE trả placeholder sau cold start, nên ưu tiên nội dung đã hiện cho user.
+          // Ưu tiên nội dung local vì BE đôi khi trả placeholder sau cold start.
           title: title || serverRaw.title,
           content: content || serverRaw.content,
           sentAt: sentAtMs ?? serverRaw.sentAt ?? Date.now(),

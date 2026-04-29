@@ -98,7 +98,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
-      // Có giá trị mặc định để người dùng không phải nhập từ đầu.
+      // Chọn sẵn thời điểm hiện tại để người dùng chỉ cần chỉnh phần khác.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
@@ -129,7 +129,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
     const payload = {
       title,
       content,
-      // Backend đang yêu cầu imageUrl, tạm giữ ảnh mặc định đến khi có upload thật.
+      // BE vẫn bắt buộc imageUrl, nên giữ ảnh mặc định cho tới khi có upload thật.
       imageUrl,
       dueDate: finalDueDate,
       categoryId,

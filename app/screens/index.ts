@@ -12,4 +12,3 @@ export * from "./NewCategoryScreen"
 export * from "./EditCategoryScreen"
 export * from "./EditTodoScreen"
 export * from "./NotificationDetailScreen"
-// export other screens here

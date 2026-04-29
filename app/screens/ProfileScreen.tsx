@@ -71,7 +71,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
   const handleStartEdit = () => {
     setIsEditing(true)
-    // Mật khẩu chỉ được gửi khi người dùng nhập lại.
+    // Không giữ password cũ trong form để tránh gửi nhầm dữ liệu nhạy cảm.
     setEditPassword("")
   }
 
@@ -134,7 +134,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
         text: "Đăng xuất",
         style: "destructive",
         onPress: () => {
-          // Xóa lịch sử điều hướng để không quay lại màn hình đã đăng nhập.
+          // Reset stack để người dùng không back lại màn hình cần đăng nhập.
           ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
         },
       },

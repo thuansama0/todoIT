@@ -294,6 +294,161 @@ API response thường có dạng:
 }
 ```
 
+## API Và Local Theo Chức Năng
+
+### Auth
+
+File liên quan:
+
+- `app/screens/LoginScreen.tsx`
+- `app/screens/SignUpScreen.tsx`
+- `app/services/api/authApi.ts`
+- `app/models/AuthenticationStore.ts`
+
+API đang dùng:
+
+| Chức năng | Method | Endpoint | File gọi |
+| --- | --- | --- | --- |
+| Đăng nhập | `POST` | `/auth/sign-in` | `authApi.signIn()` |
+| Đăng ký | `POST` | `/auth/sign-up` | `authApi.signUp()` |
+| Đăng xuất | `POST` | `/auth/sign-out` | `authApi.signOut()` |
+
+Local đang dùng:
+
+- `accessToken` được lưu vào `AuthenticationStore`.
+- `accessToken` cũng được lưu vào `AsyncStorage` với key `accessToken` để API layer tự gắn `Authorization`.
+
+### User / Profile / Push Token
+
+File liên quan:
+
+- `app/screens/ProfileScreen.tsx`
+- `app/models/ProfileStore.ts`
+- `app/services/api/userApi.ts`
+- `app/utils/usePushNotifications.ts`
+
+API đang dùng:
+
+| Chức năng | Method | Endpoint | File gọi |
+| --- | --- | --- | --- |
+| Lấy profile hiện tại | `GET` | `/user/me` | `userApi.getMe()` |
+| Lấy user theo id | `GET` | `/user/{id}` | `userApi.getUserById()` |
+| Cập nhật profile | `PUT` | `/user` | `userApi.updateProfile()` |
+| Xóa tài khoản | `DELETE` | `/user` | `userApi.deleteAccount()` |
+| Lưu Expo push token | `PATCH` | `/user/update-push-token` | `userApi.updatePushToken()` |
+
+Local đang dùng:
+
+- `ProfileStore` giữ `id`, `email`, `name`, `imageUrl`, `accessToken`, `pushToken`.
+- `usePushNotifications()` lấy `ExponentPushToken[...]` bằng Expo và gửi lên `/user/update-push-token`.
+- `/user/me` hiện đã trả `pushToken`, nên có thể dùng để kiểm tra token đã lưu đúng user chưa.
+
+### Todo
+
+File liên quan:
+
+- `app/screens/TodoScreen.tsx`
+- `app/screens/NewTodoScreen.tsx`
+- `app/screens/EditTodoScreen.tsx`
+- `app/screens/TodoDetailScreen.tsx`
+- `app/models/TodoStore.ts`
+- `app/services/api/todoApi.ts`
+- `app/utils/todoReminder.ts`
+
+API đang dùng:
+
+| Chức năng | Method | Endpoint | File gọi |
+| --- | --- | --- | --- |
+| Lấy danh sách Todo | `GET` | `/todo/all` | `todoApi.getTodos()` |
+| Tạo Todo | `POST` | `/todo` | `todoApi.createTodo()` |
+| Lấy chi tiết Todo | `GET` | `/todo/{id}` | `todoApi.getTodoById()` |
+| Toggle completed | `PATCH` | `/todo/{id}/toggle-completed` | `todoApi.toggleTodoStatus()` |
+| Xóa Todo | `DELETE` | `/todo/{id}` | `todoApi.deleteTodo()` |
+| Cập nhật Todo | `PUT` | `/todo/{id}` | `todoApi.updateTodo()` |
+
+Local đang dùng:
+
+- `TodoStore` dùng optimistic UI cho tạo/sửa/xóa/toggle.
+- `reminderMinutes` hiện là dữ liệu local, không nằm trong payload backend.
+- `todoReminder.ts` lưu các map local:
+  - `todoId -> notificationId`
+  - `todoId -> reminderMinutes`
+  - `notificationId -> displayTitle/displayBody/fireAtMs`
+- Vì reminder hiện là local-only nên app bị kill có thể không nhận đúng giờ trên một số máy Android. Muốn chắc chắn khi kill app vẫn nhận đúng giờ thì BE cần nhận `reminderMinutes` và tự schedule push.
+
+### Category
+
+File liên quan:
+
+- `app/screens/CategoriesScreen.tsx`
+- `app/screens/NewCategoryScreen.tsx`
+- `app/screens/EditCategoryScreen.tsx`
+- `app/models/CategoryStore.ts`
+- `app/services/api/categoryApi.ts`
+
+API đang dùng:
+
+| Chức năng | Method | Endpoint | File gọi |
+| --- | --- | --- | --- |
+| Lấy danh sách category | `GET` | `/category/all` | `categoryApi.getCategories()` |
+| Tạo category | `POST` | `/category` | `categoryApi.createCategory()` |
+| Cập nhật category | `PUT` | `/category/{id}` | `categoryApi.updateCategory()` |
+| Xóa category | `DELETE` | `/category/{id}` | `categoryApi.deleteCategory()` |
+
+Local đang dùng:
+
+- `CategoryStore` dùng optimistic UI cho tạo/sửa.
+- `NewCategoryScreen` kiểm tra trùng tên local trước khi gọi API.
+- Danh sách category được cache trong root store snapshot.
+
+### Notification
+
+File liên quan:
+
+- `app/screens/NotificationsScreen.tsx`
+- `app/screens/NotificationDetailScreen.tsx`
+- `app/models/NotificationStore.ts`
+- `app/services/api/notificationApi.ts`
+- `app/utils/localNotificationLog.ts`
+- `app/utils/usePushNotifications.ts`
+
+API đang dùng:
+
+| Chức năng | Method | Endpoint | File gọi |
+| --- | --- | --- | --- |
+| Lấy danh sách notification | `GET` | `/notification/all` | `notificationApi.getNotifications()` |
+| Lấy số unread | `GET` | `/notification/unread-count` | `notificationApi.getUnreadCount()` |
+| Tạo notification | `POST` | `/notification` | `notificationApi.createNotification()` |
+| Mark read một notification | `PATCH` | `/notification/mark-read/{id}` | `notificationApi.markAsRead()` |
+| Mark read tất cả | `PATCH` | `/notification/mark-read/all` | `notificationApi.markAllAsRead()` |
+| Xóa một notification | `DELETE` | `/notification/{id}` | `notificationApi.deleteNotification()` |
+| Xóa tất cả notification | `DELETE` | `/notification/all` | `notificationApi.deleteAllNotifications()` |
+
+Local đang dùng:
+
+- `localNotificationLog.ts` lưu notification local bằng AsyncStorage.
+- `NotificationStore.fetchNotifications()` merge notification từ BE với local log.
+- Khi app active, `usePushNotifications()` hiện toast.
+- Khi user bấm notification, app điều hướng về tab `Notifications`.
+- Khi local reminder quá hạn mà OS không bắn, app recovery vào `NotificationsScreen` lúc mở app lại.
+
+### Phần Hiện Vẫn Local-Only
+
+Các phần này chưa được BE quản lý hoàn toàn:
+
+- `reminderMinutes` của Todo.
+- Lịch local notification trong `todoReminder.ts`.
+- Local notification log trong `localNotificationLog.ts`.
+- Dedupe notification response trong `usePushNotifications.ts`.
+- Navigation persistence trong `navigationUtilities.ts`.
+
+Nếu muốn reminder hoạt động chắc chắn khi app bị kill, BE cần thêm cơ chế server-side schedule:
+
+1. App gửi `dueDate` và `reminderMinutes` lên BE.
+2. BE tính `reminderAt = dueDate - reminderMinutes`.
+3. BE lưu job/reminder.
+4. Đến giờ, BE tạo notification và gửi Expo push bằng `user.pushToken`.
+
 ## UI Components Dùng Chung
 
 Một số component quan trọng:
