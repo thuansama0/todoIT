@@ -52,14 +52,26 @@ export const TodoStoreModel = types
     isLoaded: types.optional(types.boolean, false),
   })
   .actions((store) => {
+    const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
+    const locallyDeletedTempIds = new Set<string>()
+
     const syncCreateTodoInBackground = flow(function* syncCreateTodoInBackground(
       tempId: string,
       payload: CreateTodoPayload,
       reminderMinutes: number,
     ) {
       const response = yield todoApi.createTodo(payload)
-      if (response.ok && response.data?.success) {
+      if (isMutationSuccess(response)) {
         const createdTodo = response.data?.data
+        if (locallyDeletedTempIds.has(tempId)) {
+          locallyDeletedTempIds.delete(tempId)
+          yield cancelTodoReminder(tempId)
+          if (createdTodo?.id) {
+            yield todoApi.deleteTodo(createdTodo.id)
+          }
+          return response
+        }
+
         if (createdTodo?.id) {
           const normalized = normalizeTodo({
             ...createdTodo,
@@ -67,9 +79,12 @@ export const TodoStoreModel = types
           })
           const idx = store.items.findIndex((todo) => todo.id === tempId)
           if (idx >= 0) {
-            store.items[idx] = normalized
+            const nextItems = store.items.map((todo) =>
+              todo.id === tempId ? normalized : getSnapshotTodo(todo),
+            )
+            store.items.replace(nextItems as any)
           } else if (!store.items.some((todo) => todo.id === normalized.id)) {
-            store.items.unshift(normalized)
+            store.items.replace([normalized, ...store.items.map(getSnapshotTodo)] as any)
           }
           if (reminderMinutes > 0) {
             yield cancelTodoReminder(tempId)
@@ -107,6 +122,7 @@ export const TodoStoreModel = types
       }
 
       yield cancelTodoReminder(tempId)
+      locallyDeletedTempIds.delete(tempId)
       store.items.replace(store.items.filter((todo) => todo.id !== tempId))
       return response
     })
@@ -148,7 +164,7 @@ export const TodoStoreModel = types
         isCompleted: false,
         reminderMinutes,
       })
-      store.items.unshift(optimisticTodo)
+      store.items.replace([optimisticTodo, ...store.items.map(getSnapshotTodo)] as any)
       if (reminderMinutes > 0 && optimisticTodo.dueDate > 0) {
         void scheduleTodoReminder({
           todoId: tempId,
@@ -159,7 +175,10 @@ export const TodoStoreModel = types
       }
 
       void syncCreateTodoInBackground(tempId, payload, reminderMinutes)
-      return { ok: true, data: { success: true, message: "Todo saved locally and syncing..." } } as any
+      return {
+        ok: true,
+        data: { success: true, message: "Todo saved locally and syncing..." },
+      } as any
     }
 
     const updateTodo = flow(function* updateTodo(
@@ -206,12 +225,22 @@ export const TodoStoreModel = types
       const idx = store.items.findIndex((todo) => todo.id === id)
       const previousStatus = idx >= 0 ? store.items[idx].isCompleted : false
       if (idx >= 0) {
-        store.items[idx] = { ...store.items[idx], isCompleted: newStatus } as any
+        const nextItems = store.items.map((todo) =>
+          todo.id === id
+            ? { ...getSnapshotTodo(todo), isCompleted: newStatus }
+            : getSnapshotTodo(todo),
+        )
+        store.items.replace(nextItems as any)
       }
 
       const response = yield todoApi.toggleTodoStatus(id, newStatus)
-      if ((!response.ok || !response.data?.success) && idx >= 0) {
-        store.items[idx] = { ...store.items[idx], isCompleted: previousStatus } as any
+      if (!isMutationSuccess(response) && idx >= 0) {
+        const rollbackItems = store.items.map((todo) =>
+          todo.id === id
+            ? { ...getSnapshotTodo(todo), isCompleted: previousStatus }
+            : getSnapshotTodo(todo),
+        )
+        store.items.replace(rollbackItems as any)
       }
       return response
     })
@@ -222,8 +251,13 @@ export const TodoStoreModel = types
       store.items.replace(nextItems as any)
       yield cancelTodoReminder(id)
 
+      if (id.startsWith("temp-")) {
+        locallyDeletedTempIds.add(id)
+        return { ok: true, data: { success: true } } as any
+      }
+
       const response = yield todoApi.deleteTodo(id)
-      if (!response.ok || !response.data?.success) {
+      if (!isMutationSuccess(response)) {
         store.items.replace(backup as any)
       }
       return response

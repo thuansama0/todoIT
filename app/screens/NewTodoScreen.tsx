@@ -1,13 +1,5 @@
 import { FC, useState, useEffect } from "react"
-import {
-  View,
-  Text,
-  Switch,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Alert,
-} from "react-native"
+import { View, Text, Switch, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native"
 import { AppStackScreenProps } from "../navigators"
 import { AppSectionHeader, Screen, Button } from "app/components"
 import { colors } from "app/theme"
@@ -59,9 +51,7 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
-  const [imageUrl] = useState(
-    "https://res.cloudinary.com/demo/image/upload/sample.jpg",
-  )
+  const [imageUrl] = useState("https://res.cloudinary.com/demo/image/upload/sample.jpg")
   const [isLoading, setIsLoading] = useState(false)
 
   const [hasDueDate, setHasDueDate] = useState(false)
@@ -112,6 +102,11 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       return
     }
 
+    if (!categoryId) {
+      Alert.alert("Thiếu thông tin", "Vui lòng chọn danh mục cho công việc.")
+      return
+    }
+
     setIsLoading(true)
 
     let finalDueDate = 0
@@ -135,11 +130,10 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       categoryId,
     }
 
-    const response = await todoStore.createTodo(payload, reminderMinutes)
+    const response = todoStore.createTodo(payload, reminderMinutes)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
-      Alert.alert("Thành công", "Đã tạo công việc mới!")
       navigation.goBack()
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể tạo Todo lúc này.")
@@ -153,7 +147,12 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       style={$screenFill}
       contentContainerStyle={$screenContainer}
     >
-      <AppSectionHeader title="New Todo" showRefresh={false} leftIcon="x" onLeftPress={() => navigation.goBack()} />
+      <AppSectionHeader
+        title="New Todo"
+        showRefresh={false}
+        leftIcon="x"
+        onLeftPress={() => navigation.goBack()}
+      />
 
       <ScrollView
         style={$formContainer}
@@ -240,17 +239,6 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
         {isDropdownOpen && (
           <View style={$dropdownList}>
-            <TouchableOpacity
-              style={[$dropdownItem, !categoryId && $dropdownItemActive]}
-              onPress={() => {
-                setCategoryId("")
-                setSelectedCategoryName("No category")
-                setIsDropdownOpen(false)
-              }}
-            >
-              <Text style={$dropdownItemText}>No category</Text>
-            </TouchableOpacity>
-
             {categoryStore.sortedItems.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
@@ -262,7 +250,9 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
                 }}
               >
                 <Text style={$dropdownItemText}>{cat.name}</Text>
-                {!cat.isPublic && <Feather name="lock" size={14} color={colors.palette.neutral400} />}
+                {!cat.isPublic && (
+                  <Feather name="lock" size={14} color={colors.palette.neutral400} />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -287,4 +277,3 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
     </Screen>
   )
 })
-

@@ -1,16 +1,20 @@
-import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import Toast from 'react-native-toast-message';
-import Constants from 'expo-constants';
+import { useEffect, useRef } from "react"
+import { Platform } from "react-native"
+import * as Device from "expo-device"
+import * as Notifications from "expo-notifications"
+import Toast from "react-native-toast-message"
+import Constants from "expo-constants"
 
-import { navigationRef } from '../navigators/navigationUtilities';
-import { useStores } from "app/models";
-import { formatLeadTime, getNearestReminderPayload, getReminderPayloadByNotificationId } from "./todoReminder";
-import { normalizeNotificationData } from "./notificationPayload";
-import { load, loadString, save } from "app/utils/storage";
-import { userApi } from "app/services/api/userApi";
+import { navigationRef } from "../navigators/navigationUtilities"
+import { useStores } from "app/models"
+import {
+  formatLeadTime,
+  getNearestReminderPayload,
+  getReminderPayloadByNotificationId,
+} from "./todoReminder"
+import { normalizeNotificationData } from "./notificationPayload"
+import { load, loadString, save } from "app/utils/storage"
+import { userApi } from "app/services/api/userApi"
 
 function navigateToNotificationsTab() {
   if (!navigationRef.isReady()) return
@@ -84,18 +88,18 @@ function shouldHandleNotificationResponse(response: Notifications.NotificationRe
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: false,
+    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
-});
+})
 
 const LAST_HANDLED_RESPONSE_KEY = "last-handled-notification-response"
 
 export const usePushNotifications = () => {
   const { authenticationStore, notificationStore, profileStore } = useStores()
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
+  const notificationListener = useRef<Notifications.Subscription>()
+  const responseListener = useRef<Notifications.Subscription>()
   const handledResponseIds = useRef<Set<string>>(new Set())
 
   const resolveNotificationText = async (notification: Notifications.Notification) => {
@@ -105,8 +109,7 @@ export const usePushNotifications = () => {
     if (data.kind === "todo-reminder") {
       const displayTitle = data.displayTitle?.trim() ?? ""
       const todoTitleRaw = data.todoTitle?.trim() ?? ""
-      let fromDataTitle =
-        displayTitle || (todoTitleRaw ? `Nhắc việc: ${todoTitleRaw}` : "")
+      let fromDataTitle = displayTitle || (todoTitleRaw ? `Nhắc việc: ${todoTitleRaw}` : "")
       let fromDataBody = data.displayBody?.trim() ?? ""
       const rm = Number(data.reminderMinutes)
       if (!fromDataBody && Number.isFinite(rm) && rm > 0) {
@@ -136,7 +139,9 @@ export const usePushNotifications = () => {
       return { title: resolvedTitle, body: resolvedBody, fireAtMs: Number(data.fireAtMs) || 0 }
     }
 
-    const fallbackFromStorage = await getReminderPayloadByNotificationId(notification.request.identifier)
+    const fallbackFromStorage = await getReminderPayloadByNotificationId(
+      notification.request.identifier,
+    )
     if (fallbackFromStorage) {
       return {
         title: fallbackFromStorage.displayTitle,
@@ -165,7 +170,10 @@ export const usePushNotifications = () => {
     const finalBody = body.trim() ? body : "Còn ít phút nữa đến lịch của bạn"
     const deliveredAtMs = fireAtMs > 0 ? fireAtMs : extractDeliveredAtMs(notification)
     const dedupeKey = `${finalTitle}|${finalBody}|${deliveredAtMs}`
-    const lastHandled = (await load(LAST_HANDLED_RESPONSE_KEY)) as { key?: string; at?: number } | null
+    const lastHandled = (await load(LAST_HANDLED_RESPONSE_KEY)) as {
+      key?: string
+      at?: number
+    } | null
     if (
       lastHandled?.key === dedupeKey &&
       typeof lastHandled?.at === "number" &&
@@ -192,11 +200,11 @@ export const usePushNotifications = () => {
       if (Platform.OS === "android") {
         const channel = await Notifications.getNotificationChannelAsync("default").catch(() => null)
         if (!channel) {
-          await Notifications.setNotificationChannelAsync('default', {
-            name: 'default',
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "default",
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
-            lightColor: '#FF231F7C',
+            lightColor: "#FF231F7C",
           })
         }
       }
@@ -234,40 +242,44 @@ export const usePushNotifications = () => {
       } catch {}
     })()
 
+    ensureNotificationPermissionsAsync().catch(() => {})
+
     if (authenticationStore.authToken) {
       syncExpoPushTokenWithServer(authenticationStore.authToken).catch(() => {})
     }
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       void pushIncomingReminder(notification)
       void (async () => {
         const { title, body } = await resolveNotificationText(notification)
         Toast.show({
-          type: 'info',
-          text1: title.trim() ? title : 'Thông báo mới',
-          text2: body.trim() ? body : 'Còn ít phút nữa đến lịch của bạn',
-          position: 'top',
+          type: "info",
+          text1: title.trim() ? title : "Thông báo mới",
+          text2: body.trim() ? body : "Còn ít phút nữa đến lịch của bạn",
+          position: "top",
         })
       })()
-    });
+    })
 
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       if (!shouldHandleNotificationResponse(response)) return
       const id = response.notification.request.identifier || String(response.notification.date)
       if (handledResponseIds.current.has(id)) return
       handledResponseIds.current.add(id)
       void pushIncomingReminder(response.notification)
       navigateToNotificationsTab()
-    });
+    })
 
     return () => {
       cancelled = true
       stopWaitingNav?.()
-      if (notificationListener.current) Notifications.removeNotificationSubscription(notificationListener.current);
-      if (responseListener.current) Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, []);
-};
+      if (notificationListener.current)
+        Notifications.removeNotificationSubscription(notificationListener.current)
+      if (responseListener.current)
+        Notifications.removeNotificationSubscription(responseListener.current)
+    }
+  }, [])
+}
 
 export async function syncExpoPushTokenWithServer(accessToken?: string) {
   const token = await registerForPushNotificationsAsync()
@@ -283,33 +295,44 @@ export async function syncExpoPushTokenWithServer(accessToken?: string) {
 }
 
 async function registerForPushNotificationsAsync() {
-  let token;
+  let token
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
+  const finalStatus = await ensureNotificationPermissionsAsync()
+  if (finalStatus !== "granted") {
+    return undefined
+  }
+
+  if (!Device.isDevice) {
+    return undefined
+  }
+
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId
+  token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+
+  return token
+}
+
+async function ensureNotificationPermissionsAsync() {
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "default",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
+      lightColor: "#FF231F7C",
+    })
   }
 
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      return;
-    }
+  const { status: existingStatus } = await Notifications.getPermissionsAsync()
+  let finalStatus = existingStatus
 
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId
-    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
-  } else {
-    return;
+  if (existingStatus !== "granted") {
+    const { status } = await Notifications.requestPermissionsAsync()
+    finalStatus = status
   }
 
-  return token;
+  if (finalStatus !== "granted") {
+    return undefined
+  }
+
+  return finalStatus
 }

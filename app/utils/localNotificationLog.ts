@@ -5,7 +5,7 @@ const LOCAL_NOTIFICATION_LOG_KEY = "local-notification-log"
 const MAX_LOCAL_ITEMS = 100
 
 export async function loadLocalNotificationLog(): Promise<Notification[]> {
-  const raw = await load(LOCAL_NOTIFICATION_LOG_KEY)
+  const raw = await load(LOCAL_NOTIFICATION_LOG_KEY) 
   if (!Array.isArray(raw)) return []
   return raw as Notification[]
 }

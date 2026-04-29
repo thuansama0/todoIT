@@ -1,12 +1,5 @@
 import { FC, useEffect } from "react"
-import {
-  FlatList,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
-  Pressable,
-} from "react-native"
+import { FlatList, TouchableOpacity, View, ActivityIndicator, Alert, Pressable } from "react-native"
 import { AppSectionHeader, Screen, TodoItem } from "app/components"
 import { colors } from "app/theme"
 import { AppStackParamList } from "../navigators"
@@ -26,11 +19,12 @@ import {
   $todoItemContainer,
 } from "./TodoScreen.styles"
 
-
 type TodoScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, "Todo">,
   NativeStackScreenProps<AppStackParamList>
 >
+
+const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
 
 export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ navigation }) {
   const { todoStore } = useStores()
@@ -41,7 +35,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
   async function handleToggleStatus(id: string, currentStatus: boolean) {
     const newStatus = !currentStatus
     const response = await todoStore.toggleTodoStatus(id, newStatus)
-    if (!response.ok || !response.data?.success) {
+    if (!isMutationSuccess(response)) {
       Alert.alert("Lỗi", "Không thể cập nhật trạng thái.")
     }
   }
@@ -54,7 +48,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
         style: "destructive",
         onPress: async () => {
           const response = await todoStore.deleteTodo(id)
-          if (!response.ok || !response.data?.success) {
+          if (!isMutationSuccess(response)) {
             Alert.alert("Lỗi", "Không thể xóa công việc.")
           }
         },
@@ -86,6 +80,8 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
       : null,
   })
 
+  const todoItems = todoStore.items.map(toPlainTodo)
+
   return (
     <Screen
       preset="fixed"
@@ -102,7 +98,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
       ) : (
         <FlatList
           style={$list}
-          data={todoStore.items}
+          data={todoItems}
           keyExtractor={(item) => item.id}
           refreshing={todoStore.isLoading}
           onRefresh={() => todoStore.fetchTodos()}

@@ -47,7 +47,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
       if (accessToken) {
         authenticationStore.setAuthToken(accessToken)
         await saveString("accessToken", accessToken)
-        void syncExpoPushTokenWithServer(accessToken).catch(() => {})
+        void syncExpoPushTokenWithServer(accessToken).catch(() => {}) 
       }
       navigation.navigate("MainTabs")
     } else {
