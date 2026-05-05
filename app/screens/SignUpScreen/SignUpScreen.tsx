@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { Alert, View } from "react-native"
 import { Button, Screen, Text, TextField } from "app/components"
-import { AppStackScreenProps } from "../navigators"
+import { AppStackScreenProps } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { authApi } from "app/services/api/authApi"
 import { saveString } from "app/utils/storage"
@@ -18,7 +18,6 @@ import {
   $screenContainer,
   $signInButton,
   $signInText,
-  $signInText2,
   $subtitle,
   $title,
 } from "./SignUpScreen.styles"
@@ -66,8 +65,8 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
           <Text text="✓" style={$logoCheck} />
         </View>
 
-        <Text text="Create account" preset="heading" style={$title} />
-        <Text text="Start organizing your life with Todoit" style={$subtitle} />
+        <Text text="Create account" preset="authTitle" style={$title} />
+        <Text text="Start organizing your life with Todoit" preset="body" style={$subtitle} />
       </View>
       <TextField
         label="Name"
@@ -100,11 +99,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
       />
       <Text style={$footerText}>
         Already have an account?
-        <Text
-          text=" Sign In"
-          style={$signInText2}
-          onPress={() => navigation.navigate("Login")}
-        />
+        <Text text=" Sign In" preset="link" onPress={() => navigation.navigate("Login")} />
       </Text>
     </Screen>
   )

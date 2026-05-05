@@ -1,13 +1,11 @@
 import { FC, useState } from "react"
 import {
   View,
-  Text,
   Switch,
-  TextInput,
   Alert,
   TouchableOpacity,
 } from "react-native"
-import { AppSectionHeader, Screen, Button } from "app/components"
+import { AppSectionHeader, Screen, Button, Text, TextField } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
@@ -20,13 +18,11 @@ import {
   $deleteOuterCircle,
   $disabledButton,
   $formContainer,
-  $input,
   $label,
   $screenContainer,
   $submitButton,
   $submitButtonText,
   $switchRow,
-  $switchSubText,
   $switchTextContainer,
   $switchTitle,
 } from "./EditCategoryScreen.styles"
@@ -88,9 +84,9 @@ export const EditCategoryScreen: FC<any> = ({ route }) => {
       />
 
       <View style={$formContainer}>
-        <Text style={$label}>Category name *</Text>
-        <TextInput
-          style={$input}
+        <TextField
+          label="Category name *"
+          LabelTextProps={{ preset: "formLabel", style: $label }}
           placeholder="e.g. Work, Shopping, Health"
           value={name}
           onChangeText={setName}
@@ -99,8 +95,10 @@ export const EditCategoryScreen: FC<any> = ({ route }) => {
 
         <View style={$switchRow}>
           <View style={$switchTextContainer}>
-            <Text style={$switchTitle}>Public category</Text>
-            <Text style={$switchSubText}>
+            <Text style={$switchTitle} preset="body">
+              Public category
+            </Text>
+            <Text preset="caption">
               {isPublic ? "Visible to all users" : "Only visible to you"}
             </Text>
           </View>

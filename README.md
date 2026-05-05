@@ -34,7 +34,7 @@ app/
 
 ## Luồng Khởi Động App
 
-1. `app/app.tsx` gọi `useInitialRootStore()` để khởi tạo MST root store.
+1. `app/app.tsx` gọi `useInitialRootStore()` để khởi tạo MST root store.  
 2. `setupRootStore.ts` load snapshot từ storage để phục hồi cache local.
 3. `RootStoreProvider` bọc toàn app để các màn hình dùng `useStores()`.
 4. `AppNavigator` dựng Stack navigation.
@@ -300,8 +300,8 @@ API response thường có dạng:
 
 File liên quan:
 
-- `app/screens/LoginScreen.tsx`
-- `app/screens/SignUpScreen.tsx`
+- `app/screens/LoginScreen/LoginScreen.tsx`
+- `app/screens/SignUpScreen/SignUpScreen.tsx`
 - `app/services/api/authApi.ts`
 - `app/models/AuthenticationStore.ts`
 
@@ -322,7 +322,7 @@ Local đang dùng:
 
 File liên quan:
 
-- `app/screens/ProfileScreen.tsx`
+- `app/screens/ProfileScreen/ProfileScreen.tsx`
 - `app/models/ProfileStore.ts`
 - `app/services/api/userApi.ts`
 - `app/utils/usePushNotifications.ts`
@@ -347,10 +347,10 @@ Local đang dùng:
 
 File liên quan:
 
-- `app/screens/TodoScreen.tsx`
-- `app/screens/NewTodoScreen.tsx`
-- `app/screens/EditTodoScreen.tsx`
-- `app/screens/TodoDetailScreen.tsx`
+- `app/screens/TodoScreen/TodoScreen.tsx`
+- `app/screens/NewTodoScreen/NewTodoScreen.tsx`
+- `app/screens/EditTodoScreen/EditTodoScreen.tsx`
+- `app/screens/TodoDetailScreen/TodoDetailScreen.tsx`
 - `app/models/TodoStore.ts`
 - `app/services/api/todoApi.ts`
 - `app/utils/todoReminder.ts`
@@ -380,9 +380,9 @@ Local đang dùng:
 
 File liên quan:
 
-- `app/screens/CategoriesScreen.tsx`
-- `app/screens/NewCategoryScreen.tsx`
-- `app/screens/EditCategoryScreen.tsx`
+- `app/screens/CategoriesScreen/CategoriesScreen.tsx`
+- `app/screens/NewCategoryScreen/NewCategoryScreen.tsx`
+- `app/screens/EditCategoryScreen/EditCategoryScreen.tsx`
 - `app/models/CategoryStore.ts`
 - `app/services/api/categoryApi.ts`
 
@@ -405,8 +405,8 @@ Local đang dùng:
 
 File liên quan:
 
-- `app/screens/NotificationsScreen.tsx`
-- `app/screens/NotificationDetailScreen.tsx`
+- `app/screens/NotificationsScreen/NotificationsScreen.tsx`
+- `app/screens/NotificationDetailScreen/NotificationDetailScreen.tsx`
 - `app/models/NotificationStore.ts`
 - `app/services/api/notificationApi.ts`
 - `app/utils/localNotificationLog.ts`

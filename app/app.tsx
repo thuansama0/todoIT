@@ -27,7 +27,6 @@ const config = {
     Login: {
       path: "",
     },
-    Welcome: "welcome",
     Demo: {
       screens: {
         DemoShowroom: {
@@ -53,10 +52,10 @@ function PushNotificationHandler() {
 function App(props: AppProps) {
   const { hideSplashScreen } = props
   const {
-    initialNavigationState,
-    onNavigationStateChange,
+    initialNavigationState, // State của navigation khi khởi tạo app
+    onNavigationStateChange, // Hàm callback khi state navigation thay đổi
     isRestored: isNavigationStateRestored,
-  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY)
+  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY) 
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
 
@@ -70,7 +69,7 @@ function App(props: AppProps) {
     prefixes: [prefix],
     config,
   }
-
+ // 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <RootStoreProvider value={rootStore}>

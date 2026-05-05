@@ -1,5 +1,5 @@
 import { TextStyle, ViewStyle } from "react-native"
-import { colors, spacing } from "app/theme"
+import { colors, spacing, typography } from "app/theme"
 
 export const $headerContainer: ViewStyle = { alignItems: "center", marginBottom: spacing.xl }
 export const $logoBox: ViewStyle = {
@@ -42,10 +42,9 @@ export const $footerText1: TextStyle = {
 }
 export const $fieldContainer1: ViewStyle = { marginBottom: spacing.lg, borderRadius: 10 }
 export const $ButtonText: TextStyle = { color: colors.palette.neutral100 }
-export const $signUpText: TextStyle = {
-  color: colors.palette.primary500,
-  fontWeight: "bold",
-  height: 20,
+export const $logoCheck: TextStyle = {
+  color: colors.palette.neutral100,
+  fontSize: 30,
+  fontFamily: typography.primary.bold,
 }
-export const $logoCheck: TextStyle = { color: colors.palette.neutral100, fontSize: 30 }
 export const $disabledButton: ViewStyle = { opacity: 0.7 }

@@ -1,13 +1,12 @@
 import { FC, useEffect, useState } from "react"
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native"
-import { AppSectionHeader, Screen } from "app/components"
+import { AppSectionHeader, Screen, Text } from "app/components"
 import { NotificationItem } from "app/components/NotificationItem"
 import { colors } from "app/theme"
 import { Feather, Feather as Icon } from "@expo/vector-icons"
@@ -93,8 +92,12 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
         <View style={$emptyIconWrapper}>
           <Icon name="bell-off" size={32} color={colors.palette.secondary400} />
         </View>
-        <Text style={$emptyTitle}>No notifications</Text>
-        <Text style={$emptySub}>You're all caught up</Text>
+        <Text preset="title" style={$emptyTitle}>
+          No notifications
+        </Text>
+        <Text preset="body" style={$emptySub}>
+          You're all caught up
+        </Text>
       </View>
     )
   }
@@ -116,12 +119,16 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
         <View style={$topActions}>
           <TouchableOpacity style={[$topBtn, $btnGreen]} onPress={handleMarkAllRead}>
             <Feather name="check-circle" size={16} color={colors.palette.secondary400} />
-            <Text style={[$topBtnText, $topBtnGreenText]}>Mark all read</Text>
+            <Text preset="caption" style={[$topBtnText, $topBtnGreenText]}>
+              Mark all read
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[$topBtn, $btnRed]} onPress={handleDeleteAll}>
             <Feather name="trash-2" size={16} color={colors.palette.angry500} />
-            <Text style={[$topBtnText, $topBtnRedText]}>Delete all</Text>
+            <Text preset="caption" style={[$topBtnText, $topBtnRedText]}>
+              Delete all
+            </Text>
           </TouchableOpacity>
         </View>
       )}

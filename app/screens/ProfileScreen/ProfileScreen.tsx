@@ -1,15 +1,13 @@
 import { FC, useEffect, useState } from "react"
 import {
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Image,
 } from "react-native"
 import * as ImagePicker from "expo-image-picker"
-import { AppSectionHeader, Screen } from "app/components"
+import { AppSectionHeader, Screen, Text, TextField } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
@@ -31,9 +29,8 @@ import {
   $deleteText,
   $editProfileBtn,
   $editProfileText,
-  $emailText,
   $formSection,
-  $input,
+  $emailText,
   $label,
   $loadingContainer,
   $nameText,
@@ -222,7 +219,9 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
               {editImageUrl ? (
                 <Image source={{ uri: editImageUrl }} style={$avatarImage} />
               ) : (
-                <Text style={$avatarText}>{getInitials(profileStore.profile?.name || "")}</Text>
+                <Text preset="title" size="xxl" style={$avatarText}>
+                  {getInitials(profileStore.profile?.name || "")}
+                </Text>
               )}
 
               {isEditing && (
@@ -234,11 +233,17 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
           </TouchableOpacity>
           {!isEditing ? (
             <>
-              <Text style={$nameText}>{profileStore.profile?.name}</Text>
-              <Text style={$emailText}>{profileStore.profile?.email}</Text>
+              <Text preset="titleSm" style={$nameText}>
+                {profileStore.profile?.name}
+              </Text>
+              <Text preset="body" style={$emailText}>
+                {profileStore.profile?.email}
+              </Text>
             </>
           ) : (
-            <Text style={$tapToChangeText}>Tap photo to change</Text>
+            <Text preset="caption" style={$tapToChangeText}>
+              Tap photo to change
+            </Text>
           )}
         </View>
 
@@ -246,22 +251,24 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
           <>
             <TouchableOpacity style={$editProfileBtn} onPress={handleStartEdit}>
               <Feather name="edit-2" size={16} color={colors.palette.secondary400} />
-              <Text style={$editProfileText}>Edit Profile</Text>
+              <Text preset="body" style={$editProfileText}>
+                Edit Profile
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
           <View style={$formSection}>
-            <Text style={$label}>Name *</Text>
-            <TextInput
-              style={$input}
+            <TextField
+              label="Name *"
+              LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editName}
               onChangeText={setEditName}
               placeholder="Your name"
             />
 
-            <Text style={$label}>Email *</Text>
-            <TextInput
-              style={$input}
+            <TextField
+              label="Email *"
+              LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editEmail}
               onChangeText={setEditEmail}
               placeholder="Your email"
@@ -269,9 +276,9 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
               autoCapitalize="none"
             />
 
-            <Text style={$label}>New password (optional)</Text>
-            <TextInput
-              style={$input}
+            <TextField
+              label="New password (optional)"
+              LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editPassword}
               onChangeText={setEditPassword}
               placeholder="Leave blank to keep current"
@@ -280,7 +287,9 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
             <View style={$actionRow}>
               <TouchableOpacity style={[$actionBtn, $cancelBtn]} onPress={handleCancelEdit}>
-                <Text style={$cancelText}>Cancel</Text>
+                <Text preset="body" style={$cancelText}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -291,7 +300,9 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
                 {isSaving ? (
                   <ActivityIndicator color={colors.palette.neutral100} />
                 ) : (
-                  <Text style={$saveText}>Save</Text>
+                  <Text preset="body" style={$saveText}>
+                    Save
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -299,14 +310,20 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
         )}
 
         <View style={$accountSection}>
-          <Text style={$sectionTitle}>ACCOUNT</Text>
+          <Text preset="caption" style={$sectionTitle}>
+            ACCOUNT
+          </Text>
 
           <TouchableOpacity style={[$accountBtn, $signOutBtn]} onPress={handleSignOut}>
-            <Text style={$signOutText}>Sign Out</Text>
+            <Text preset="body" style={$signOutText}>
+              Sign Out
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[$accountBtn, $deleteBtn]} onPress={handleDeleteAccount}>
-            <Text style={$deleteText}>Delete Account</Text>
+            <Text preset="body" style={$deleteText}>
+              Delete Account
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

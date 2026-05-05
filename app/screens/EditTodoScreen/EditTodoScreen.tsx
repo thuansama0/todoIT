@@ -1,29 +1,32 @@
 import { FC, useState, useEffect } from "react"
-import { View, Text, Switch, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native"
-import { AppStackScreenProps } from "../navigators"
-import { AppSectionHeader, Screen, Button } from "app/components"
+import {
+  View,
+  Switch,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native"
+import { AppSectionHeader, Screen, Button, Text, TextField } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 
+import { CreateTodoPayload, Todo } from "app/services/api/todoApi"
 import {
   $disabledButton,
   $dropdownButton,
   $dropdownButtonOpen,
   $dropdownItem,
   $dropdownItemActive,
-  $dropdownItemText,
   $dropdownList,
   $dropdownText,
   $dropdownTextPlaceholder,
-  $dueDateLabel,
   $dueDateRow,
   $dueDateWrap,
   $reminderChip,
   $reminderChipActive,
-  $reminderChipText,
   $reminderChipTextActive,
   $reminderRow,
   $footerContainer,
@@ -31,7 +34,6 @@ import {
   $formContent,
   $imagePickerText,
   $imagePickerWrapper,
-  $input,
   $label,
   $labelLargeTop,
   $labelNoTop,
@@ -41,26 +43,38 @@ import {
   $screenFill,
   $submitButton,
   $submitButtonText,
-} from "./NewTodoScreen.styles"
+} from "./EditTodoScreen.styles"
 
-interface NewTodoScreenProps extends AppStackScreenProps<"NewTodo"> {}
-
-export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoScreen() {
+export const EditTodoScreen: FC<any> = observer(function EditTodoScreen({ route }) {
   const navigation = useNavigation()
   const { todoStore, categoryStore } = useStores()
 
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState("")
-  const [imageUrl] = useState("https://res.cloudinary.com/demo/image/upload/sample.jpg")
+  const { todoData } = route.params as { todoData: Todo }
+
+  const getInitialDateString = (timestamp: number) => {
+    if (!timestamp || timestamp === 0) return ""
+    const date = new Date(timestamp)
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    const hh = String(date.getHours()).padStart(2, "0")
+    const min = String(date.getMinutes()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`
+  }
+
+  const [title, setTitle] = useState(todoData.title || "")
+  const [content, setContent] = useState(todoData.content || "")
   const [isLoading, setIsLoading] = useState(false)
 
-  const [hasDueDate, setHasDueDate] = useState(false)
-  const [dueDateString, setDueDateString] = useState("")
-  const [reminderMinutes, setReminderMinutes] = useState(0)
+  const [hasDueDate, setHasDueDate] = useState(!!todoData.dueDate && todoData.dueDate > 0)
+  const [dueDateString, setDueDateString] = useState(getInitialDateString(todoData.dueDate))
+  const [reminderMinutes, setReminderMinutes] = useState(todoData.reminderMinutes ?? 0)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [categoryId, setCategoryId] = useState("")
-  const [selectedCategoryName, setSelectedCategoryName] = useState("No category")
+  const [categoryId, setCategoryId] = useState(todoData.category?.id || "")
+  const [selectedCategoryName, setSelectedCategoryName] = useState(
+    todoData.category?.name || "No category",
+  )
 
   useEffect(() => {
     categoryStore.loadIfNeeded()
@@ -96,14 +110,9 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
     }
   }
 
-  async function handleCreateTodo() {
+  async function handleSaveChanges() {
     if (!title.trim()) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập tiêu đề (Title) cho công việc.")
-      return
-    }
-
-    if (!categoryId) {
-      Alert.alert("Thiếu thông tin", "Vui lòng chọn danh mục cho công việc.")
+      Alert.alert("Thiếu thông tin", "Vui lòng nhập tiêu đề (Title).")
       return
     }
 
@@ -121,22 +130,22 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       }
     }
 
-    const payload = {
+    const payload: CreateTodoPayload = {
       title,
       content,
-      // BE vẫn bắt buộc imageUrl, nên giữ ảnh mặc định cho tới khi có upload thật.
-      imageUrl,
+      // BE chưa có upload riêng, nên giữ ảnh mặc định để payload luôn hợp lệ.
+      imageUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
       dueDate: finalDueDate,
       categoryId,
     }
-
-    const response = todoStore.createTodo(payload, reminderMinutes)
+    const response = await todoStore.updateTodo(todoData.id, payload, reminderMinutes)
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
+      Alert.alert("Thành công", "Đã cập nhật công việc!")
       navigation.goBack()
     } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể tạo Todo lúc này.")
+      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
     }
   }
 
@@ -147,40 +156,38 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
       style={$screenFill}
       contentContainerStyle={$screenContainer}
     >
-      <AppSectionHeader
-        title="New Todo"
-        showRefresh={false}
-        leftIcon="x"
-        onLeftPress={() => navigation.goBack()}
-      />
+      <AppSectionHeader title="Edit Todo" showRefresh={false} leftIcon="x" onLeftPress={() => navigation.goBack()} />
 
       <ScrollView
         style={$formContainer}
         contentContainerStyle={$formContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={$label}>Title *</Text>
-        <TextInput
-          style={$input}
+        <Text style={$label} preset="formLabel">
+          Title *
+        </Text>
+        <TextField
+          label="Title *"
+          LabelTextProps={{ preset: "formLabel", style: $label }}
           placeholder="What needs to be done?"
           value={title}
           onChangeText={setTitle}
           placeholderTextColor={colors.palette.neutral400}
         />
 
-        <Text style={$label}>Notes (optional)</Text>
-        <TextInput
-          style={[$input, $notesInput]}
+        <TextField
+          label="Notes (optional)"
+          LabelTextProps={{ preset: "formLabel", style: $label }}
           placeholder="Add any details..."
           multiline
           value={content}
           onChangeText={setContent}
           placeholderTextColor={colors.palette.neutral400}
-          textAlignVertical="top"
+          inputWrapperStyle={$notesInput}
         />
 
         <View style={$dueDateRow}>
-          <Text style={$dueDateLabel}>Set due date</Text>
+          <Text preset="formLabel">Set due date</Text>
           <Switch
             value={hasDueDate}
             onValueChange={handleToggleDueDate}
@@ -191,16 +198,18 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
         {hasDueDate && (
           <View style={$dueDateWrap}>
-            <Text style={[$label, $labelNoTop]}>Due Date (YYYY-MM-DD HH:mm)</Text>
-            <TextInput
-              style={$input}
+            <TextField
+              label="Due Date (YYYY-MM-DD HH:mm)"
+              LabelTextProps={{ preset: "formLabel", style: [$label, $labelNoTop] }}
               placeholder="2026-04-22 14:30"
               value={dueDateString}
               onChangeText={setDueDateString}
               placeholderTextColor={colors.palette.neutral400}
             />
 
-            <Text style={$label}>Remind before</Text>
+            <Text style={$label} preset="formLabel">
+              Remind before
+            </Text>
             <View style={$reminderRow}>
               {[0, 5, 15, 30, 60].map((minute) => (
                 <TouchableOpacity
@@ -209,8 +218,8 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
                   onPress={() => setReminderMinutes(minute)}
                 >
                   <Text
+                    preset="caption"
                     style={[
-                      $reminderChipText,
                       reminderMinutes === minute && $reminderChipTextActive,
                     ]}
                   >
@@ -222,12 +231,14 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
           </View>
         )}
 
-        <Text style={[$label, $labelSmallTop]}>Category</Text>
+        <Text style={[$label, $labelSmallTop]} preset="formLabel">
+          Category
+        </Text>
         <TouchableOpacity
           style={[$dropdownButton, isDropdownOpen && $dropdownButtonOpen]}
           onPress={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <Text style={[$dropdownText, !categoryId && $dropdownTextPlaceholder]}>
+          <Text preset="body" style={[$dropdownText, !categoryId && $dropdownTextPlaceholder]}>
             {selectedCategoryName}
           </Text>
           <Feather
@@ -239,6 +250,17 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
 
         {isDropdownOpen && (
           <View style={$dropdownList}>
+            <TouchableOpacity
+              style={[$dropdownItem, !categoryId && $dropdownItemActive]}
+              onPress={() => {
+                setCategoryId("")
+                setSelectedCategoryName("No category")
+                setIsDropdownOpen(false)
+              }}
+            >
+              <Text preset="body">No category</Text>
+            </TouchableOpacity>
+
             {categoryStore.sortedItems.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
@@ -249,29 +271,31 @@ export const NewTodoScreen: FC<NewTodoScreenProps> = observer(function NewTodoSc
                   setIsDropdownOpen(false)
                 }}
               >
-                <Text style={$dropdownItemText}>{cat.name}</Text>
-                {!cat.isPublic && (
-                  <Feather name="lock" size={14} color={colors.palette.neutral400} />
-                )}
+                <Text preset="body">{cat.name}</Text>
+                {!cat.isPublic && <Feather name="lock" size={14} color={colors.palette.neutral400} />}
               </TouchableOpacity>
             ))}
           </View>
         )}
 
-        <Text style={[$label, $labelLargeTop]}>Image</Text>
+        <Text style={[$label, $labelLargeTop]} preset="formLabel">
+          Image
+        </Text>
         <TouchableOpacity style={$imagePickerWrapper}>
           <Ionicons name="checkmark-circle-outline" size={24} color={colors.palette.secondary400} />
-          <Text style={$imagePickerText}>Image selected (tap to change)</Text>
+          <Text style={$imagePickerText} preset="caption">
+            Image selected (tap to change)
+          </Text>
         </TouchableOpacity>
       </ScrollView>
 
       <View style={$footerContainer}>
         <Button
-          text={isLoading ? "Creating..." : "Create Todo"}
+          text={isLoading ? "Saving..." : "Save Changes"}
           disabled={isLoading}
           style={[$submitButton, isLoading && $disabledButton]}
           textStyle={$submitButtonText}
-          onPress={handleCreateTodo}
+          onPress={handleSaveChanges}
         />
       </View>
     </Screen>

@@ -1,7 +1,7 @@
 import { FC, useEffect } from "react"
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from "react-native"
-import { AppStackScreenProps } from "../navigators"
-import { AppSectionHeader, Screen } from "app/components"
+import { View, TouchableOpacity, ActivityIndicator, Alert } from "react-native"
+import { AppStackScreenProps } from "app/navigators"
+import { AppSectionHeader, Screen, Text } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
@@ -152,18 +152,26 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
               <View style={$circleUnchecked} />
             )}
           </TouchableOpacity>
-          <Text style={[$titleText, todo.isCompleted && $titleTextDone]}>{todo.title}</Text>
+          <Text preset="title" style={[$titleText, todo.isCompleted && $titleTextDone]}>
+            {todo.title}
+          </Text>
         </View>
 
-        <Text style={$notesText}>{todo.content || "No description provided."}</Text>
+        <Text preset="body" style={$notesText}>
+          {todo.content || "No description provided."}
+        </Text>
 
         <View style={$infoBox}>
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="clock" size={16} color={colors.palette.neutral500} />
-              <Text style={$infoLabel}>Due date</Text>
+              <Text preset="caption" style={$infoLabel}>
+                Due date
+              </Text>
             </View>
-            <Text style={$infoValue}>{formatTime(todo.dueDate)}</Text>
+            <Text preset="body" style={$infoValue}>
+              {formatTime(todo.dueDate)}
+            </Text>
           </View>
 
           <View style={$divider} />
@@ -171,9 +179,13 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="tag" size={16} color={colors.palette.neutral500} />
-              <Text style={$infoLabel}>Category</Text>
+              <Text preset="caption" style={$infoLabel}>
+                Category
+              </Text>
             </View>
-            <Text style={[$infoValue, $categoryValue]}>{todo.category?.name || "None"}</Text>
+            <Text preset="body" style={[$infoValue, $categoryValue]}>
+              {todo.category?.name || "None"}
+            </Text>
           </View>
 
           <View style={$divider} />
@@ -181,9 +193,11 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="circle" size={16} color={colors.palette.neutral500} />
-              <Text style={$infoLabel}>Status</Text>
+              <Text preset="caption" style={$infoLabel}>
+                Status
+              </Text>
             </View>
-            <Text style={[$infoValue, todo.isCompleted ? $statusDone : $statusPending]}>
+            <Text preset="body" style={[$infoValue, todo.isCompleted ? $statusDone : $statusPending]}>
               {todo.isCompleted ? "Completed" : "Pending"}
             </Text>
           </View>
@@ -196,14 +210,16 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
               size={18}
               color={colors.palette.secondary400}
             />
-            <Text style={[$actionBtnText, $actionDoneText]}>
+            <Text preset="body" style={[$actionBtnText, $actionDoneText]}>
               {todo.isCompleted ? "Mark Undone" : "Mark Done"}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[$actionBtn, $actionDelete]} onPress={handleDelete}>
             <Feather name="trash-2" size={18} color={colors.palette.angry500} />
-            <Text style={[$actionBtnText, $actionDeleteText]}>Delete</Text>
+            <Text preset="body" style={[$actionBtnText, $actionDeleteText]}>
+              Delete
+            </Text>
           </TouchableOpacity>
         </View>
       </Screen>

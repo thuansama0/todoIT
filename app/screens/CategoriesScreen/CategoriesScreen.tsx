@@ -7,7 +7,7 @@ import {
   Alert,
 } from "react-native"
 import { AppSectionHeader, Screen } from "app/components"
-import { CategoryItem } from "../components/CategoryItem"
+import { CategoryItem } from "app/components/CategoryItem"
 import { colors } from "app/theme"
 import { observer } from "mobx-react-lite"
 import { Feather } from "@expo/vector-icons"

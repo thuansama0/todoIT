@@ -16,7 +16,6 @@ import { TabNavigator } from "./TabNavigator"
 import type { TabParamList } from "./TabNavigator"
 
 export type AppStackParamList = {
-  Welcome: undefined
   Login: undefined
   SignUp: undefined
   MainTabs: NavigatorScreenParams<TabParamList> | undefined
@@ -43,7 +42,6 @@ const AppStack = observer(function AppStack() {
     <Stack.Navigator
       screenOptions={{ headerShown: false, navigationBarColor: colors.background }}
     >
-          <Stack.Screen name="Welcome" component={Screens.WelcomeScreen} />
           <Stack.Screen name="Login" component={Screens.LoginScreen} />
           <Stack.Screen name="SignUp" component={Screens.SignUpScreen} />
           <Stack.Screen name="MainTabs" component={TabNavigator} />

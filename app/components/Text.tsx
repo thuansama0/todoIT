@@ -105,6 +105,29 @@ const $presets = {
   formLabel: [$baseStyle, $fontWeightStyles.medium] as StyleProp<TextStyle>,
 
   formHelper: [$baseStyle, $sizeStyles.sm, $fontWeightStyles.normal] as StyleProp<TextStyle>,
+
+  title: [$baseStyle, $sizeStyles.xl, $fontWeightStyles.bold] as StyleProp<TextStyle>,
+
+  titleSm: [$baseStyle, $sizeStyles.lg, $fontWeightStyles.bold] as StyleProp<TextStyle>,
+
+  authTitle: [$baseStyle, $sizeStyles.xxl, $fontWeightStyles.bold] as StyleProp<TextStyle>,
+
+  body: [$baseStyle, $sizeStyles.sm, $fontWeightStyles.normal] as StyleProp<TextStyle>,
+
+  bodySm: [$baseStyle, $sizeStyles.xs, $fontWeightStyles.normal] as StyleProp<TextStyle>,
+
+  caption: [$baseStyle, $sizeStyles.xs, $fontWeightStyles.normal] as StyleProp<TextStyle>,
+
+  error: [$baseStyle, $sizeStyles.xs, $fontWeightStyles.medium, { color: colors.error }] as StyleProp<TextStyle>,
+
+  button: [$baseStyle, $sizeStyles.sm, $fontWeightStyles.medium] as StyleProp<TextStyle>,
+
+  link: [
+    $baseStyle,
+    $sizeStyles.sm,
+    $fontWeightStyles.medium,
+    { color: colors.palette.primary500, textDecorationLine: "underline" },
+  ] as StyleProp<TextStyle>,
 }
 
 const $rtlStyle: TextStyle = isRTL ? { writingDirection: "rtl" } : {}

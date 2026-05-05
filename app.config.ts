@@ -14,9 +14,19 @@ require("ts-node/register")
  */
 module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
   const existingPlugins = config.plugins ?? []
+  const existingExtra = config.extra ?? {}
+  const existingEas = (existingExtra as Record<string, any>).eas ?? {}
+  const envProjectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID
 
   return {
     ...config,
+    extra: {
+      ...existingExtra,
+      eas: {
+        ...existingEas,
+        projectId: envProjectId ?? existingEas.projectId,
+      },
+    },
     plugins: [
       ...existingPlugins,
       require("./plugins/withSplashScreen").withSplashScreen,
