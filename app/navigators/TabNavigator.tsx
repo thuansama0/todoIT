@@ -2,6 +2,7 @@ import React from "react"
 import { View } from "react-native"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Ionicons } from "@expo/vector-icons" 
+import { colors, typography } from "app/theme"
 
 
 import { TodoScreen, ProfileScreen, NotificationsScreen, CategoriesScreen } from "../screens"
@@ -21,8 +22,8 @@ export function TabNavigator() {
       initialRouteName="Todo"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#3b5998', 
-        tabBarInactiveTintColor: '#9e9e9e', 
+        tabBarActiveTintColor: colors.palette.info500, 
+        tabBarInactiveTintColor: colors.palette.gray500, 
         
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
@@ -42,7 +43,7 @@ export function TabNavigator() {
           if (focused) {
             return (
               <View style={{ 
-                backgroundColor: '#e8eaf6', 
+                backgroundColor: colors.palette.secondary100, 
                 width: 56,
                 height: 32,
                 justifyContent: 'center',
@@ -59,7 +60,7 @@ export function TabNavigator() {
         
         tabBarLabelStyle: {
           fontSize: 12, 
-          fontWeight: '600', 
+          fontFamily: typography.primary.semiBold, 
           marginTop: 5,
         },
         

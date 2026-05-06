@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';    
 import { Ionicons, Feather } from "@expo/vector-icons";
+import { colors, spacing, typography } from "app/theme";
 
 export interface TodoItemProps {
   title: string;
@@ -27,7 +28,7 @@ export const TodoItem: FC<TodoItemProps> = ({
     <View style={[$container, isCompleted && $containerCompleted]}>
       <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
         {isCompleted ? (
-          <Ionicons name="checkmark-circle" size={28} color="#4CAF50" />
+          <Ionicons name="checkmark-circle" size={28} color={colors.palette.success500} />
         ) : (
           <View style={$circleUnchecked} />
         )}
@@ -42,7 +43,7 @@ export const TodoItem: FC<TodoItemProps> = ({
         )}
         <View style={$metaRow}>
           <View style={$timeContainer}> 
-            <Feather name="clock" size={14} color="#9e9e9e" />
+            <Feather name="clock" size={14} color={colors.palette.gray500} />
             <Text style={$timeText}>{timeText}</Text>
           </View>
 
@@ -54,11 +55,11 @@ export const TodoItem: FC<TodoItemProps> = ({
 
       <View style={$actionsContainer}>
         <TouchableOpacity style={$actionButton} onPress={onEdit}>
-          <Feather name="edit-2" size={18} color="#78909c" />
+          <Feather name="edit-2" size={18} color={colors.palette.slate500} />
         </TouchableOpacity>
 
         <TouchableOpacity style={$actionButton} onPress={onDelete}>
-          <Feather name="trash-2" size={18} color="#e53935" />
+          <Feather name="trash-2" size={18} color={colors.palette.angry500} />
         </TouchableOpacity>
       </View>
 
@@ -68,22 +69,22 @@ export const TodoItem: FC<TodoItemProps> = ({
 
 const $container: ViewStyle = {
   flexDirection: 'row',
-  backgroundColor: '#ffffff',
+  backgroundColor: colors.palette.neutral100,
   borderRadius: 16,
-  padding: 16,
-  marginBottom: 12,
+  padding: spacing.md,
+  marginBottom: spacing.sm,
   borderWidth: 1,
-  borderColor: '#f0f0f0',
+  borderColor: colors.palette.neutral200,
   elevation: 2, 
 };
 
 const $containerCompleted: ViewStyle = {
-  backgroundColor: '#fafafa',
+  backgroundColor: colors.palette.neutral150,
 };
 
 const $checkboxContainer: ViewStyle = {
-  marginRight: 12,
-  marginTop: 2,
+  marginRight: spacing.sm,
+  marginTop: spacing.xxxs,
 };
 
 const $circleUnchecked: ViewStyle = {
@@ -91,7 +92,7 @@ const $circleUnchecked: ViewStyle = {
   height: 26,
   borderRadius: 13,
   borderWidth: 2,
-  borderColor: '#cfd8dc',
+  borderColor: colors.palette.neutral300,
 };
 
 const $contentContainer: ViewStyle = {
@@ -101,14 +102,14 @@ const $contentContainer: ViewStyle = {
 
 const $title: TextStyle = {
   fontSize: 16,
-  fontWeight: '600',
-  color: '#263238',
-  marginBottom: 6,
+  fontFamily: typography.primary.semiBold,
+  color: colors.palette.neutral700,
+  marginBottom: spacing.xxs + spacing.xxxs,
 };
 
 const $titleCompleted: TextStyle = {
   textDecorationLine: 'line-through',
-  color: '#90a4ae',
+  color: colors.palette.neutral400,
 };
 
 const $metaRow: ViewStyle = {
@@ -119,40 +120,40 @@ const $metaRow: ViewStyle = {
 const $timeContainer: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
-  marginRight: 12,
+  marginRight: spacing.sm,
 };
 
 const $timeText: TextStyle = {
   fontSize: 12,
-  color: '#9e9e9e',
-  marginLeft: 4,
-  fontWeight: '500',
+  color: colors.palette.gray500,
+  marginLeft: spacing.xxs,
+  fontFamily: typography.primary.medium,
 };
 
 const $badgeContainer: ViewStyle = { 
-  backgroundColor: '#e8eaf6',
-  paddingHorizontal: 10,
-  paddingVertical: 4,
+  backgroundColor: colors.palette.secondary100,
+  paddingHorizontal: spacing.xs + spacing.xxs,
+  paddingVertical: spacing.xxs,
   borderRadius: 12,
 };
 
 const $badgeText: TextStyle = { 
   fontSize: 12,
-  color: '#3f51b5',
-  fontWeight: '600',
+  color: colors.palette.info500,
+  fontFamily: typography.primary.semiBold,
 };
 
 const $actionsContainer: ViewStyle = { 
   justifyContent: 'space-between', 
-  paddingLeft: 4,  
+  paddingLeft: spacing.xxs,  
 };
 
 const $actionButton: ViewStyle = { 
-  padding: 9,
+  padding: spacing.xs + spacing.xxxs,
 };
 const $notesText: TextStyle = {
   fontSize: 14,
-  color: '#546e7a',
+  color: colors.palette.neutral600,
   marginTop: 0,
-  marginBottom: 8,
+  marginBottom: spacing.xs,
 };

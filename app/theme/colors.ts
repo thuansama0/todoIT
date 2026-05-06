@@ -2,6 +2,7 @@
 
 const palette = {
   neutral100: "#FFFFFF",
+  neutral150: "#FAFAFA",
   neutral200: "#F4F2F1",
   neutral300: "#D7CEC9",
   neutral400: "#B6ACA6",
@@ -29,6 +30,11 @@ const palette = {
   accent300: "#FDD495",
   accent400: "#FBC878",
   accent500: "#FFBB50",
+  info500: "#3B5998",
+  success500: "#4CAF50",
+  slate500: "#78909C",
+  gray500: "#9E9E9E",
+  surfaceSoft: "#F8F9FF",
 
   angry100: "#F2D6CD",
   angry500: "#C03403",
@@ -81,4 +87,6 @@ export const colors = {
    *
    */
   errorBackground: palette.angry100,
+  success: palette.success500,
+  info: palette.info500,
 }

@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';    
 import { Feather } from "@expo/vector-icons";
+import { colors, spacing, typography } from "app/theme";
 
 export interface CategoryItemProps {
   name: string;
@@ -17,7 +18,7 @@ export const CategoryItem: FC<CategoryItemProps> = ({ name, isPublic, isOwner, o
         <Feather 
           name={isPublic ? "globe" : "lock"} 
           size={18} 
-          color="#757575" 
+          color={colors.palette.neutral600}
           style={$iconLeft}
         />
         <Text style={$nameText}>{name}</Text>
@@ -26,10 +27,10 @@ export const CategoryItem: FC<CategoryItemProps> = ({ name, isPublic, isOwner, o
       {isOwner ? (
         <View style={$actionsContainer}>
           <TouchableOpacity style={$actionBtn} onPress={onEdit}>
-            <Feather name="edit-2" size={18} color="#78909c" />
+            <Feather name="edit-2" size={18} color={colors.palette.slate500} />
           </TouchableOpacity>
           <TouchableOpacity style={$actionBtn} onPress={onDelete}>
-            <Feather name="trash-2" size={18} color="#e53935" />
+            <Feather name="trash-2" size={18} color={colors.palette.angry500} />
           </TouchableOpacity>
         </View>
       ) : (
@@ -44,18 +45,18 @@ const $container: ViewStyle = {
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
-  backgroundColor: '#ffffff',
+  backgroundColor: colors.palette.neutral100,
   borderRadius: 16,
-  paddingVertical: 16,
-  paddingHorizontal: 20,
-  marginBottom: 12,
+  paddingVertical: spacing.md,
+  paddingHorizontal: spacing.md + spacing.xxs,
+  marginBottom: spacing.sm,
   borderWidth: 1,
-  borderColor: '#f0f0f0',
+  borderColor: colors.palette.neutral200,
   elevation: 1,
 };
 const $leftContent: ViewStyle = { flexDirection: 'row', alignItems: 'center', flex: 1 };
-const $iconLeft: TextStyle = { marginRight: 12 };
-const $nameText: TextStyle = { fontSize: 16, fontWeight: '600', color: '#263238' };
+const $iconLeft: TextStyle = { marginRight: spacing.sm };
+const $nameText: TextStyle = { fontSize: 16, fontFamily: typography.primary.semiBold, color: colors.palette.neutral700 };
 const $actionsContainer: ViewStyle = { flexDirection: 'row', alignItems: 'center' };
-const $actionBtn: ViewStyle = { marginLeft: 16, padding: 4 };
-const $sharedText: TextStyle = { fontSize: 14, color: '#bdbdbd', fontStyle: 'italic' };
+const $actionBtn: ViewStyle = { marginLeft: spacing.md, padding: spacing.xxs };
+const $sharedText: TextStyle = { fontSize: 14, color: colors.palette.neutral400, fontStyle: 'italic' };

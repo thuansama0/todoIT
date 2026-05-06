@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';    
 import { Feather } from "@expo/vector-icons";
+import { colors, spacing, typography } from "app/theme";
 
 export interface NotificationItemProps {
   title: string;
@@ -21,7 +22,7 @@ export const NotificationItem: FC<NotificationItemProps> = ({
         {!isRead ? (
           <View style={$unreadDot} />
         ) : (
-          <Feather name="bell" size={20} color="#9e9e9e" />
+          <Feather name="bell" size={20} color={colors.palette.gray500} />
         )}
       </View>
 
@@ -34,11 +35,11 @@ export const NotificationItem: FC<NotificationItemProps> = ({
       <View style={$actionsContainer}>
         {!isRead && (
           <TouchableOpacity style={$actionBtn} onPress={onMarkRead}>
-            <Feather name="check-circle" size={20} color="#4CAF50" />
+            <Feather name="check-circle" size={20} color={colors.palette.success500} />
           </TouchableOpacity>
         )}
         <TouchableOpacity style={$actionBtn} onPress={onDelete}>
-          <Feather name="trash-2" size={20} color="#e53935" />
+          <Feather name="trash-2" size={20} color={colors.palette.angry500} />
         </TouchableOpacity>
       </View>
 
@@ -46,14 +47,14 @@ export const NotificationItem: FC<NotificationItemProps> = ({
   );
 };
 
-const $container: ViewStyle = { flexDirection: 'row', backgroundColor: '#ffffff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#f0f0f0' };
-const $containerUnread: ViewStyle = { backgroundColor: '#f8f9ff', borderColor: '#e8eaf6' };
-const $leftIcon: ViewStyle = { width: 24, alignItems: 'center', marginTop: 2, marginRight: 12 };
-const $unreadDot: ViewStyle = { width: 10, height: 10, borderRadius: 5, backgroundColor: '#3b5998', marginTop: 6 };
+const $container: ViewStyle = { flexDirection: 'row', backgroundColor: colors.palette.neutral100, borderRadius: 16, padding: spacing.md, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.palette.neutral200 };
+const $containerUnread: ViewStyle = { backgroundColor: colors.palette.surfaceSoft, borderColor: colors.palette.secondary100 };
+const $leftIcon: ViewStyle = { width: spacing.lg, alignItems: 'center', marginTop: spacing.xxxs, marginRight: spacing.sm };
+const $unreadDot: ViewStyle = { width: spacing.xs + spacing.xxs, height: spacing.xs + spacing.xxs, borderRadius: spacing.xs / 2 + spacing.xxs / 2, backgroundColor: colors.palette.info500, marginTop: spacing.xxs + spacing.xxxs };
 const $contentContainer: ViewStyle = { flex: 1, justifyContent: 'center' };
-const $title: TextStyle = { fontSize: 16, fontWeight: '600', color: '#424242', marginBottom: 4 };
-const $titleUnread: TextStyle = { color: '#263238', fontWeight: 'bold' };
-const $content: TextStyle = { fontSize: 14, color: '#757575', marginBottom: 8, lineHeight: 20 };
-const $timeText: TextStyle = { fontSize: 12, color: '#9e9e9e' };
-const $actionsContainer: ViewStyle = { justifyContent: 'space-between', paddingLeft: 8, alignItems: 'center' };
-const $actionBtn: ViewStyle = { padding: 8 };
+const $title: TextStyle = { fontSize: 16, fontFamily: typography.primary.semiBold, color: colors.palette.neutral700, marginBottom: spacing.xxs };
+const $titleUnread: TextStyle = { color: colors.palette.neutral700, fontFamily: typography.primary.bold };
+const $content: TextStyle = { fontSize: 14, color: colors.palette.neutral600, marginBottom: spacing.xs, lineHeight: 20 };
+const $timeText: TextStyle = { fontSize: 12, color: colors.palette.gray500 };
+const $actionsContainer: ViewStyle = { justifyContent: 'space-between', paddingLeft: spacing.xs, alignItems: 'center' };
+const $actionBtn: ViewStyle = { padding: spacing.xs };

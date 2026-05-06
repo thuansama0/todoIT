@@ -15,6 +15,7 @@ import {
 import { normalizeNotificationData } from "./notificationPayload"
 import { load, loadString, save } from "app/utils/storage"
 import { userApi } from "app/services/api/userApi"
+import { colors } from "app/theme"
 
 function navigateToNotificationsTab() {
   if (!navigationRef.isReady()) return
@@ -204,7 +205,7 @@ export const usePushNotifications = () => {
             name: "default",
             importance: Notifications.AndroidImportance.MAX,
             vibrationPattern: [0, 250, 250, 250],
-            lightColor: "#FF231F7C",
+            lightColor: colors.palette.secondary400,
           })
         }
       }
@@ -318,7 +319,7 @@ async function ensureNotificationPermissionsAsync() {
       name: "default",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
+      lightColor: colors.palette.secondary400,
     })
   }
 
