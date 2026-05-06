@@ -51,7 +51,7 @@ export const NotificationDetailScreen: FC<any> = ({ route }) => {
       <AppSectionHeader
         title="Notification"
         showRefresh={false}
-        leftIcon="arrow-left"
+        leftIcon="back"
         onLeftPress={() => navigation.goBack()}
       />
 

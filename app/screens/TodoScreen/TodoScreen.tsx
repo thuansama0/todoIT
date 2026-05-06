@@ -1,6 +1,6 @@
 import { FC, useEffect } from "react"
-import { FlatList, TouchableOpacity, View, ActivityIndicator, Alert, Pressable } from "react-native"
-import { AppSectionHeader, Screen, TodoItem } from "app/components"
+import {  TouchableOpacity, View, ActivityIndicator, Alert, Pressable } from "react-native"
+import { AppSectionHeader, Screen, TodoItem, ListView } from "app/components"
 import { colors } from "app/theme"
 import { AppStackParamList } from "app/navigators"
 import { observer } from "mobx-react-lite"
@@ -96,34 +96,36 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
           <ActivityIndicator size="large" color={colors.palette.secondary400} />
         </View>
       ) : (
-        <FlatList
-          style={$list}
-          data={todoItems}
-          keyExtractor={(item) => item.id}
-          refreshing={todoStore.isLoading}
-          onRefresh={() => todoStore.fetchTodos()}
-          renderItem={({ item }) => (
-            <View style={$todoItemContainer}>
-              <Pressable
-                onPress={() => (navigation.navigate as any)("TodoDetail", { id: item.id })}
-              >
-                <TodoItem
-                  title={item.title}
-                  notes={item.content}
-                  timeText={formatTime(item.dueDate)}
-                  category={item.category?.name || "General"}
-                  isCompleted={item.isCompleted}
-                  onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
-                  onDelete={() => handleDelete(item.id)}
-                  onEdit={() => {
-                    ;(navigation.navigate as any)("EditTodo", { todoData: toPlainTodo(item) })
-                  }}
-                />
-              </Pressable>
-            </View>
-          )}
-          contentContainerStyle={$flatListContent}
-        />
+        <View style={$list}>
+          <ListView
+            data={todoItems}
+            keyExtractor={(item) => item.id}
+            refreshing={todoStore.isLoading}
+            onRefresh={() => todoStore.fetchTodos()}
+            estimatedItemSize={56}
+            renderItem={({ item }) => (
+              <View style={$todoItemContainer}>
+                <Pressable
+                  onPress={() => navigation.navigate("TodoDetail", { id: item.id })}
+                >
+                  <TodoItem
+                    title={item.title}
+                    notes={item.content}
+                    timeText={formatTime(item.dueDate)}
+                    category={item.category?.name || "General"}
+                    isCompleted={item.isCompleted}
+                    onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
+                    onDelete={() => handleDelete(item.id)}
+                    onEdit={() => {
+                      navigation.navigate("EditTodo", { todoData: toPlainTodo(item) })
+                    }}
+                  />
+                </Pressable>
+              </View>
+            )}
+            contentContainerStyle={$flatListContent}
+          />
+        </View>
       )}
 
       <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewTodo")}>

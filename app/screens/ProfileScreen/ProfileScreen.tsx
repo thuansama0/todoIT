@@ -13,6 +13,8 @@ import { Feather } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { AppStackParamList } from "app/navigators"
 import {
   $accountBtn,
   $accountSection,
@@ -45,7 +47,8 @@ import {
 } from "./ProfileScreen.styles"
 
 export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
-  const navigation = useNavigation()
+  type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
+  const navigation = useNavigation<AppStackNavigation>()
   const isFocused = useIsFocused()
   const { profileStore } = useStores()
   const [isSaving, setIsSaving] = useState(false)
@@ -57,6 +60,13 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
   const [editEmail, setEditEmail] = useState("")
   const [editPassword, setEditPassword] = useState("")
 
+  const normalizeImageUri = (uri?: string | null) => {
+    if (!uri) return ""
+    const normalized = uri.trim()
+    if (!normalized || normalized.toLowerCase() === "null") return ""
+    return normalized
+  }
+
   useEffect(() => {
     if (isFocused) {
       profileStore.fetchProfile()
@@ -67,7 +77,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
-      setEditImageUrl(profileStore.profile.imageUrl ?? "")
+      setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
     }
   }, [profileStore.profile])
 
@@ -82,7 +92,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
-      setEditImageUrl(profileStore.profile.imageUrl ?? "")
+      setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
     }
   }
   // chọn ảnh từ thư viện
@@ -172,7 +182,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
           style: "destructive",
           onPress: async () => {
             await profileStore.deleteAccount()
-            ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] })
           },
         },
       ],
@@ -187,7 +197,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
         style: "destructive",
         onPress: () => {
           // Reset stack để người dùng không back lại màn hình cần đăng nhập.
-          ;(navigation.reset as any)({ index: 0, routes: [{ name: "Login" }] })
+          navigation.reset({ index: 0, routes: [{ name: "Login" }] })
         },
       },
     ])

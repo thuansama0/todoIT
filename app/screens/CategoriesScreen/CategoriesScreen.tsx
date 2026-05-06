@@ -1,12 +1,11 @@
 import { FC, useEffect } from "react"
 import {
-  FlatList,
   TouchableOpacity,
   View,
   ActivityIndicator,
   Alert,
 } from "react-native"
-import { AppSectionHeader, Screen } from "app/components"
+import { AppSectionHeader, Screen, ListView } from "app/components"
 import { CategoryItem } from "app/components/CategoryItem"
 import { colors } from "app/theme"
 import { observer } from "mobx-react-lite"
@@ -22,10 +21,12 @@ import {
   $screenInner,
 } from "./CategoriesScreen.styles"
 import { useStores } from "app/models"
-
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { AppStackParamList } from "app/navigators"
 
 export const CategoriesScreen: FC = observer(function CategoriesScreen() {
-  const navigation = useNavigation()
+  type AppStackNavigatorProps = NativeStackNavigationProp<AppStackParamList>
+  const navigation = useNavigation<AppStackNavigatorProps>()
   const { categoryStore } = useStores()
 
   useEffect(() => {
@@ -62,28 +63,30 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
           <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
         </View>
       ) : (
-        <FlatList
-          style={$list}
-          data={categoryStore.sortedItems}
-          keyExtractor={(item) => item.id}
-          refreshing={categoryStore.isLoading}
-          onRefresh={() => categoryStore.fetchCategories()}
-          contentContainerStyle={$flatListContent}
-          renderItem={({ item }) => (
-            <CategoryItem
-              name={item.name}
-              isPublic={item.isPublic}
-              isOwner={item.isOwner}
-              onEdit={() => {
-                ;(navigation.navigate as any)("EditCategory", { categoryData: item })
-              }}
-              onDelete={() => handleDelete(item.id)}
-            />
-          )}
-        />
+        <View style={$list}>
+          <ListView
+            data={categoryStore.sortedItems}
+            keyExtractor={(item) => item.id}
+            estimatedItemSize={56}
+            refreshing={categoryStore.isLoading}
+            onRefresh={() => categoryStore.fetchCategories()}
+            contentContainerStyle={$flatListContent}
+            renderItem={({ item }) => (
+              <CategoryItem
+                name={item.name}
+                isPublic={item.isPublic}
+                isOwner={item.isOwner}
+                onEdit={() => {
+                  navigation.navigate("EditCategory", { categoryData: item })
+                }}
+                onDelete={() => handleDelete(item.id)}
+              />
+            )}
+          />
+        </View>
       )}
 
-      <TouchableOpacity style={$fab} onPress={() => (navigation.navigate as any)("NewCategory")}>
+      <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewCategory")}>
         <Feather name="plus" size={24} color={colors.palette.neutral100} />
       </TouchableOpacity>
     </Screen>

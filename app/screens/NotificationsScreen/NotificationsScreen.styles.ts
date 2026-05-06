@@ -23,8 +23,7 @@ export const $topBtnText: TextStyle = { marginLeft: spacing.xxs + spacing.xxxs }
 export const $topBtnGreenText: TextStyle = { color: colors.palette.secondary400 }
 export const $topBtnRedText: TextStyle = { color: colors.palette.angry500 }
 export const $list: ViewStyle = { flex: 1 }
-export const $emptyListContent: ViewStyle = { flex: 1 }
-export const $listContent: ViewStyle = { padding: spacing.md, paddingBottom: spacing.xl + spacing.xs, flexGrow: 1 }
+export const $listContent: ViewStyle = { padding: spacing.md, paddingBottom: spacing.xl + spacing.xs }
 export const $emptyContainer: ViewStyle = {
   flex: 1,
   justifyContent: "center",

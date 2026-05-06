@@ -4,7 +4,6 @@ import { AppStackScreenProps } from "app/navigators"
 import { AppSectionHeader, Screen, Text } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import {
@@ -19,7 +18,6 @@ import {
   $circleUnchecked,
   $content,
   $divider,
-  $rightEditIcon,
   $infoBox,
   $infoIconText,
   $infoLabel,
@@ -38,10 +36,9 @@ import {
 const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
 
 export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
-  function TodoDetailScreen({ route }) {
-    const navigation = useNavigation()
+  function TodoDetailScreen({ route, navigation }) {
     const { todoStore } = useStores()
-    const id = (route.params as { id: string } | undefined)?.id ?? ""
+    const { id } = route.params
     const todo = todoStore.items.find((item) => item.id === id)
 
     useEffect(() => {
@@ -131,17 +128,10 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
         <AppSectionHeader
           title="Todo Detail"
           showRefresh={false}
-          leftIcon="arrow-left"
+          leftIcon="back"
           onLeftPress={() => navigation.goBack()}
-          rightActionComponent={
-            <Feather
-              name="edit-2"
-              size={22}
-              color={colors.palette.secondary400}
-              style={$rightEditIcon}
-              onPress={() => (navigation.navigate as any)("EditTodo", { todoData: toPlainTodo() })}
-            />
-          }
+          rightText="Edit"
+          onRightPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo() })}
         />
 
         <View style={$titleRow}>

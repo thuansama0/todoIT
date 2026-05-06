@@ -1,18 +1,21 @@
-import { FC, ReactElement } from "react"
+import { FC } from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
-import { Feather } from "@expo/vector-icons"
 import { Header } from "./Header"
-import { Text } from "./Text"
+import { IconTypes } from "./Icon"
 import { colors } from "app/theme"
+import { Text } from "./Text"
+
 
 interface AppSectionHeaderProps {
   title: string
   subtitle?: string
   onRefresh?: () => void
   showRefresh?: boolean
-  leftIcon?: "x" | "arrow-left"
+  leftIcon?: IconTypes
   onLeftPress?: () => void
-  rightActionComponent?: ReactElement
+  rightIcon?: IconTypes
+  onRightPress?: () => void
+  rightText?: string
 }
 
 export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
@@ -22,32 +25,11 @@ export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
   showRefresh = true,
   leftIcon,
   onLeftPress,
-  rightActionComponent,
+  rightIcon,
+  onRightPress,
+  rightText,
 }) => {
   const shouldShowRefresh = showRefresh && !!onRefresh
-  const hasCustomRightAction = !!rightActionComponent
-
-  const resolvedRightAction = hasCustomRightAction
-    ? rightActionComponent
-    : shouldShowRefresh
-      ? (
-          <Feather
-            style={$icon}
-            name="refresh-cw"
-            color={colors.palette.secondary400}
-            onPress={onRefresh}
-          />
-        )
-      : undefined
-
-  const resolvedLeftAction = leftIcon ? (
-    <Feather
-      style={$leftIcon}
-      name={leftIcon}
-      color={colors.palette.neutral900}
-      onPress={onLeftPress}
-    />
-  ) : undefined
 
   return (
     <View style={$headerArea}>
@@ -57,21 +39,16 @@ export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
         titleContainerStyle={$titleContainer}
         titleStyle={$title}
         style={$header}
-        LeftActionComponent={resolvedLeftAction}
-        RightActionComponent={resolvedRightAction}
+        leftIcon={leftIcon}
+        onLeftPress={onLeftPress}
+        rightIcon={rightIcon ?? (shouldShowRefresh ? "refresh" : undefined)}
+        rightText={!rightIcon && !shouldShowRefresh ? rightText : undefined}
+        onRightPress={onRightPress ?? (shouldShowRefresh ? onRefresh : undefined)}
       />
       {!!subtitle && <Text style={$subtitle}>{subtitle}</Text>}
     </View>
   )
 }
-
-const $headerArea: ViewStyle = {
-  backgroundColor: colors.palette.neutral100,
-  paddingBottom: 12,
-  borderBottomWidth: 1,
-  borderColor: colors.palette.neutral300,
-}
-
 const $header: ViewStyle = {
   minHeight: 30,
   backgroundColor: "transparent",
@@ -109,4 +86,11 @@ const $subtitle: TextStyle = {
   textAlign: "center",
   color: colors.palette.neutral500,
   fontSize: 14,
+}
+
+const $headerArea: ViewStyle = {
+  backgroundColor: colors.palette.neutral100,
+  paddingBottom: 12,
+  borderBottomWidth: 1,
+  borderColor: colors.palette.neutral300,
 }

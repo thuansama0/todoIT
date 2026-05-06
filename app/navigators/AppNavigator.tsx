@@ -14,17 +14,24 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
 import { TabNavigator } from "./TabNavigator"
 import type { TabParamList } from "./TabNavigator"
+import type { Todo } from "app/services/api/todoApi"
+import type { Category } from "app/services/api/categoryApi"
+import type { Notification } from "app/services/api/notificationApi"
+
+type EditTodoRouteData = Omit<Todo, "category"> & {
+  category: Category | null
+}
 
 export type AppStackParamList = {
   Login: undefined
   SignUp: undefined
   MainTabs: NavigatorScreenParams<TabParamList> | undefined
   NewTodo: undefined
-  TodoDetail: undefined
+  TodoDetail: {id: string}
   NewCategory: undefined
-  EditCategory: undefined
-  EditTodo: undefined
-  NotificationDetail: undefined
+  EditCategory:{categoryData: Category}
+  EditTodo: {todoData: EditTodoRouteData}
+  NotificationDetail: {notificationData: Notification}
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 

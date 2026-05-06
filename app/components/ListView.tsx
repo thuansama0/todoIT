@@ -26,9 +26,16 @@ export type ListViewProps<T> = PropsWithoutRef<FlashListProps<T>>
  */
 const ListViewComponent = forwardRef(
   <T,>(props: ListViewProps<T>, ref: React.ForwardedRef<ListViewRef<T>>) => {
-    const ListComponentWrapper = isRTL ? FlatList : FlashList
+    // FlashList warns when `style` is passed directly.
+    const { style: _style, ...baseProps } = props as ListViewProps<T> & { style?: unknown }
 
-    return <ListComponentWrapper {...props} ref={ref} />
+    if (isRTL) {
+      // FlatList does not use FlashList-only props (e.g. estimatedItemSize).
+      const { estimatedItemSize, ...flatListProps } = baseProps
+      return <FlatList {...(flatListProps as any)} ref={ref as React.ForwardedRef<FlatList<T>>} />
+    }
+
+    return <FlashList {...(baseProps as FlashListProps<T>)} ref={ref as React.ForwardedRef<FlashList<T>>} />
   },
 )
 
@@ -36,6 +43,6 @@ ListViewComponent.displayName = "ListView"
 
 export const ListView = ListViewComponent as <T>(
   props: ListViewProps<T> & {
-    ref?: React.RefObject<ListViewRef<T>>
+    ref?: React.Ref<ListViewRef<T>>
   },
 ) => React.ReactElement

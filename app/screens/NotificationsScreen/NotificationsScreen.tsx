@@ -1,24 +1,24 @@
 import { FC, useEffect, useState } from "react"
 import {
   View,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native"
-import { AppSectionHeader, Screen, Text } from "app/components"
+import { AppSectionHeader, Screen, Text, ListView } from "app/components"
 import { NotificationItem } from "app/components/NotificationItem"
 import { colors } from "app/theme"
 import { Feather, Feather as Icon } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { AppStackParamList } from "app/navigators"
 import {
   $btnGreen,
   $btnRed,
   $emptyContainer,
   $emptyIconWrapper,
-  $emptyListContent,
   $emptySub,
   $emptyTitle,
   $list,
@@ -33,8 +33,17 @@ import {
   $topBtnText,
 } from "./NotificationsScreen.styles" 
 
+type NotificationListItem = {
+  id: string
+  title: string
+  content: string
+  isRead: boolean
+  sentAt: number
+}
+
 export const NotificationsScreen: FC<any> = observer(function NotificationsScreen() {
-  const navigation = useNavigation()
+  type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
+  const navigation = useNavigation<AppStackNavigation>()
   const isFocused = useIsFocused()
   const { notificationStore } = useStores()
   const [, setTimeTick] = useState(0)
@@ -102,6 +111,14 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
     )
   }
 
+  const notificationItems: NotificationListItem[] = notificationStore.items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    isRead: item.isRead,
+    sentAt: item.sentAt,
+  }))
+
   return (
     <Screen
       preset="fixed"
@@ -136,27 +153,29 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
       {notificationStore.isLoading ? (
         <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
       ) : (
-        <FlatList
-          style={$list}
-          contentContainerStyle={notificationStore.items.length === 0 ? $emptyListContent : $listContent}
-          data={notificationStore.items}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={renderEmpty}
-          renderItem={({ item }) => (
-            <NotificationItem
-              title={item.title}
-              content={item.content}
-              isRead={item.isRead}
-              timeAgo={formatTimeAgo(item.sentAt)}
-              onPress={() => {
-                if (!item.isRead) handleMarkRead(item.id)
-                ;(navigation.navigate as any)("NotificationDetail", { notificationData: item })
-              }}
-              onMarkRead={() => handleMarkRead(item.id)}
-              onDelete={() => handleDelete(item.id)}
-            />
-          )}
-        />
+        <View style={$list}>
+          <ListView<NotificationListItem>
+            contentContainerStyle={notificationStore.items.length > 0 ? $listContent : undefined}
+            data={notificationItems}
+            keyExtractor={(item) => item.id}
+            ListEmptyComponent={renderEmpty}
+            estimatedItemSize={56}
+            renderItem={({ item }) => (
+              <NotificationItem
+                title={item.title}
+                content={item.content}
+                isRead={item.isRead}
+                timeAgo={formatTimeAgo(item.sentAt)}
+                onPress={() => {
+                  if (!item.isRead) handleMarkRead(item.id)
+                  navigation.navigate("NotificationDetail", { notificationData: item })
+                }}
+                onMarkRead={() => handleMarkRead(item.id)}
+                onDelete={() => handleDelete(item.id)}
+              />
+            )}
+          />
+        </View>
       )}
     </Screen>
   )
