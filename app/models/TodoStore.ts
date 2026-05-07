@@ -5,6 +5,8 @@ import {
   loadTodoReminderMinutesMap,
   scheduleTodoReminder,
 } from "app/utils/todoReminder"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
+import { toPlainTodo } from "app/utils/todoMapper"
 
 const TodoCategoryModel = types.model("TodoCategory", {
   id: types.string,
@@ -52,7 +54,6 @@ export const TodoStoreModel = types
     isLoaded: types.optional(types.boolean, false),
   })
   .actions((store) => {
-    const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
     const locallyDeletedTempIds = new Set<string>()
 
     const syncCreateTodoInBackground = flow(function* syncCreateTodoInBackground(
@@ -80,11 +81,11 @@ export const TodoStoreModel = types
           const idx = store.items.findIndex((todo) => todo.id === tempId)
           if (idx >= 0) {
             const nextItems = store.items.map((todo) =>
-              todo.id === tempId ? normalized : getSnapshotTodo(todo),
+              todo.id === tempId ? normalized : toPlainTodo(todo),
             )
             store.items.replace(nextItems as any)
           } else if (!store.items.some((todo) => todo.id === normalized.id)) {
-            store.items.replace([normalized, ...store.items.map(getSnapshotTodo)] as any)
+            store.items.replace([normalized, ...store.items.map(toPlainTodo)] as any)
           }
           if (reminderMinutes > 0) {
             yield cancelTodoReminder(tempId)
@@ -164,7 +165,7 @@ export const TodoStoreModel = types
         isCompleted: false,
         reminderMinutes,
       })
-      store.items.replace([optimisticTodo, ...store.items.map(getSnapshotTodo)] as any)
+      store.items.replace([optimisticTodo, ...store.items.map(toPlainTodo)] as any)
       if (reminderMinutes > 0 && optimisticTodo.dueDate > 0) {
         void scheduleTodoReminder({
           todoId: tempId,
@@ -187,7 +188,7 @@ export const TodoStoreModel = types
       reminderMinutes = 0,
     ) {
       const idx = store.items.findIndex((todo) => todo.id === id)
-      const backup = idx >= 0 ? getSnapshotTodo(store.items[idx]) : null
+      const backup = idx >= 0 ? toPlainTodo(store.items[idx]) : null
       if (idx >= 0) {
         store.items[idx] = {
           ...store.items[idx],
@@ -227,8 +228,8 @@ export const TodoStoreModel = types
       if (idx >= 0) {
         const nextItems = store.items.map((todo) =>
           todo.id === id
-            ? { ...getSnapshotTodo(todo), isCompleted: newStatus }
-            : getSnapshotTodo(todo),
+            ? { ...toPlainTodo(todo), isCompleted: newStatus }
+            : toPlainTodo(todo),
         )
         store.items.replace(nextItems as any)
       }
@@ -237,8 +238,8 @@ export const TodoStoreModel = types
       if (!isMutationSuccess(response) && idx >= 0) {
         const rollbackItems = store.items.map((todo) =>
           todo.id === id
-            ? { ...getSnapshotTodo(todo), isCompleted: previousStatus }
-            : getSnapshotTodo(todo),
+            ? { ...toPlainTodo(todo), isCompleted: previousStatus }
+            : toPlainTodo(todo),
         )
         store.items.replace(rollbackItems as any)
       }
@@ -246,8 +247,8 @@ export const TodoStoreModel = types
     })
 
     const deleteTodo = flow(function* deleteTodo(id: string) {
-      const backup = store.items.map(getSnapshotTodo)
-      const nextItems = store.items.map(getSnapshotTodo).filter((todo) => todo.id !== id)
+      const backup = store.items.map(toPlainTodo)
+      const nextItems = store.items.map(toPlainTodo).filter((todo) => todo.id !== id)
       store.items.replace(nextItems as any)
       yield cancelTodoReminder(id)
 
@@ -274,25 +275,7 @@ export const TodoStoreModel = types
     }
   })
 
-function getSnapshotTodo(todo: any) {
-  return {
-    id: todo.id,
-    title: todo.title,
-    content: todo.content,
-    imageUrl: todo.imageUrl,
-    dueDate: todo.dueDate,
-    isCompleted: todo.isCompleted,
-    reminderMinutes: todo.reminderMinutes ?? 0,
-    category: todo.category
-      ? {
-          id: todo.category.id,
-          name: todo.category.name,
-          isPublic: todo.category.isPublic,
-          isOwner: todo.category.isOwner,
-        }
-      : null,
-  }
-}
+
 
 export interface TodoStore extends Instance<typeof TodoStoreModel> {}
 export interface TodoStoreSnapshot extends SnapshotOut<typeof TodoStoreModel> {}

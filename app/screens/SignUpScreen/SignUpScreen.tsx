@@ -4,9 +4,8 @@ import { Button, Screen, Text, TextField } from "app/components"
 import { AppStackScreenProps } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { authApi } from "app/services/api/authApi"
-import { saveString } from "app/utils/storage"
 import { useStores } from "app/models"
-import { syncExpoPushTokenWithServer } from "app/utils/usePushNotifications"
+import { completeAuthSession } from "app/utils/completeAuthSession"
 import {
   $email,
   $footerText,
@@ -43,12 +42,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
 
     if (response.ok && response.data?.success) {
       const accessToken = response.data.data?.accessToken
-      if (accessToken) {
-        authenticationStore.setAuthToken(accessToken)
-        await saveString("accessToken", accessToken)
-        void syncExpoPushTokenWithServer(accessToken).catch(() => {}) 
-      }
-      navigation.navigate("MainTabs")
+      await completeAuthSession(authenticationStore, navigation, accessToken)
     } else {
       Alert.alert("Đăng ký thất bại", response.data?.message || "Không thể tạo tài khoản.")
     }

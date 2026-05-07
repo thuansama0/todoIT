@@ -1,4 +1,3 @@
-import { saveString } from "app/utils/storage"
 import { observer } from "mobx-react-lite"
 import React, { FC, useState } from "react"
 import { Alert, View } from "react-native"
@@ -6,7 +5,7 @@ import { Button, Screen, Text, TextField } from "app/components"
 import { AppStackScreenProps } from "app/navigators"
 import { authApi } from "app/services/api/authApi"
 import { useStores } from "app/models"
-import { syncExpoPushTokenWithServer } from "app/utils/usePushNotifications"
+import { completeAuthSession } from "app/utils/completeAuthSession"
 import {
   $ButtonText,
   $disabledButton,
@@ -42,12 +41,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
     if (response.ok && response.data) {
       if (response.data.success) {
         const accessToken = response.data.data?.accessToken
-        if (accessToken) {
-          authenticationStore.setAuthToken(accessToken)
-          await saveString("accessToken", accessToken)
-          void syncExpoPushTokenWithServer(accessToken).catch(() => {})
-        }
-        navigation.navigate("MainTabs")
+        await completeAuthSession(authenticationStore, navigation, accessToken)
       } else {
         Alert.alert("Thông báo", response.data.message || "Đăng nhập thất bại.")
       }

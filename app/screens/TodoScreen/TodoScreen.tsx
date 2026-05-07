@@ -9,7 +9,10 @@ import { CompositeScreenProps } from "@react-navigation/native"
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TabParamList } from "app/navigators/TabNavigator"
+import { toPlainTodo } from "app/utils/todoMapper"
 import { useStores } from "app/models"
+import { formatTodoDate } from "app/utils/formatDate"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import {
   $fab,
   $flatListContent,
@@ -23,8 +26,6 @@ type TodoScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, "Todo">,
   NativeStackScreenProps<AppStackParamList>
 >
-
-const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
 
 export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ navigation }) {
   const { todoStore } = useStores()
@@ -55,30 +56,6 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
       },
     ])
   }
-
-  const formatTime = (timestamp: number) => {
-    if (!timestamp || timestamp === 0) return "No date"
-    const date = new Date(timestamp)
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-  }
-
-  const toPlainTodo = (todo: any) => ({
-    id: todo.id,
-    title: todo.title,
-    content: todo.content,
-    imageUrl: todo.imageUrl,
-    dueDate: todo.dueDate,
-    isCompleted: todo.isCompleted,
-    reminderMinutes: todo.reminderMinutes ?? 0,
-    category: todo.category
-      ? {
-          id: todo.category.id,
-          name: todo.category.name,
-          isPublic: todo.category.isPublic,
-          isOwner: todo.category.isOwner,
-        }
-      : null,
-  })
 
   const todoItems = todoStore.items.map(toPlainTodo)
 
@@ -111,7 +88,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
                   <TodoItem
                     title={item.title}
                     notes={item.content}
-                    timeText={formatTime(item.dueDate)}
+                    timeText={formatTodoDate(item.dueDate)}
                     category={item.category?.name || "General"}
                     isCompleted={item.isCompleted}
                     onToggle={() => handleToggleStatus(item.id, item.isCompleted)}

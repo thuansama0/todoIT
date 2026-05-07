@@ -6,6 +6,9 @@ import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
+import { toPlainTodo } from "app/utils/todoMapper"
+import { formatTodoDate } from "app/utils/formatDate"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import {
   $actionBtn,
   $actionBtnText,
@@ -32,8 +35,6 @@ import {
   $titleText,
   $titleTextDone,
 } from "./TodoDetailScreen.styles"
-
-const isMutationSuccess = (response: any) => response.ok && response.data?.success !== false
 
 export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
   function TodoDetailScreen({ route, navigation }) {
@@ -81,29 +82,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
       ])
     }
 
-    const formatTime = (timestamp: number) => {
-      if (!timestamp || timestamp === 0) return "No date"
-      return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    }
-
-    const toPlainTodo = () => ({
-      id: todo!.id,
-      title: todo!.title,
-      content: todo!.content,
-      imageUrl: todo!.imageUrl,
-      dueDate: todo!.dueDate,
-      isCompleted: todo!.isCompleted,
-      reminderMinutes: todo!.reminderMinutes ?? 0,
-      category: todo!.category
-        ? {
-            id: todo!.category.id,
-            name: todo!.category.name,
-            isPublic: todo!.category.isPublic,
-            isOwner: todo!.category.isOwner,
-          }
-        : null,
-    })
-
+   
     if (todoStore.isLoading && !todo) {
       return (
         <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
@@ -131,7 +110,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           leftIcon="back"
           onLeftPress={() => navigation.goBack()}
           rightText="Edit"
-          onRightPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo() })}
+          onRightPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo(todo) })}
         />
 
         <View style={$titleRow}>
@@ -160,7 +139,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
               </Text>
             </View>
             <Text preset="body" style={$infoValue}>
-              {formatTime(todo.dueDate)}
+              {formatTodoDate(todo.dueDate)}
             </Text>
           </View>
 

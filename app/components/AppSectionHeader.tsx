@@ -5,7 +5,6 @@ import { IconTypes } from "./Icon"
 import { colors } from "app/theme"
 import { Text } from "./Text"
 
-
 interface AppSectionHeaderProps {
   title: string
   subtitle?: string
@@ -65,20 +64,6 @@ const $title: TextStyle = {
   fontSize: 20,
   fontWeight: "bold",
   color: colors.text,
-  height: "100%",
-}
-
-const $icon: TextStyle = {
-  fontSize: 24,
-  marginRight: 16,
-  color: colors.palette.secondary400,
-  height: "100%",
-}
-
-const $leftIcon: TextStyle = {
-  fontSize: 24,
-  marginLeft: 16,
-  color: colors.palette.neutral900,
   height: "100%",
 }
 

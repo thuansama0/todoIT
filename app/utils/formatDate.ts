@@ -36,3 +36,8 @@ export const formatTimeAgo = (timestamp: number) => {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
   return `${Math.floor(diffInSeconds / 86400)}d ago`
 }
+
+export const formatTodoDate = (timestamp: number) => {
+  if (!timestamp || timestamp === 0) return "No date"
+  return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
