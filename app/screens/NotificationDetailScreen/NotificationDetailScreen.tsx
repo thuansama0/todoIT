@@ -5,6 +5,7 @@ import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { notificationApi, Notification } from "app/services/api/notificationApi"
+import { formatTimeAgo } from "app/utils/formatDate"
 import {
   $card,
   $cardHeader,
@@ -35,15 +36,6 @@ export const NotificationDetailScreen: FC<any> = ({ route }) => {
         },
       },
     ])
-  }
-
-  const formatTimeAgo = (timestamp: number) => {
-    if (!timestamp) return ""
-    const diffInSeconds = Math.floor((Date.now() - timestamp) / 1000)
-    if (diffInSeconds < 60) return `${diffInSeconds}s ago`
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-    return `${Math.floor(diffInSeconds / 86400)}d ago`
   }
 
   return (

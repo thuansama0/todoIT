@@ -14,6 +14,7 @@ import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AppStackParamList } from "app/navigators"
+import { formatTimeAgo } from "app/utils/formatDate"
 import {
   $btnGreen,
   $btnRed,
@@ -83,15 +84,6 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
 
   const handleDelete = async (id: string) => {
     await notificationStore.deleteNotification(id)
-  }
-
-  const formatTimeAgo = (timestamp: number) => {
-    if (!timestamp) return ""
-    const diffInSeconds = Math.floor((Date.now() - timestamp) / 1000)
-    if (diffInSeconds < 60) return `${diffInSeconds}s ago`
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-    return `${Math.floor(diffInSeconds / 86400)}d ago`
   }
 
   const renderEmpty = () => {
