@@ -8,6 +8,7 @@ import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import type { AppStackParamList } from "app/navigators"
 import { CreateTodoPayload } from "app/services/api/todoApi"
+import { formatDueDateFromTimestamp, getCurrentDateString, parseDateTime } from "app/utils/formatDate"
 
 import {
   $disabledButton,
@@ -48,35 +49,6 @@ export type TodoFormScreenProps =
   | { mode: "create" }
   | { mode: "edit"; initialTodo: AppStackParamList["EditTodo"]["todoData"] }
 
-function formatDueDateFromTimestamp(timestamp: number): string {
-  if (!timestamp || timestamp === 0) return ""
-  const date = new Date(timestamp)
-  const yyyy = date.getFullYear()
-  const mm = String(date.getMonth() + 1).padStart(2, "0")
-  const dd = String(date.getDate()).padStart(2, "0")
-  const hh = String(date.getHours()).padStart(2, "0")
-  const min = String(date.getMinutes()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd} ${hh}:${min}`
-}
-
-function getCurrentDateString(): string {
-  const today = new Date()
-  const yyyy = today.getFullYear()
-  const mm = String(today.getMonth() + 1).padStart(2, "0")
-  const dd = String(today.getDate()).padStart(2, "0")
-  const hh = String(today.getHours()).padStart(2, "0")
-  const min = String(today.getMinutes()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd} ${hh}:${min}`
-}
-
-function parseDateTime(value: string): number {
-  const [datePart, timePart] = value.trim().split(" ")
-  if (!datePart || !timePart) return NaN
-  const [yyyy, mm, dd] = datePart.split("-").map(Number)
-  const [hh, min] = timePart.split(":").map(Number)
-  if (!yyyy || !mm || !dd || hh === undefined || min === undefined) return NaN
-  return new Date(yyyy, mm - 1, dd, hh, min, 0, 0).getTime()
-}
 
 export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFormScreen(props) {
   const navigation = useNavigation()
@@ -86,7 +58,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     props.mode === "edit" ? props.initialTodo.title || "" : "",
   )
   const [content, setContent] = useState(() =>
-    props.mode === "edit" ? props.initialTodo.content || "" : "",
+    props.mode === "edit" ? props.initialTodo.content || "" : "", 
   )
   const [isLoading, setIsLoading] = useState(false)
 
@@ -109,15 +81,18 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
   )
 
   useEffect(() => {
+    // Bảo đảm dropdown luôn có dữ liệu mà không tạo thêm request nếu store đã có sẵn.
     categoryStore.loadIfNeeded()
   }, [categoryStore])
 
   const handleToggleDueDate = (value: boolean) => {
     setHasDueDate(value)
     if (value) {
+      // Prefill để giảm thao tác nhập tay khi người dùng chỉ muốn chỉnh nhẹ thời gian.
       setDueDateString(getCurrentDateString())
     } else {
       setDueDateString("")
+      // Tránh lưu reminder "mồ côi" khi todo không còn due date.
       setReminderMinutes(0)
     }
   }
@@ -134,12 +109,14 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     }
 
     if (props.mode === "create" && !categoryId) {
+      // Bắt buộc chọn category lúc tạo mới để hỗ trợ phân nhóm/filter ngay từ đầu.
       Alert.alert("Thiếu thông tin", "Vui lòng chọn danh mục cho công việc.")
       return
     }
 
     setIsLoading(true)
 
+    // Dùng 0 làm sentinel nhất quán cho trạng thái "không đặt hạn".
     let finalDueDate = 0
     if (hasDueDate && dueDateString) {
       const parsedDate = parseDateTime(dueDateString)
@@ -155,13 +132,14 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     const payload: CreateTodoPayload = {
       title,
       content,
+      // Giữ contract backend ổn định trước khi hoàn thiện luồng upload/chọn ảnh thật.
       imageUrl: DEFAULT_IMAGE_URL,
       dueDate: finalDueDate,
       categoryId,
     }
 
     if (props.mode === "create") {
-      const response = todoStore.createTodo(payload, reminderMinutes)
+      const response = todoStore.createTodo(payload, reminderMinutes) 
       setIsLoading(false)
       if (response.ok && response.data?.success) {
         navigation.goBack()
@@ -181,7 +159,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
     }
   }
-
+//
   const headerTitle = props.mode === "create" ? "New Todo" : "Edit Todo"
   const submitLabel =
     props.mode === "create"

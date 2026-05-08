@@ -5,10 +5,10 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native"
-import { AppSectionHeader, Screen, Text, ListView } from "app/components"
+import { AppSectionHeader, Screen, Text, ListView, EmptyState } from "app/components"
 import { NotificationItem } from "app/components/NotificationItem"
 import { colors } from "app/theme"
-import { Feather, Feather as Icon } from "@expo/vector-icons"
+import { Feather } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
@@ -19,7 +19,6 @@ import {
   $btnGreen,
   $btnRed,
   $emptyContainer,
-  $emptyIconWrapper,
   $emptySub,
   $emptyTitle,
   $list,
@@ -88,18 +87,17 @@ export const NotificationsScreen: FC<any> = observer(function NotificationsScree
 
   const renderEmpty = () => {
     if (notificationStore.isLoading) return null
+  
+    // Dùng EmptyState của Ignite để thống nhất UI empty và tránh nhân đôi layout giữa các màn.
     return (
-      <View style={$emptyContainer}>
-        <View style={$emptyIconWrapper}>
-          <Icon name="bell-off" size={32} color={colors.palette.secondary400} />
-        </View>
-        <Text preset="title" style={$emptyTitle}>
-          No notifications
-        </Text>
-        <Text preset="body" style={$emptySub}>
-          You're all caught up
-        </Text>
-      </View>
+      <EmptyState
+        heading="No notifications"
+        content="You're all caught up"
+        button=""
+        style={$emptyContainer}
+        headingStyle={$emptyTitle}
+        contentStyle={$emptySub}
+      />
     )
   }
 

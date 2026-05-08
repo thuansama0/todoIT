@@ -1,5 +1,6 @@
 import { Instance, SnapshotOut, flow, types } from "mobx-state-tree"
 import { Category, categoryApi } from "app/services/api/categoryApi"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 
 const CategoryModel = types.model("Category", {
   id: types.identifier,
@@ -17,9 +18,11 @@ export const CategoryStoreModel = types
   })
   .views((store) => ({
     get sortedItems() {
+      // Sort ở layer store để mọi màn dùng chung một thứ tự ổn định, tránh mỗi nơi tự sort khác nhau.
       return store.items.slice().sort((a, b) => a.name.localeCompare(b.name))
     },
   }))
+  .actions(withSetPropAction)
   .actions((store) => {
     const normalizeCategory = (input: Partial<Category> & { id: string }) => ({
       id: input.id,
@@ -43,6 +46,7 @@ export const CategoryStoreModel = types
     })
 
     const loadIfNeeded = flow(function* loadIfNeeded() {
+      // Chặn request lặp lại khi nhiều màn mở gần nhau hoặc re-render liên tiếp.
       if (store.isLoaded || store.isLoading) return
       yield fetchCategories()
     })
@@ -50,6 +54,7 @@ export const CategoryStoreModel = types
     const createCategory = flow(function* createCategory(name: string, isPublic: boolean) {
       const normalizedName = name.trim()
       const tempId = `temp-${Date.now()}`
+      // Optimistic insert để danh sách phản hồi ngay thay vì chờ round-trip network.
       store.items.unshift(
         normalizeCategory({
           id: tempId,
@@ -61,6 +66,7 @@ export const CategoryStoreModel = types
 
       const response = yield categoryApi.createCategory(name.trim(), isPublic)
       if (response.ok && response.data?.success) {
+        // Refetch để đồng bộ metadata do server quyết định (id thật, quyền, thứ tự...).
         yield fetchCategories()
       } else {
         store.items.replace(store.items.filter((category) => category.id !== tempId))
@@ -102,7 +108,13 @@ export const CategoryStoreModel = types
       return response
     })
 
-    return { fetchCategories, loadIfNeeded, createCategory, updateCategory, deleteCategory }
+    const resetForAuthChange = () => {
+      store.items.clear()
+      store.isLoaded = false
+      store.isLoading = false
+    }
+
+    return { fetchCategories, loadIfNeeded, createCategory, updateCategory, deleteCategory, resetForAuthChange }
   })
 
 export interface CategoryStore extends Instance<typeof CategoryStoreModel> {}

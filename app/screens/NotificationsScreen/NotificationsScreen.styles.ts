@@ -30,15 +30,6 @@ export const $emptyContainer: ViewStyle = {
   alignItems: "center",
   paddingBottom: spacing.xxxl + spacing.lg,
 }
-export const $emptyIconWrapper: ViewStyle = {
-  width: 80,
-  height: 80,
-  borderRadius: 40,
-  backgroundColor: colors.palette.secondary100,
-  justifyContent: "center",
-  alignItems: "center",
-  marginBottom: spacing.lg,
-}
 export const $emptyTitle: TextStyle = {
   marginBottom: spacing.xs,
 }

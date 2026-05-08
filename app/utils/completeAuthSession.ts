@@ -15,5 +15,6 @@ export async function completeAuthSession<S extends keyof AppStackParamList>(
     await saveString("accessToken", accessToken)
     void syncExpoPushTokenWithServer(accessToken).catch(() => {})
   }
+
   navigation.navigate("MainTabs")
 }

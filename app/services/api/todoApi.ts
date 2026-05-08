@@ -1,11 +1,6 @@
 import { api } from "./api"
 import { ApiResponse } from "apisauce"
-export interface Category {
-  id: string
-  name: string
-  isPublic: boolean
-  isOwner: boolean
-}
+import type { Category } from "./categoryApi"
 
 export interface Todo {
   id: string
@@ -17,6 +12,7 @@ export interface Todo {
   category: Category
   reminderMinutes?: number
 }
+// lấy danh sách todo
 export interface GetTodosResult {
   success: boolean
   message: string
@@ -37,6 +33,7 @@ export interface CreateTodoPayload {
   dueDate: number
   categoryId: string
 }
+
 export const todoApi = {
   getTodos: async (page = 0, size = 20): Promise<ApiResponse<GetTodosResult>> => {
     const response = await api.apisauce.get<GetTodosResult>("/todo/all", {

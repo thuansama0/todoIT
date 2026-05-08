@@ -15,6 +15,7 @@ import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AppStackParamList } from "app/navigators"
+import { remove } from "app/utils/storage"
 import {
   $accountBtn,
   $accountSection,
@@ -50,7 +51,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
   type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
   const navigation = useNavigation<AppStackNavigation>()
   const isFocused = useIsFocused()
-  const { profileStore } = useStores()
+  const { profileStore, authenticationStore, notificationStore, todoStore, categoryStore } = useStores()
   const [isSaving, setIsSaving] = useState(false)
 
   const [isEditing, setIsEditing] = useState(false)
@@ -69,7 +70,7 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
 
   useEffect(() => {
     if (isFocused) {
-      profileStore.fetchProfile()
+      profileStore.loadIfNeeded()
     }
   }, [isFocused, profileStore])
 
@@ -171,6 +172,21 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
     }
   }
 
+  const finishSession = async () => {
+    // Xóa token/snapshot cũ để request transform không dùng nhầm session trước.
+    await remove("accessToken")
+    await remove("root-v1")
+    authenticationStore.logout()
+  
+    // Dọn notification state để tránh lẫn dữ liệu giữa các tài khoản.
+    await notificationStore.resetForAuthChange?.()
+    // Dọn todo và category state để tránh lẫn dữ liệu giữa các tài khoản.
+    await todoStore.resetForAuthChange?.()
+    categoryStore.resetForAuthChange?.()
+    // Reset stack để không back về màn cần đăng nhập.
+    navigation.reset({ index: 0, routes: [{ name: "Login" }] })
+  }
+
   const handleDeleteAccount = () => {
     Alert.alert(
       "CẢNH BÁO",
@@ -181,8 +197,13 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
           text: "Xóa vĩnh viễn",
           style: "destructive",
           onPress: async () => {
-            await profileStore.deleteAccount()
-            navigation.reset({ index: 0, routes: [{ name: "Login" }] })
+            const response = await profileStore.deleteAccount()
+          
+            if (response?.ok && response?.data?.success !== false) {
+              await finishSession()
+            } else {
+              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa tài khoản lúc này.")
+            }
           },
         },
       ],
@@ -195,9 +216,8 @@ export const ProfileScreen: FC<any> = observer(function ProfileScreen() {
       {
         text: "Đăng xuất",
         style: "destructive",
-        onPress: () => {
-          // Reset stack để người dùng không back lại màn hình cần đăng nhập.
-          navigation.reset({ index: 0, routes: [{ name: "Login" }] })
+        onPress: async () => {
+          await finishSession()
         },
       },
     ])

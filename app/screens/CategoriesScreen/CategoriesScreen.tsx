@@ -49,6 +49,48 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
     ])
   }
 
+  function renderCategoriesList() {
+    if (categoryStore.isLoading) {
+      return (
+        <View>
+          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
+        </View>
+      )
+    }
+
+    return (
+      <View style={$list}>
+        <ListView
+          data={categoryStore.sortedItems}
+          keyExtractor={(item) => item.id}
+          estimatedItemSize={56}
+          refreshing={categoryStore.isLoading}
+          onRefresh={() => categoryStore.fetchCategories()}
+          contentContainerStyle={$flatListContent}
+          renderItem={({ item }) => (
+            <CategoryItem
+              name={item.name}
+              isPublic={item.isPublic}
+              isOwner={item.isOwner}
+              onEdit={() => {
+                navigation.navigate("EditCategory", { categoryData: item })
+              }}
+              onDelete={() => handleDelete(item.id)}
+            />
+          )}
+        />
+      </View>
+    )
+  }
+
+  function renderAddButton() {
+    return (
+      <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewCategory")}>
+        <Feather name="plus" size={24} color={colors.palette.neutral100} />
+      </TouchableOpacity>
+    )
+  }
+
   return (
     <Screen
       preset="fixed"
@@ -57,38 +99,8 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
       contentContainerStyle={$screenInner}
     >
       <AppSectionHeader title="Categories" onRefresh={() => categoryStore.fetchCategories()} />
-
-      {categoryStore.isLoading ? (
-        <View>
-          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
-        </View>
-      ) : (
-        <View style={$list}>
-          <ListView
-            data={categoryStore.sortedItems}
-            keyExtractor={(item) => item.id}
-            estimatedItemSize={56}
-            refreshing={categoryStore.isLoading}
-            onRefresh={() => categoryStore.fetchCategories()}
-            contentContainerStyle={$flatListContent}
-            renderItem={({ item }) => (
-              <CategoryItem
-                name={item.name}
-                isPublic={item.isPublic}
-                isOwner={item.isOwner}
-                onEdit={() => {
-                  navigation.navigate("EditCategory", { categoryData: item })
-                }}
-                onDelete={() => handleDelete(item.id)}
-              />
-            )}
-          />
-        </View>
-      )}
-
-      <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewCategory")}>
-        <Feather name="plus" size={24} color={colors.palette.neutral100} />
-      </TouchableOpacity>
+      {renderCategoriesList()}
+      {renderAddButton()}
     </Screen>
   )
 })

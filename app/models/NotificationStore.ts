@@ -1,4 +1,5 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Notification, notificationApi } from "app/services/api/notificationApi"
 import {
   appendLocalNotificationLog,
@@ -15,6 +16,16 @@ const NotificationModel = types.model("Notification", {
   isRead: types.boolean,
   sentAt: types.number,
 })
+
+function toPlainNotification(item: any) {
+  return {
+    id: item.id,
+    title: item.title,
+    content: item.content,
+    isRead: item.isRead,
+    sentAt: item.sentAt,
+  }
+} 
 
 function normalizeNotification(input: Notification): any {
   return {
@@ -34,17 +45,11 @@ export const NotificationStoreModel = types
     isLoading: types.optional(types.boolean, false),
     isLoaded: types.optional(types.boolean, false),
   })
+  .actions(withSetPropAction)
   .actions((store) => {
     const fetchNotifications = flow(function* fetchNotifications() {
       store.isLoading = true
       try {
-        const currentItems = store.items.map((item) => ({
-          id: item.id,
-          title: item.title,
-          content: item.content,
-          isRead: item.isRead,
-          sentAt: item.sentAt,
-        }))
         const [listRes, countRes] = yield Promise.all([
           notificationApi.getNotifications(0, 50),
           notificationApi.getUnreadCount(),
@@ -54,11 +59,11 @@ export const NotificationStoreModel = types
         if (listRes.ok && listRes.data?.success) {
           const serverItems = (listRes.data.data?.items ?? []).map(normalizeNotification)
           const mergedById = new Map<string, any>()
-          ;[...currentItems, ...localItems.map(normalizeNotification), ...serverItems].forEach((item) => {
+          ;[...localItems.map(normalizeNotification), ...serverItems].forEach((item) => {
             mergedById.set(item.id, item)
           })
           const mergedItems = Array.from(mergedById.values()).sort((a, b) => b.sentAt - a.sentAt)
-          store.items.replace(mergedItems)
+          store.items.replace(mergedItems as any)
           store.isLoaded = true
         } else if (localItems.length > 0) {
           store.items.replace(localItems.map(normalizeNotification))
@@ -103,7 +108,7 @@ export const NotificationStoreModel = types
     })
 
     const markAllRead = flow(function* markAllRead() {
-      const backupItems = store.items.slice()
+      const backupItems = store.items.map(toPlainNotification)
       const backupUnread = store.unreadCount
       store.items.replace(store.items.map((n) => ({ ...n, isRead: true } as any)))
       store.unreadCount = 0
@@ -117,7 +122,7 @@ export const NotificationStoreModel = types
     })
 
     const deleteNotification = flow(function* deleteNotification(id: string) {
-      const backupItems = store.items.slice()
+      const backupItems = store.items.map(toPlainNotification)
       const backupUnread = store.unreadCount
       const targetIsUnread = store.items.some((n) => n.id === id && !n.isRead)
       store.items.replace(store.items.filter((n) => n.id !== id))
@@ -137,7 +142,7 @@ export const NotificationStoreModel = types
     })
 
     const deleteAllNotifications = flow(function* deleteAllNotifications() {
-      const backupItems = store.items.slice()
+      const backupItems = store.items.map(toPlainNotification)
       const backupUnread = store.unreadCount
       store.items.clear()
       store.unreadCount = 0
@@ -216,6 +221,14 @@ export const NotificationStoreModel = types
       return response
     })
 
+    const resetForAuthChange = flow(function* resetForAuthChange() {
+      store.items.clear()
+      store.unreadCount = 0
+      store.isLoaded = false
+      store.isLoading = false
+      yield clearLocalNotifications()
+    })
+
     return {
       fetchNotifications,
       loadIfNeeded,
@@ -225,6 +238,7 @@ export const NotificationStoreModel = types
       deleteAllNotifications,
       addLocalNotification,
       addIncomingNotification,
+      resetForAuthChange,
     }
   })
 

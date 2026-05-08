@@ -1,4 +1,5 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 import { CreateTodoPayload, Todo, todoApi } from "app/services/api/todoApi"
 import {
   cancelTodoReminder,
@@ -53,7 +54,9 @@ export const TodoStoreModel = types
     isLoading: types.optional(types.boolean, false),
     isLoaded: types.optional(types.boolean, false),
   })
+  .actions(withSetPropAction)
   .actions((store) => {
+    // Ghi nhớ temp item đã bị xóa local để tránh "hồi sinh" khi request create trả về trễ.
     const locallyDeletedTempIds = new Set<string>()
 
     const syncCreateTodoInBackground = flow(function* syncCreateTodoInBackground(
@@ -99,6 +102,7 @@ export const TodoStoreModel = types
           return response
         }
 
+        // Fallback fetch vì một số backend có thể trả success nhưng không trả entity vừa tạo.
         yield fetchTodos()
         const matchedTodo = [...store.items]
           .reverse()
@@ -176,6 +180,7 @@ export const TodoStoreModel = types
       }
 
       void syncCreateTodoInBackground(tempId, payload, reminderMinutes)
+      // Trả success sớm để UI phản hồi tức thì; phần sync server được tách chạy nền.
       return {
         ok: true,
         data: { success: true, message: "Todo saved locally and syncing..." },
@@ -221,7 +226,6 @@ export const TodoStoreModel = types
       }
       return response
     })
-
     const toggleTodoStatus = flow(function* toggleTodoStatus(id: string, newStatus: boolean) {
       const idx = store.items.findIndex((todo) => todo.id === id)
       const previousStatus = idx >= 0 ? store.items[idx].isCompleted : false
@@ -245,7 +249,6 @@ export const TodoStoreModel = types
       }
       return response
     })
-
     const deleteTodo = flow(function* deleteTodo(id: string) {
       const backup = store.items.map(toPlainTodo)
       const nextItems = store.items.map(toPlainTodo).filter((todo) => todo.id !== id)
@@ -253,6 +256,7 @@ export const TodoStoreModel = types
       yield cancelTodoReminder(id)
 
       if (id.startsWith("temp-")) {
+        // Todo chưa tồn tại trên server thì chỉ cần đánh dấu local, không cần gọi API delete.
         locallyDeletedTempIds.add(id)
         return { ok: true, data: { success: true } } as any
       }
@@ -264,6 +268,17 @@ export const TodoStoreModel = types
       return response
     })
 
+    const resetForAuthChange = flow(function* resetForAuthChange() {
+      const todoIds = store.items.map((todo) => todo.id)
+      store.items.clear()
+      store.isLoaded = false
+      store.isLoading = false
+      // Dọn reminder local để không lẫn giữa các phiên đăng nhập.
+      for (const id of todoIds) {
+        yield cancelTodoReminder(id)
+      }
+    })
+
     return {
       fetchTodos,
       loadIfNeeded,
@@ -272,6 +287,7 @@ export const TodoStoreModel = types
       toggleTodoStatus,
       deleteTodo,
       syncCreateTodoInBackground,
+      resetForAuthChange,
     }
   })
 

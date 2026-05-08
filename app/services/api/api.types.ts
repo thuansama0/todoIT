@@ -34,3 +34,9 @@ export interface ApiConfig {
   url: string
   timeout: number
 }
+export interface ApiResult {
+  success: boolean
+  message: string
+  errors?: any[]
+  data?: any
+}

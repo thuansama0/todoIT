@@ -24,11 +24,13 @@ import {
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
-export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) {
+export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) { //todo: navigation tac dung gi 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { authenticationStore } = useStores()
+
+  const { authenticationStore, notificationStore, todoStore, categoryStore } = useStores() //todo: tim hieu tai sao phai lấy tất cả các store
+
   async function onLogin() {
     if (!email || !password) {
       Alert.alert("Thiếu thông tin", "Vui lòng nhập đầy đủ email và mật khẩu.")
@@ -41,6 +43,9 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
     if (response.ok && response.data) {
       if (response.data.success) {
         const accessToken = response.data.data?.accessToken
+        await notificationStore.resetForAuthChange()
+        await todoStore.resetForAuthChange()
+        categoryStore.resetForAuthChange?.()
         await completeAuthSession(authenticationStore, navigation, accessToken)
       } else {
         Alert.alert("Thông báo", response.data.message || "Đăng nhập thất bại.")
@@ -54,7 +59,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
           response.data?.message || "Email hoặc mật khẩu không chính xác.",
         )
       }
-      console.tron?.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data)
+      console.tron?.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data) // TODO: tim hieu tai sao k in
     }
   }
 

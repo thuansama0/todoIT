@@ -5,7 +5,7 @@ import { colors } from "app/theme"
 import { AppStackParamList } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { Feather } from "@expo/vector-icons"
-import { CompositeScreenProps } from "@react-navigation/native"
+import { CompositeScreenProps, useIsFocused } from "@react-navigation/native"
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TabParamList } from "app/navigators/TabNavigator"
@@ -29,10 +29,15 @@ type TodoScreenProps = CompositeScreenProps<
 
 export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ navigation }) {
   const { todoStore } = useStores()
+  const isFocused = useIsFocused()
 
+  // Refetch khi quay lại màn này để tránh hiển thị dữ liệu cũ sau khi tạo/sửa ở màn khác.
   useEffect(() => {
-    todoStore.loadIfNeeded()
-  }, [todoStore])
+    if (isFocused) {
+      todoStore.fetchTodos()
+    }
+  }, [isFocused, todoStore])
+
   async function handleToggleStatus(id: string, currentStatus: boolean) {
     const newStatus = !currentStatus
     const response = await todoStore.toggleTodoStatus(id, newStatus)
@@ -42,6 +47,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
   }
 
   function handleDelete(id: string) {
+    // Yêu cầu xác nhận vì xóa là thao tác destructive, khó/không thể hoàn tác.
     Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa?", [
       { text: "Hủy", style: "cancel" },
       {
@@ -105,6 +111,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
         </View>
       )}
 
+      {/* Giữ action thêm todo luôn dễ chạm ở mọi trạng thái của danh sách. */}
       <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewTodo")}>
         <Feather name="plus" size={24} color={colors.palette.neutral100} />
       </TouchableOpacity>

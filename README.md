@@ -10,10 +10,10 @@
 
 Tài liệu này tập trung vào:
 
-1. Dự án dùng thư viện nào và dùng để làm gì  
-2. Luồng hoạt động từ lúc app mở đến khi user thao tác  
-3. Mỗi file chính đảm nhiệm chức năng gì  
-4. Hàm nào là hàm quan trọng trong từng flow  
+1. Dự án dùng thư viện nào và dùng để làm gì
+2. Luồng hoạt động từ lúc app mở đến khi user thao tác
+3. Mỗi file chính đảm nhiệm chức năng gì
+4. Hàm nào là hàm quan trọng trong từng flow
 5. Component nào đang được tái sử dụng sau refactor
 
 ---
@@ -70,6 +70,7 @@ Vai trò:
 - Quản lý state tập trung
 - Dùng `flow` cho async action
 - Tự động cập nhật UI qua `observer`
+- Mỗi store chính gắn `withSetPropAction` (`app/models/helpers/withSetPropAction.ts`): thêm action `setProp` để gán field trong `.props` đúng chuẩn MST, giảm setter lặp khi cần (Ignite convention)
 
 ## 2.4 Nhóm gọi API
 
@@ -138,6 +139,20 @@ Nguyên tắc tổ chức:
 - `api` chỉ làm nhiệm vụ gọi endpoint
 - `utils` gom các xử lý hạ tầng hoặc cross-module
 
+### 3.1 Utils và type API tập trung (DRY)
+
+Các file sau gom logic dùng chung, tránh copy-paste giữa screen/store:
+
+
+| File                               | Vai trò                                                                                                               |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `app/utils/todoMapper.ts`          | `toPlainTodo`: chuyển MST todo / snapshot sang object thường (navigation, replace list, tránh lỗi node MST)           |
+| `app/utils/formatDate.ts`          | `formatTodoDate`, `formatTimeAgo`, `formatDueDateFromTimestamp`, `getCurrentDateString`, `parseDateTime`, ...         |
+| `app/utils/isMutationSuccess.ts`   | Kiểm tra response mutation `ok` và `data.success` thống nhất                                                          |
+| `app/utils/completeAuthSession.ts` | Sau login/signup: `setAuthToken`, lưu token storage, `syncExpoPushTokenWithServer`, `navigation.navigate("MainTabs")` |
+| `app/services/api/apiTypes.ts`     | `ApiResult` dùng chung cho response generic (`authApi`, `userApi`, ...)                                               |
+
+
 ---
 
 ## 4. Luồng khởi động ứng dụng (App bootstrap)
@@ -150,10 +165,10 @@ Luồng hoạt động:
 2. Gọi `useInitialRootStore()` để rehydrate dữ liệu từ local.
 3. Gọi `useNavigationPersistence()` để khôi phục state navigation.
 4. Bọc app bởi:
-   - `SafeAreaProvider`
-   - `RootStoreProvider`
-   - `ErrorBoundary`
-   - `GestureHandlerRootView`
+  - `SafeAreaProvider`
+  - `RootStoreProvider`
+  - `ErrorBoundary`
+  - `GestureHandlerRootView`
 5. Mount `PushNotificationHandler` (gọi `usePushNotifications()`).
 6. Render `AppNavigator`.
 7. Mount `Toast` global.
@@ -224,6 +239,7 @@ Hàm chính:
 - `setAuthToken(value?)`: set token
 - `logout()`: clear token
 - `isAuthenticated` (view): kiểm tra trạng thái đăng nhập
+- `setProp` (từ `withSetPropAction`): tuỳ chọn gán `authToken` hoặc field khác trong `.props` nếu team dùng style đó
 
 ## 6.2 TodoStore
 
@@ -244,6 +260,7 @@ Hàm chính:
 - `updateTodo(id, payload, reminderMinutes)`: optimistic update + rollback
 - `toggleTodoStatus(id, newStatus)`: optimistic toggle + rollback
 - `deleteTodo(id)`: optimistic delete + rollback
+- `resetForAuthChange()`: xoá list, reset cờ load, huỷ reminder local (tránh lẫn giữa các tài khoản)
 
 Điểm kỹ thuật quan trọng:
 
@@ -273,6 +290,7 @@ Hàm chính:
 - `createCategory(name, isPublic)` (optimistic + fetch sync)
 - `updateCategory(id, name, isPublic)` (optimistic + rollback)
 - `deleteCategory(id)`
+- `resetForAuthChange()`: clear items + cờ loading/loaded khi đổi phiên đăng nhập
 
 ## 6.4 NotificationStore
 
@@ -293,12 +311,14 @@ Hàm chính:
 - `deleteNotification(id)` / `deleteAllNotifications()`
 - `addLocalNotification(title, content, sentAtMs?)`
 - `addIncomingNotification(title, content, userId?, sentAtMs?)`
+- `resetForAuthChange()`: clear list, unread, cờ load, xoá log local notification
 
 Điểm kỹ thuật quan trọng:
 
 - Dùng `Map` để merge dữ liệu không trùng id
 - Có dedupe notification gần nhau theo thời gian
 - Nếu là notification local (`id` bắt đầu bằng `local-`) thì ưu tiên thao tác local log
+- Backup/rollback (`markAllRead`, `delete*`) dùng snapshot plain (`toPlainNotification`) để tránh cảnh báo MST khi node đã detach
 
 ## 6.5 ProfileStore
 
@@ -318,9 +338,13 @@ Hàm chính:
 - `deleteAccount()`
 - `clearProfile()`
 
+Các store domain trên đều gắn `withSetPropAction` nên có thêm `setProp` (tuỳ chọn thay cho setter lặp). `TodoStore`, `CategoryStore`, `NotificationStore` còn có `resetForAuthChange` phục vụ đổi phiên đăng nhập; logic nghiệp vụ chính vẫn nằm trong các action/`flow` hiện có.
+
 ---
 
 ## 7. API layer theo file và theo hàm
+
+- `app/services/api/apiTypes.ts`: `ApiResult` (`success`, `message`, `errors?`, `data?`) cho envelope response dùng chung
 
 ## 7.1 `authApi.ts`
 
@@ -385,8 +409,8 @@ Flow:
 1. Validate email/password không rỗng
 2. Gọi `authApi.signIn`
 3. Thành công -> lấy `accessToken`
-4. Gọi `completeAuthSession(authenticationStore, navigation, accessToken)`
-5. Điều hướng vào `MainTabs`
+4. Reset dữ liệu theo user cũ (tránh lộ dữ liệu tab khác): `notificationStore.resetForAuthChange()`, `todoStore.resetForAuthChange()`, `categoryStore.resetForAuthChange()`
+5. Gọi `completeAuthSession(authenticationStore, navigation, accessToken)` (token + storage + sync push token + vào `MainTabs`)
 
 ### SignUp
 
@@ -398,7 +422,7 @@ Flow tương tự login:
 
 1. Validate name/email/password
 2. Gọi `authApi.signUp`
-3. Thành công -> `completeAuthSession(...)`
+3. Thành công -> reset `notificationStore` / `todoStore` / `categoryStore` như login, rồi `completeAuthSession(...)`
 
 ## 8.2 Todo flow
 
@@ -414,7 +438,7 @@ File chính:
 
 Hàm chính:
 
-- `todoStore.loadIfNeeded()` trong `useEffect`
+- `useIsFocused` + `useEffect`: mỗi lần vào lại tab/màn `Todo` gọi `todoStore.fetchTodos()` để dữ liệu khớp user hiện tại (sau đổi tài khoản không cần reload tay)
 - `handleToggleStatus(id, currentStatus)`
 - `handleDelete(id)`
 
@@ -429,7 +453,7 @@ UI tái sử dụng:
 Props:
 
 - `{ mode: "create" }`
-- `{ mode: "edit"; initialTodo }`
+- `{ mode: "edit"; initialTodo }` — `initialTodo` cùng kiểu với `AppStackParamList["EditTodo"]["todoData"]` (thường map từ `toPlainTodo` khi navigate)
 
 Hàm chính:
 
@@ -453,6 +477,8 @@ Tính năng:
 Đây là phần refactor quan trọng nhất giúp tái sử dụng logic.
 
 ## 8.3 Category flow
+
+`CategoriesScreen` dùng `useIsFocused` để `fetchCategories()` khi tab được focus lại (cùng mục đích đồng bộ sau đổi user như `TodoScreen`).
 
 File chính:
 
@@ -492,7 +518,8 @@ UI tái sử dụng:
 
 - `AppSectionHeader`
 - `ListView`
-- `NotificationItem`
+- `EmptyState` (trạng thái danh sách rỗng)
+- `NotificationItem` (layout custom `TouchableOpacity` + nhiều dòng text; giữ căn chỉnh ổn định hơn so với ép vào `ListItem`)
 
 ## 8.5 Profile flow
 
@@ -510,6 +537,7 @@ Hàm chính:
 - `handleSaveProfile()`
 - `handleDeleteAccount()`
 - `handleSignOut()`
+- Đăng xuất / xoá tài khoản thành công: gom qua helper nội bộ (ví dụ `finishSession`) — clear token trong store, `resetForAuthChange` trên `notificationStore` / `todoStore` / `categoryStore`, xoá `accessToken` và snapshot persist (`root-v1`) trong storage, rồi về màn login
 
 Thư viện dùng trực tiếp:
 
@@ -586,8 +614,8 @@ Component tái sử dụng chính:
 - `Text`, `TextField`: typography + input chuẩn
 - `ListView`: danh sách chung cho Todo/Category/Notification
 - `TodoItem`: card item todo với action toggle/edit/delete
-- `CategoryItem`: item category với action edit/delete
-- `NotificationItem`: item notification với action mark read/delete
+- `CategoryItem`: item category (có thể bọc `ListItem` Ignite cho layout hàng đơn giản)
+- `NotificationItem`: item notification (layout riêng nhiều dòng + icon) với mark read/delete
 
 Kết quả của cách làm này:
 
@@ -613,27 +641,28 @@ Kết quả của cách làm này:
 ## 12. Điểm kỹ thuật nổi bật để trình bày với sếp
 
 1. **Refactor tái sử dụng screen logic**
-   - Gộp create/edit todo vào `TodoFormScreen`
-   - Wrapper mỏng (`NewTodoScreen`, `EditTodoScreen`)
-
+  - Gộp create/edit todo vào `TodoFormScreen`
+  - Wrapper mỏng (`NewTodoScreen`, `EditTodoScreen`)
 2. **Trải nghiệm nhanh nhờ optimistic UI**
-   - Người dùng thấy dữ liệu đổi ngay
-   - Backend sync chạy sau
-   - Có rollback khi lỗi
-
+  - Người dùng thấy dữ liệu đổi ngay
+  - Backend sync chạy sau
+  - Có rollback khi lỗi
 3. **Thiết kế module rõ ràng**
-   - UI (`screens/components`) tách khỏi business logic (`models`)
-   - API layer tách độc lập
-
+  - UI (`screens/components`) tách khỏi business logic (`models`)
+  - API layer tách độc lập
 4. **Xử lý notification thực tế**
-   - Có dedupe
-   - Có fallback local log
-   - Có recovery cho lịch local bị miss
-
+  - Có dedupe
+  - Có fallback local log
+  - Có recovery cho lịch local bị miss
 5. **Type-safe và dễ bảo trì**
-   - Type route params
-   - Type response API
-   - Type model state
+  - Type route params
+  - Type response API
+  - Type model state
+6. **Cô lập phiên đăng nhập**
+  - Reset store + storage khi login/signup/logout/delete account
+  - Refetch list khi focus tab Todo/Categories để không hiển thị cache user trước
+7. **Chuẩn Ignite trên MST**
+  - `withSetPropAction` trên các store domain
 
 ---
 
@@ -641,7 +670,7 @@ Kết quả của cách làm này:
 
 1. Reminder local có thể bị chặn khi app bị kill trên một số OEM Android.
 2. Để đảm bảo tuyệt đối, cần backend scheduler + push server-side.
-3. Flow Sign Out ở `ProfileScreen` hiện reset navigation; có thể mở rộng thêm gọi `authApi.signOut` + clear token/store đồng bộ.
+3. Có thể bổ sung gọi `authApi.signOut` trước khi clear local nếu backend yêu cầu invalidate session phía server (hiện tại đã clear token, store và persist phía client).
 
 ---
 
@@ -673,13 +702,14 @@ npm run build:ios:prod
 1. **Mở app** -> nói về bootstrap + store rehydrate.
 2. **Đăng nhập** -> nói về `authApi.signIn` và `completeAuthSession`.
 3. **Vào Todo**:
-   - tạo mới (mode create)
-   - sửa todo (mode edit)
-   - nhấn mạnh dùng chung `TodoFormScreen`.
+  - tạo mới (mode create)
+  - sửa todo (mode edit)
+  - nhấn mạnh dùng chung `TodoFormScreen`.
 4. **Vào Category** -> tạo/xóa category, nói optimistic UI.
 5. **Vào Notifications** -> mark read/delete.
 6. **Vào Profile** -> sửa tên/email, đổi ảnh.
 7. Kết luận:
-   - kiến trúc tách lớp rõ
-   - component tái sử dụng tốt
-   - sẵn sàng mở rộng tính năng.
+  - kiến trúc tách lớp rõ
+  - component tái sử dụng tốt
+  - sẵn sàng mở rộng tính năng.
+
