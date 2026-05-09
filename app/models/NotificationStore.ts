@@ -7,6 +7,7 @@ import {
   deleteLocalNotification,
   loadLocalNotificationLog,
   markLocalNotificationAsRead,
+  replaceLocalIdWithServerNotification,
 } from "app/utils/localNotificationLog"
 
 const NotificationModel = types.model("Notification", {
@@ -37,6 +38,10 @@ function normalizeNotification(input: Partial<Notification> & { id: string }) {
   }
 }
 
+function unreadCountFromItems(items: readonly { isRead: boolean }[]) {
+  return items.reduce((n, item) => n + (item.isRead ? 0 : 1), 0)
+}
+
 export const NotificationStoreModel = types
   .model("NotificationStore")
   .props({
@@ -50,10 +55,7 @@ export const NotificationStoreModel = types
     const fetchNotifications = flow(function* fetchNotifications() {
       store.isLoading = true
       try {
-        const [listRes, countRes] = yield Promise.all([
-          notificationApi.getNotifications(0, 50),
-          notificationApi.getUnreadCount(),
-        ])
+        const listRes = yield notificationApi.getNotifications(0, 50)
 
         const localItems = yield loadLocalNotificationLog()
         if (listRes.ok && listRes.data?.success) {
@@ -69,13 +71,10 @@ export const NotificationStoreModel = types
           store.items.replace(localItems.map(normalizeNotification))
           store.isLoaded = true
         }
-        if (countRes.ok && countRes.data?.success) {
-          const localUnread = localItems.filter((item: Notification) => !item.isRead).length
-          store.unreadCount = (countRes.data.data ?? 0) + localUnread
-        } else {
-          store.unreadCount = localItems.filter((item: Notification) => !item.isRead).length
-        }
-        return { listRes, countRes }
+        // Một nguồn sự thật: đếm từ danh sách đã merge — tránh server unread + local unread
+        // đếm trùng cùng một thông báo (hiện "3 chưa đọc" cho 1 thông báo).
+        store.unreadCount = unreadCountFromItems(store.items.slice())
+        return { listRes }
       } finally {
         store.isLoading = false
       }
@@ -216,7 +215,7 @@ export const NotificationStoreModel = types
             store.items[localIdx] = normalized
           }
         }
-        yield deleteLocalNotification(local.id)
+        yield replaceLocalIdWithServerNotification(local.id, normalized)
       }
       return response
     })

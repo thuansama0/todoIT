@@ -7,6 +7,7 @@ type AuthStoreLike = { setProp: (field: "authToken", newValue: string | undefine
 
 export type CompleteAuthSessionStores = {
   authenticationStore: AuthStoreLike
+  profileStore: { clearProfile: () => void }
   notificationStore: { resetForAuthChange: () => Promise<void> }
   todoStore: { resetForAuthChange: () => Promise<void> }
   categoryStore: { resetForAuthChange?: () => void }
@@ -17,6 +18,9 @@ export async function completeAuthSession<S extends keyof AppStackParamList>(
   navigation: NativeStackNavigationProp<AppStackParamList, S>,
   accessToken: string | undefined,
 ) {
+  // Xóa profile cũ trước — tránh isLoaded + email user trước khiến loadIfNeeded bỏ qua GET /me
+  // và tránh gửi userId/notifications nhầm sang session mới.
+  stores.profileStore.clearProfile()
   await stores.notificationStore.resetForAuthChange()
   await stores.todoStore.resetForAuthChange()
   stores.categoryStore.resetForAuthChange?.()

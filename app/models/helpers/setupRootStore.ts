@@ -11,6 +11,10 @@ export async function setupRootStore(rootStore: RootStore) {
 
   try {
     restoredState = ((await storage.load(ROOT_STATE_STORAGE_KEY)) ?? {}) as RootStoreSnapshot
+    const restoredNotificationItems = restoredState?.notificationStore?.items ?? []
+    const notificationUnreadFromList = Array.isArray(restoredNotificationItems)
+      ? restoredNotificationItems.filter((n: { isRead?: boolean }) => n && !n.isRead).length
+      : 0
     const snapshotToApply = {
       ...(restoredState ?? {}),
       authenticationStore: restoredState?.authenticationStore ?? {},
@@ -25,8 +29,9 @@ export async function setupRootStore(rootStore: RootStore) {
         isLoaded: false,
       },
       notificationStore: {
-        items: restoredState?.notificationStore?.items ?? [],
-        unreadCount: restoredState?.notificationStore?.unreadCount ?? 0,
+        items: Array.isArray(restoredNotificationItems) ? restoredNotificationItems : [],
+        // unreadCount persist có thể lệch items (0 thông báo nhưng badge 1); luôn suy ra từ items.
+        unreadCount: notificationUnreadFromList,
         isLoading: false,
         isLoaded: false,
       },

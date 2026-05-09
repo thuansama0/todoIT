@@ -25,11 +25,12 @@ import {
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
 export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) { //todo: navigation tac dung gi và tại sao bên này khai báo navigation mà bên categoris lại dùng khác sếp tôi yêu cầu tôi tìm hiểu và dùng đúng 1 kiểu thôi
-  const [email, setEmail] = useState("")
+   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const { authenticationStore, notificationStore, todoStore, categoryStore } = useStores() //todo: tim hieu tai sao phai lấy tất cả các store
+  const { authenticationStore, profileStore, notificationStore, todoStore, categoryStore } =
+    useStores()
 
   async function onLogin() {
     if (!email || !password) {
@@ -44,7 +45,13 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
       if (response.data.success) {
         const accessToken = response.data.data?.accessToken
         await completeAuthSession(
-          { authenticationStore, notificationStore, todoStore, categoryStore },
+          {
+            authenticationStore,
+            profileStore,
+            notificationStore,
+            todoStore,
+            categoryStore,
+          },
           navigation,
           accessToken,
         )

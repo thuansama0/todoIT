@@ -40,6 +40,17 @@ export async function deleteLocalNotification(id: string) {
   await save(LOCAL_NOTIFICATION_LOG_KEY, merged)
 }
 
+/** Sau khi POST /notification thành công: đổi `local-*` thành bản ghi server trong log — tránh mất dòng nếu GET /all chưa kịp trả về. */
+export async function replaceLocalIdWithServerNotification(
+  localId: string,
+  serverItem: Notification,
+) {
+  const current = await loadLocalNotificationLog()
+  const withoutOld = current.filter((item) => item.id !== localId && item.id !== serverItem.id)
+  const merged = [serverItem, ...withoutOld].slice(0, MAX_LOCAL_ITEMS)
+  await save(LOCAL_NOTIFICATION_LOG_KEY, merged)
+}
+
 export async function clearLocalNotifications() {
   await save(LOCAL_NOTIFICATION_LOG_KEY, [])
 }

@@ -187,6 +187,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
     // Dọn todo và category state để tránh lẫn dữ liệu giữa các tài khoản.
     await todoStore.resetForAuthChange?.()
     categoryStore.resetForAuthChange?.()
+    profileStore.clearProfile()
     // Reset stack để không back về màn cần đăng nhập.
     navigation.reset({ index: 0, routes: [{ name: "Login" }] })
   }

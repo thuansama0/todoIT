@@ -1,4 +1,5 @@
 import { FC, useState } from "react"
+import { observer } from "mobx-react-lite"
 import {
   View,
   Alert,
@@ -28,7 +29,10 @@ import {
 
 type EditCategoryScreenProps = AppStackScreenProps<"EditCategory">
 
-export const EditCategoryScreen: FC<EditCategoryScreenProps> = ({ route, navigation }) => {
+export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(function EditCategoryScreen({
+  route,
+  navigation,
+}) {
   const { categoryStore } = useStores()
 
   const { categoryData } = route.params as { categoryData: Category }
@@ -124,5 +128,5 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = ({ route, navigat
       </View>
     </Screen>
   )
-}
+})
 

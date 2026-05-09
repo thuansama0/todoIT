@@ -83,7 +83,8 @@ reactotron.onCustomCommand<[{ name: "route"; type: ArgType.String }]>({
     const { route } = args ?? {}
     if (route) {
       Reactotron.log(`Navigating to: ${route}`)
-      navigate(route as any) // this should be tied to the navigator, but since this is for debugging, we can navigate to illegal routes
+      // navigate() nhận unknown ở navigationUtilities — phù hợp lệnh debug nhập tay tên route.
+      navigate(route)
     } else {
       Reactotron.log("Could not navigate. No route provided.")
     }

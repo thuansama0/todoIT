@@ -1,5 +1,5 @@
 import React, { forwardRef, PropsWithoutRef } from "react"
-import { FlatList } from "react-native"
+import { FlatList, type FlatListProps } from "react-native"
 import { isRTL } from "app/i18n"
 import { FlashList, FlashListProps } from "@shopify/flash-list"
 
@@ -31,8 +31,13 @@ const ListViewComponent = forwardRef(
 
     if (isRTL) {
       // FlatList does not use FlashList-only props (e.g. estimatedItemSize).
-      const { estimatedItemSize, ...flatListProps } = baseProps
-      return <FlatList {...(flatListProps as any)} ref={ref as React.ForwardedRef<FlatList<T>>} />
+      const { estimatedItemSize: _estimatedItemSize, ...flatListProps } = baseProps
+      return (
+        <FlatList
+          {...(flatListProps as FlatListProps<T>)}
+          ref={ref as React.ForwardedRef<FlatList<T>>}
+        />
+      )
     }
 
     return <FlashList {...(baseProps as FlashListProps<T>)} ref={ref as React.ForwardedRef<FlashList<T>>} />

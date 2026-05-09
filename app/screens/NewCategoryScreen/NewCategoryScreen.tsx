@@ -1,5 +1,6 @@
 import { FC, useState } from "react"
 import { View, Alert } from "react-native"
+import { observer } from "mobx-react-lite"
 import { AppStackScreenProps } from "app/navigators"
 import { AppSectionHeader, Screen, Button, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
@@ -21,7 +22,7 @@ import {
 
 interface NewCategoryScreenProps extends AppStackScreenProps<"NewCategory"> {}
 
-export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
+export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function NewCategoryScreen() {
   const navigation = useNavigation()
   const { categoryStore } = useStores()
   const [name, setName] = useState("")
@@ -94,4 +95,4 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
       </View>
     </Screen>
   )
-}
+})

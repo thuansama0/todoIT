@@ -38,7 +38,7 @@ function navigateToNotificationsTab() {
   } as never)
   setTimeout(() => {
     if (navigationRef.isReady()) {
-      ;(navigationRef.navigate as any)("MainTabs", { screen: "Notifications" })
+      navigationRef.navigate("MainTabs", { screen: "Notifications" })
     }
   }, 250)
 }
@@ -162,10 +162,17 @@ export const usePushNotifications = () => {
     return { title: "", body: "", fireAtMs: 0 }
   }
 
-  const pushIncomingReminder = async (notification: Notifications.Notification) => {
+  function isDuplicateNotificationResult(result: unknown): boolean {
+    if (!result || typeof result !== "object") return false
+    const data = (result as { data?: { message?: string } }).data
+    return data?.message === "duplicate skipped"
+  }
+
+  /** Trả về true nếu đã ghi vào store/log (để tránh Toast khi không có dòng list tương ứng). */
+  const pushIncomingReminder = async (notification: Notifications.Notification): Promise<boolean> => {
     const { title, body, fireAtMs } = await resolveNotificationText(notification)
     if (!title.trim() && !body.trim() && fireAtMs <= 0) {
-      return
+      return false
     }
     const finalTitle = title.trim() ? title : "Nhắc việc: Todo"
     const finalBody = body.trim() ? body : "Còn ít phút nữa đến lịch của bạn"
@@ -180,7 +187,7 @@ export const usePushNotifications = () => {
       typeof lastHandled?.at === "number" &&
       Date.now() - lastHandled.at < 120_000
     ) {
-      return
+      return false
     }
     await save(LAST_HANDLED_RESPONSE_KEY, { key: dedupeKey, at: Date.now() })
     let userId = profileStore.profile?.id
@@ -190,7 +197,13 @@ export const usePushNotifications = () => {
         userId = profileStore.profile.id
       }
     }
-    await notificationStore.addIncomingNotification(finalTitle, finalBody, userId, deliveredAtMs)
+    const result = await notificationStore.addIncomingNotification(
+      finalTitle,
+      finalBody,
+      userId,
+      deliveredAtMs,
+    )
+    return !isDuplicateNotificationResult(result)
   }
 
   useEffect(() => {
@@ -210,7 +223,7 @@ export const usePushNotifications = () => {
         }
       }
       if (Array.isArray(scheduled)) {
-        for (const item of scheduled as any[]) {
+        for (const item of scheduled) {
           const data = normalizeNotificationData(item?.content?.data)
           const fireAt = Number(data.fireAtMs)
           if (!Number.isFinite(fireAt) || fireAt <= 0 || fireAt > Date.now()) continue
@@ -250,8 +263,9 @@ export const usePushNotifications = () => {
     }
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      void pushIncomingReminder(notification)
       void (async () => {
+        const didRecord = await pushIncomingReminder(notification)
+        if (!didRecord) return
         const { title, body } = await resolveNotificationText(notification)
         Toast.show({
           type: "info",
