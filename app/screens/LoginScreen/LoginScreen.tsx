@@ -24,7 +24,7 @@ import {
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
-export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) { //todo: navigation tac dung gi 
+export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) { //todo: navigation tac dung gi và tại sao bên này khai báo navigation mà bên categoris lại dùng khác sếp tôi yêu cầu tôi tìm hiểu và dùng đúng 1 kiểu thôi
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -43,10 +43,11 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
     if (response.ok && response.data) {
       if (response.data.success) {
         const accessToken = response.data.data?.accessToken
-        await notificationStore.resetForAuthChange()
-        await todoStore.resetForAuthChange()
-        categoryStore.resetForAuthChange?.()
-        await completeAuthSession(authenticationStore, navigation, accessToken)
+        await completeAuthSession(
+          { authenticationStore, notificationStore, todoStore, categoryStore },
+          navigation,
+          accessToken,
+        )
       } else {
         Alert.alert("Thông báo", response.data.message || "Đăng nhập thất bại.")
       }

@@ -28,7 +28,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { authenticationStore, notificationStore, todoStore, categoryStore } = useStores()
+  const { authenticationStore, notificationStore, todoStore, categoryStore } = useStores() //todo: tim hieu tai sao phai lấy tất cả các store
 
   async function onSignUp() {
     if (!username || !email || !password) {
@@ -42,10 +42,11 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
 
     if (response.ok && response.data?.success) {
       const accessToken = response.data.data?.accessToken
-      await notificationStore.resetForAuthChange()
-      await todoStore.resetForAuthChange()
-      categoryStore.resetForAuthChange?.()
-      await completeAuthSession(authenticationStore, navigation, accessToken)
+      await completeAuthSession(
+        { authenticationStore, notificationStore, todoStore, categoryStore },
+        navigation,
+        accessToken,
+      )
     } else {
       Alert.alert("Đăng ký thất bại", response.data?.message || "Không thể tạo tài khoản.")
     }

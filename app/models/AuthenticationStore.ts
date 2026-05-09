@@ -1,17 +1,17 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
+import { withSetPropAction } from "./helpers/withSetPropAction"
+
 
 export const AuthenticationStoreModel = types
   .model("AuthenticationStore")
   .props({
     authToken: types.maybe(types.string),
   })
+  .actions(withSetPropAction)
   .actions((store) => ({
-    setAuthToken(value?: string) {
-      store.authToken = value
-    },
-
     logout() {
-      store.authToken = undefined
+      // Dung setProp de tan dung helper co san, tranh lap setter 1 dong.
+      store.setProp("authToken", undefined)
     },
   }))
   .views((store) => ({

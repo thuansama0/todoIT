@@ -1,5 +1,6 @@
 import { ApiResponse } from "apisauce"
 import { api } from "./api"
+import type { ApiResult } from "./api.types"
 
 export interface LoginResult {
   success: boolean
@@ -13,12 +14,7 @@ export interface LoginResult {
     accessToken: string
   }
 }
-export interface GenericResponse {
-  success: boolean
-  message: string
-  errors?: any[]
-  data?: any
-}
+
 
 export const authApi = {
   signIn: async (email: string, password: string): Promise<ApiResponse<LoginResult>> => {
@@ -40,8 +36,8 @@ export const authApi = {
     })
     return response
   },
-  signOut: async (): Promise<ApiResponse<GenericResponse>> => {
-    const response = await api.apisauce.post<GenericResponse>("/auth/sign-out")
+  signOut: async (): Promise<ApiResponse<ApiResult>> => {
+    const response = await api.apisauce.post<ApiResult>("/auth/sign-out")
     return response
   },
 }

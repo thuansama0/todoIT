@@ -1,5 +1,6 @@
 import { ApiResponse } from "apisauce"
 import { api } from "./api"
+import type { ApiResult } from "./api.types"
 
 export interface UserProfile {
   id: string
@@ -23,11 +24,7 @@ export interface UserApiResult {
   data?: UserProfile
 }
 
-export interface GenericResult {
-  success: boolean
-  message: string
-  data?: any
-}
+
 
 export const userApi = {
   getMe: async (): Promise<ApiResponse<UserApiResult>> => {
@@ -42,15 +39,15 @@ export const userApi = {
     return await api.apisauce.put<UserApiResult>("/user", payload)
   },
 
-  deleteAccount: async (): Promise<ApiResponse<GenericResult>> => {
-    return await api.apisauce.delete<GenericResult>("/user")
+  deleteAccount: async (): Promise<ApiResponse<ApiResult>> => {
+    return await api.apisauce.delete<ApiResult>("/user")
   },
 
   updatePushToken: async (
     pushToken: string,
     accessToken?: string,
-  ): Promise<ApiResponse<GenericResult>> => {
-    return await api.apisauce.patch<GenericResult>(
+  ): Promise<ApiResponse<ApiResult>> => {
+    return await api.apisauce.patch<ApiResult>(
       "/user/update-push-token",
       { pushToken },
       accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined,

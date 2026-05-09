@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react"
-import { Alert, ScrollView, Switch, TouchableOpacity, View } from "react-native"
-import { AppSectionHeader, Button, Screen, Text, TextField } from "app/components"
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native"
+import { AppSectionHeader, Button, Screen, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
@@ -214,12 +214,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
 
         <View style={$dueDateRow}>
           <Text preset="formLabel">Set due date</Text>
-          <Switch
-            value={hasDueDate}
-            onValueChange={handleToggleDueDate}
-            trackColor={{ false: colors.palette.neutral300, true: colors.palette.secondary400 }}
-            thumbColor={colors.palette.neutral100}
-          />
+          <Toggle variant="switch" value={hasDueDate} onValueChange={handleToggleDueDate} />
         </View>
 
         {hasDueDate && (

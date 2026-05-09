@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
-import { View, Switch, Alert } from "react-native"
+import { View, Alert } from "react-native"
 import { AppStackScreenProps } from "app/navigators"
-import { AppSectionHeader, Screen, Button, Text, TextField } from "app/components"
+import { AppSectionHeader, Screen, Button, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
@@ -80,12 +80,7 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = () => {
             </Text>
           </View>
           
-          <Switch 
-            value={isPublic} 
-            onValueChange={setIsPublic} 
-            trackColor={{ false: colors.palette.neutral300, true: colors.palette.secondary400 }}
-            thumbColor={colors.palette.neutral100}
-          />
+          <Toggle variant="switch" value={isPublic} onValueChange={setIsPublic} />
         </View>
 
         <Button 
