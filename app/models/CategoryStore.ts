@@ -1,4 +1,4 @@
-import { Instance, SnapshotOut, flow, types } from "mobx-state-tree"
+import { cast, Instance, SnapshotOut, flow, types } from "mobx-state-tree"
 import { Category, categoryApi } from "app/services/api/categoryApi"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
@@ -56,12 +56,14 @@ export const CategoryStoreModel = types
       const tempId = `temp-${Date.now()}`
       // Optimistic insert để danh sách phản hồi ngay thay vì chờ round-trip network.
       store.items.unshift(
-        normalizeCategory({
+        cast(
+          normalizeCategory({
           id: tempId,
           name: normalizedName,
           isPublic,
           isOwner: true,
-        }) as any,
+          }),
+        ),
       )
 
       const response = yield categoryApi.createCategory(name.trim(), isPublic)
@@ -86,13 +88,13 @@ export const CategoryStoreModel = types
             }
           : null
       if (idx >= 0) {
-        store.items[idx] = normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }) as any
+        store.items[idx] = cast(normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }))
       }
 
       const response = yield categoryApi.updateCategory(id, name.trim(), isPublic)
       if (!response.ok || !response.data?.success) {
         if (idx >= 0 && backup) {
-          store.items[idx] = backup as any
+          store.items[idx] = cast(backup)
         }
       } else if (idx < 0) {
         yield fetchCategories()

@@ -1,5 +1,6 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { UpdateUserPayload, userApi } from "app/services/api/userApi"
+import { withSetPropAction } from "./helpers/withSetPropAction"
 
 const ProfileModel = types.model("Profile", {
   id: types.identifier,
@@ -10,6 +11,24 @@ const ProfileModel = types.model("Profile", {
   pushToken: types.maybeNull(types.string),
 })
 
+function toProfileSnapshot(input: {
+  id: string
+  email?: string
+  name?: string
+  imageUrl?: string | null
+  accessToken?: string | null
+  pushToken?: string | null
+}) {
+  return {
+    id: input.id,
+    email: input.email ?? "",
+    name: input.name ?? "",
+    imageUrl: input.imageUrl ?? null,
+    accessToken: input.accessToken ?? null,
+    pushToken: input.pushToken ?? null,
+  }
+}
+
 export const ProfileStoreModel = types
   .model("ProfileStore")
   .props({
@@ -17,20 +36,14 @@ export const ProfileStoreModel = types
     isLoading: types.optional(types.boolean, false),
     isLoaded: types.optional(types.boolean, false),
   })
+  .actions(withSetPropAction)
   .actions((store) => {
     const fetchProfile = flow(function* fetchProfile() {
       store.isLoading = true
       try {
         const response = yield userApi.getMe()
         if (response.ok && response.data?.success && response.data.data) {
-          store.profile = {
-            id: response.data.data.id,
-            email: response.data.data.email ?? "",
-            name: response.data.data.name ?? "",
-            imageUrl: response.data.data.imageUrl,
-            accessToken: response.data.data.accessToken,
-            pushToken: response.data.data.pushToken,
-          } as any
+          store.profile = toProfileSnapshot(response.data.data)
           store.isLoaded = true
         }
         return response
@@ -57,26 +70,19 @@ export const ProfileStoreModel = types
         : undefined
 
       if (store.profile) {
-        store.profile = {
-          ...store.profile,
+        store.profile = toProfileSnapshot({
+          ...toProfileSnapshot(store.profile),
           ...(payload.name !== undefined ? { name: payload.name } : {}),
           ...(payload.email !== undefined ? { email: payload.email } : {}),
           ...(payload.imageUrl !== undefined ? { imageUrl: payload.imageUrl } : {}),
-        } as any
+        })
       }
 
       const response = yield userApi.updateProfile(payload)
       if (!response.ok || !response.data?.success) {
-        if (backup) store.profile = backup as any
+        if (backup) store.profile = toProfileSnapshot(backup)
       } else if (response.data.data) {
-        store.profile = {
-          id: response.data.data.id,
-          email: response.data.data.email ?? "",
-          name: response.data.data.name ?? "",
-          imageUrl: response.data.data.imageUrl,
-          accessToken: response.data.data.accessToken,
-          pushToken: response.data.data.pushToken,
-        } as any
+        store.profile = toProfileSnapshot(response.data.data)
       }
       return response
     })

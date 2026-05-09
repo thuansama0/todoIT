@@ -7,8 +7,8 @@ import {
 import { AppSectionHeader, Screen, Button, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
+import type { AppStackScreenProps } from "app/navigators"
 
 import { Category } from "app/services/api/categoryApi"
 import {
@@ -26,8 +26,9 @@ import {
   $switchTitle,
 } from "./EditCategoryScreen.styles"
 
-export const EditCategoryScreen: FC<any> = ({ route }) => {
-  const navigation = useNavigation()
+type EditCategoryScreenProps = AppStackScreenProps<"EditCategory">
+
+export const EditCategoryScreen: FC<EditCategoryScreenProps> = ({ route, navigation }) => {
   const { categoryStore } = useStores()
 
   const { categoryData } = route.params as { categoryData: Category }

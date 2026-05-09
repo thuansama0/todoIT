@@ -3,8 +3,8 @@ import { View, TouchableOpacity, Alert } from "react-native"
 import { AppSectionHeader, Screen, Text } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
 import { notificationApi, Notification } from "app/services/api/notificationApi"
+import type { AppStackScreenProps } from "app/navigators"
 import { formatTimeAgo } from "app/utils/formatDate"
 import {
   $card,
@@ -20,8 +20,9 @@ import {
   $title,
 } from "./NotificationDetailScreen.styles"
 
-export const NotificationDetailScreen: FC<any> = ({ route }) => {
-  const navigation = useNavigation()
+type NotificationDetailScreenProps = AppStackScreenProps<"NotificationDetail">
+
+export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = ({ route, navigation }) => {
   const { notificationData } = route.params as { notificationData: Notification }
 
   const handleDelete = () => {

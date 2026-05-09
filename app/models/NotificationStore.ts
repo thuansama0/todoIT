@@ -27,7 +27,7 @@ function toPlainNotification(item: any) {
   }
 } 
 
-function normalizeNotification(input: Notification): any {
+function normalizeNotification(input: Partial<Notification> & { id: string }) {
   return {
     id: input.id,
     title: input.title ?? "",
@@ -63,7 +63,7 @@ export const NotificationStoreModel = types
             mergedById.set(item.id, item)
           })
           const mergedItems = Array.from(mergedById.values()).sort((a, b) => b.sentAt - a.sentAt)
-          store.items.replace(mergedItems as any)
+          store.items.replace(mergedItems)
           store.isLoaded = true
         } else if (localItems.length > 0) {
           store.items.replace(localItems.map(normalizeNotification))
@@ -91,7 +91,7 @@ export const NotificationStoreModel = types
       if (idx < 0) return { ok: true, data: { success: true } }
       if (store.items[idx].isRead) return { ok: true, data: { success: true } }
 
-      store.items[idx] = { ...store.items[idx], isRead: true } as any
+      store.items[idx] = { ...store.items[idx], isRead: true }
       store.unreadCount = Math.max(0, store.unreadCount - 1)
 
       if (id.startsWith("local-")) {
@@ -101,7 +101,7 @@ export const NotificationStoreModel = types
 
       const response = yield notificationApi.markAsRead(id)
       if (!response.ok || !response.data?.success) {
-        store.items[idx] = { ...store.items[idx], isRead: false } as any
+        store.items[idx] = { ...store.items[idx], isRead: false }
         store.unreadCount += 1
       }
       return response
@@ -110,12 +110,12 @@ export const NotificationStoreModel = types
     const markAllRead = flow(function* markAllRead() {
       const backupItems = store.items.map(toPlainNotification)
       const backupUnread = store.unreadCount
-      store.items.replace(store.items.map((n) => ({ ...n, isRead: true } as any)))
+      store.items.replace(store.items.map((n) => ({ ...n, isRead: true })))
       store.unreadCount = 0
 
       const response = yield notificationApi.markAllAsRead()
       if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems as any)
+        store.items.replace(backupItems)
         store.unreadCount = backupUnread
       }
       return response
@@ -135,7 +135,7 @@ export const NotificationStoreModel = types
 
       const response = yield notificationApi.deleteNotification(id)
       if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems as any)
+        store.items.replace(backupItems)
         store.unreadCount = backupUnread
       }
       return response
@@ -149,7 +149,7 @@ export const NotificationStoreModel = types
 
       const response = yield notificationApi.deleteAllNotifications()
       if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems as any)
+        store.items.replace(backupItems)
         store.unreadCount = backupUnread
       } else {
         yield clearLocalNotifications()

@@ -12,8 +12,10 @@ import { Feather } from "@expo/vector-icons"
 import { useNavigation, useIsFocused } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AppStackParamList } from "app/navigators"
+import type { TabParamList } from "app/navigators/TabNavigator"
 import { formatTimeAgo } from "app/utils/formatDate"
 import {
   $btnGreen,
@@ -41,7 +43,9 @@ type NotificationListItem = {
   sentAt: number
 }
 
-export const NotificationsScreen: FC<any> = observer(function NotificationsScreen() {
+type NotificationsScreenProps = BottomTabScreenProps<TabParamList, "Notifications">
+
+export const NotificationsScreen: FC<NotificationsScreenProps> = observer(function NotificationsScreen() {
   type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
   const navigation = useNavigation<AppStackNavigation>()
   const isFocused = useIsFocused()

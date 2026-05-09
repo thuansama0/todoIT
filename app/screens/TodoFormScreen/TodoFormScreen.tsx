@@ -189,9 +189,6 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         contentContainerStyle={$formContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={$label} preset="formLabel">
-          Title *
-        </Text>
         <TextField
           label="Title *"
           LabelTextProps={{ preset: "formLabel", style: $label }}

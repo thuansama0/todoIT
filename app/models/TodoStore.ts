@@ -1,4 +1,4 @@
-import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
+import { applySnapshot, flow, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { CreateTodoPayload, Todo, todoApi } from "app/services/api/todoApi"
 import {
@@ -27,7 +27,9 @@ const TodoModel = types.model("Todo", {
   category: types.maybeNull(TodoCategoryModel),
 })
 
-function normalizeTodo(input: Partial<Todo> & { id: string }): any {
+type TodoMutationResult = { ok: boolean; data?: { success: boolean; message?: string } }
+
+function normalizeTodo(input: Partial<Todo> & { id: string }) {
   return {
     id: input.id,
     title: input.title ?? "",
@@ -86,16 +88,16 @@ export const TodoStoreModel = types
             const nextItems = store.items.map((todo) =>
               todo.id === tempId ? normalized : toPlainTodo(todo),
             )
-            store.items.replace(nextItems as any)
+            store.items.replace(nextItems)
           } else if (!store.items.some((todo) => todo.id === normalized.id)) {
-            store.items.replace([normalized, ...store.items.map(toPlainTodo)] as any)
+            store.items.replace([normalized, ...store.items.map(toPlainTodo)])
           }
           if (reminderMinutes > 0) {
             yield cancelTodoReminder(tempId)
             yield scheduleTodoReminder({
               todoId: normalized.id,
               title: normalized.title,
-              dueDate: normalized.dueDate,
+              dueDate: normalized.dueDate ?? 0,
               reminderMinutes,
             })
           }
@@ -169,12 +171,12 @@ export const TodoStoreModel = types
         isCompleted: false,
         reminderMinutes,
       })
-      store.items.replace([optimisticTodo, ...store.items.map(toPlainTodo)] as any)
-      if (reminderMinutes > 0 && optimisticTodo.dueDate > 0) {
+      store.items.replace([optimisticTodo, ...store.items.map(toPlainTodo)])
+      if (reminderMinutes > 0 && (optimisticTodo.dueDate ?? 0) > 0) {
         void scheduleTodoReminder({
           todoId: tempId,
           title: optimisticTodo.title,
-          dueDate: optimisticTodo.dueDate,
+          dueDate: optimisticTodo.dueDate ?? 0,
           reminderMinutes,
         })
       }
@@ -184,7 +186,7 @@ export const TodoStoreModel = types
       return {
         ok: true,
         data: { success: true, message: "Todo saved locally and syncing..." },
-      } as any
+      } as TodoMutationResult
     }
 
     const updateTodo = flow(function* updateTodo(
@@ -195,20 +197,20 @@ export const TodoStoreModel = types
       const idx = store.items.findIndex((todo) => todo.id === id)
       const backup = idx >= 0 ? toPlainTodo(store.items[idx]) : null
       if (idx >= 0) {
-        store.items[idx] = {
+        applySnapshot(store.items[idx], {
           ...store.items[idx],
           title: payload.title,
           content: payload.content,
           imageUrl: payload.imageUrl,
           dueDate: payload.dueDate,
           reminderMinutes,
-        } as any
+        })
       }
 
       const response = yield todoApi.updateTodo(id, payload)
       if (!response.ok || !response.data?.success) {
         if (idx >= 0 && backup) {
-          store.items[idx] = backup as any
+          applySnapshot(store.items[idx], backup)
         }
       } else if (idx < 0) {
         yield fetchTodos()
@@ -235,7 +237,7 @@ export const TodoStoreModel = types
             ? { ...toPlainTodo(todo), isCompleted: newStatus }
             : toPlainTodo(todo),
         )
-        store.items.replace(nextItems as any)
+        store.items.replace(nextItems)
       }
 
       const response = yield todoApi.toggleTodoStatus(id, newStatus)
@@ -245,25 +247,25 @@ export const TodoStoreModel = types
             ? { ...toPlainTodo(todo), isCompleted: previousStatus }
             : toPlainTodo(todo),
         )
-        store.items.replace(rollbackItems as any)
+        store.items.replace(rollbackItems)
       }
       return response
     })
     const deleteTodo = flow(function* deleteTodo(id: string) {
       const backup = store.items.map(toPlainTodo)
       const nextItems = store.items.map(toPlainTodo).filter((todo) => todo.id !== id)
-      store.items.replace(nextItems as any)
+      store.items.replace(nextItems)
       yield cancelTodoReminder(id)
 
       if (id.startsWith("temp-")) {
         // Todo chưa tồn tại trên server thì chỉ cần đánh dấu local, không cần gọi API delete.
         locallyDeletedTempIds.add(id)
-        return { ok: true, data: { success: true } } as any
+        return { ok: true, data: { success: true } } as TodoMutationResult
       }
 
       const response = yield todoApi.deleteTodo(id)
       if (!isMutationSuccess(response)) {
-        store.items.replace(backup as any)
+        store.items.replace(backup)
       }
       return response
     })

@@ -13,7 +13,7 @@ import { Text, TextProps } from "./Text"
 type Presets = keyof typeof $viewPresets
 
 export interface ButtonAccessoryProps {
-  style: StyleProp<any>
+  style: StyleProp<ViewStyle>
   pressableState: PressableStateCallbackType
   disabled?: boolean
 }

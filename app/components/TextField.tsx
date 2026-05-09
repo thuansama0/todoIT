@@ -13,7 +13,7 @@ import { colors, spacing, typography } from "../theme"
 import { Text, TextProps } from "./Text"
 
 export interface TextFieldAccessoryProps {
-  style: StyleProp<any>
+  style: StyleProp<ViewStyle>
   status: TextFieldProps["status"]
   multiline: boolean
   editable: boolean
