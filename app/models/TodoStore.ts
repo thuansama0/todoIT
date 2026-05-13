@@ -8,6 +8,8 @@ import {
 } from "app/utils/todoReminder"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import { toPlainTodo } from "app/utils/todoMapper"
+import { DEFAULT_LIST_PAGE_SIZE } from "app/constants/pagination"
+import { TEMP_TODO_ID_PREFIX } from "app/constants/todo"
 
 const TodoCategoryModel = types.model("TodoCategory", {
   id: types.string,
@@ -137,7 +139,7 @@ export const TodoStoreModel = types
     const fetchTodos = flow(function* fetchTodos() {
       store.isLoading = true
       try {
-        const response = yield todoApi.getTodos(0, 50)
+        const response = yield todoApi.getTodos(0, DEFAULT_LIST_PAGE_SIZE)
         if (response.ok && response.data?.success) {
           const reminderMinutesMap = yield loadTodoReminderMinutesMap()
           const items = (response.data.data?.items ?? []).map((todo: Todo) =>
@@ -166,7 +168,7 @@ export const TodoStoreModel = types
     })
 
     const createTodo = (payload: CreateTodoPayload, reminderMinutes = 0) => {
-      const tempId = `temp-${Date.now()}`
+      const tempId = `${TEMP_TODO_ID_PREFIX}${Date.now()}`
       const optimisticTodo = normalizeTodo({
         id: tempId,
         title: payload.title,
@@ -262,7 +264,7 @@ export const TodoStoreModel = types
       store.items.replace(nextItems)
       yield cancelTodoReminder(id)
 
-      if (id.startsWith("temp-")) {
+      if (id.startsWith(TEMP_TODO_ID_PREFIX)) {
         // Todo chưa tồn tại trên server thì chỉ cần đánh dấu local, không cần gọi API delete.
         locallyDeletedTempIds.add(id)
         return { ok: true, data: { success: true } } as TodoMutationResult

@@ -1,5 +1,5 @@
 import { TextStyle, ViewStyle } from "react-native"
-import { colors, spacing } from "app/theme"
+import { colors, spacing, typography } from "app/theme"
 
 export const $screenFill: ViewStyle = { flex: 1 }
 export const $screenContainer: ViewStyle = { flex: 1, backgroundColor: colors.palette.neutral200 }
@@ -17,10 +17,11 @@ export const $topBtn: ViewStyle = {
   borderRadius: 20,
   marginRight: spacing.sm,
 }
-export const $btnGreen: ViewStyle = { backgroundColor: colors.palette.accent100 }
+/** Mark all read — nền primary nhạt, chữ/icon primary700 */
+export const $markAllReadBtn: ViewStyle = { backgroundColor: colors.palette.primary900 }
 export const $btnRed: ViewStyle = { backgroundColor: colors.errorBackground }
 export const $topBtnText: TextStyle = { marginLeft: spacing.xxs + spacing.xxxs }
-export const $topBtnGreenText: TextStyle = { color: colors.palette.secondary400 }
+export const $markAllReadText: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
 export const $topBtnRedText: TextStyle = { color: colors.palette.angry500 }
 export const $list: ViewStyle = { flex: 1 }
 export const $listContent: ViewStyle = { padding: spacing.md, paddingBottom: spacing.xl + spacing.xs }

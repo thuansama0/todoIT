@@ -15,6 +15,8 @@ export type TabParamList = {
 }
 
 const Tab = createBottomTabNavigator<TabParamList>()
+const TAB_BAR_HEIGHT = 95
+const TAB_BAR_PADDING_BOTTOM = 35
 
 export function TabNavigator() {
   return (
@@ -26,7 +28,7 @@ export function TabNavigator() {
         headerShown: false,
         // lazy: false đã gây mount đồng thời mọi tab ẩn → khung 0px → FlashList cảnh báo / lỗi đo kích thước.
         ...(Platform.OS === "android" ? { freezeOnBlur: false } : {}),
-        tabBarActiveTintColor: colors.palette.info500, 
+        tabBarActiveTintColor: colors.palette.primary700,
         tabBarInactiveTintColor: colors.palette.gray500, 
         
         tabBarIcon: ({ focused, color, size }) => {
@@ -46,14 +48,16 @@ export function TabNavigator() {
 
           if (focused) {
             return ( // todo:tachs style ra 
-              <View style={{ 
-                backgroundColor: colors.palette.secondary100, 
-                width: 56,
-                height: 32,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 8,
-              }}>
+              <View
+                style={{
+                  backgroundColor: colors.palette.primary900,
+                  width: 56,
+                  height: 32,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 8,
+                }}
+              >
                 <Ionicons name={iconName} size={size} color={color} />
               </View>
             );
@@ -63,14 +67,14 @@ export function TabNavigator() {
         },
         
         tabBarLabelStyle: {
-          fontSize: 12, 
-          fontFamily: typography.primary.semiBold, 
+          fontSize: 12,
+          fontFamily: typography.primary.bold,
           marginTop: 5,
         },
         
         tabBarStyle: {
-          height: 95, 
-          paddingBottom: 35,
+          height: TAB_BAR_HEIGHT, 
+          paddingBottom: TAB_BAR_PADDING_BOTTOM,
           paddingTop: 10, 
         }
       })}

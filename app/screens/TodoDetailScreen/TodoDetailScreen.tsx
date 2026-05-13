@@ -14,13 +14,16 @@ import {
   $actionBtnText,
   $actionDelete,
   $actionDeleteText,
-  $actionDoneBg,
-  $actionDoneText,
+  $actionMarkDoneBg,
+  $actionMarkDoneText,
+  $actionMarkUndoneBg,
+  $actionMarkUndoneText,
   $actionsContainer,
   $categoryValue,
   $circleUnchecked,
   $content,
   $divider,
+  $headerEditAction,
   $infoBox,
   $infoIconText,
   $infoLabel,
@@ -88,7 +91,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
         <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
           <ActivityIndicator
             size="large"
-            color={colors.palette.secondary400}
+            color={colors.palette.primary700}
             style={$loadingSpinner}
           />
         </Screen>
@@ -109,14 +112,22 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           showRefresh={false}
           leftIcon="back"
           onLeftPress={() => navigation.goBack()}
-          rightText="Edit"
-          onRightPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo(todo) })}
+          RightActionComponent={
+            <TouchableOpacity
+              onPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo(todo) })}
+              accessibilityRole="button"
+              accessibilityLabel="Edit todo"
+              style={$headerEditAction}
+            >
+              <Feather name="edit-2" size={22} color={colors.palette.primary700} />
+            </TouchableOpacity>
+          }
         />
 
         <View style={$titleRow}>
           <TouchableOpacity onPress={handleToggleStatus}>
             {todo.isCompleted ? (
-              <Ionicons name="checkmark-circle" size={32} color={colors.palette.secondary400} />
+              <Ionicons name="checkmark-circle" size={32} color={colors.palette.primary700} />
             ) : (
               <View style={$circleUnchecked} />
             )}
@@ -161,7 +172,11 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
 
           <View style={$infoRow}>
             <View style={$infoIconText}>
-              <Feather name="circle" size={16} color={colors.palette.neutral500} />
+              {todo.isCompleted ? (
+                <Ionicons name="checkmark-circle" size={16} color={colors.palette.primary700} />
+              ) : (
+                <Feather name="circle" size={16} color={colors.palette.neutral500} />
+              )}
               <Text preset="caption" style={$infoLabel}>
                 Status
               </Text>
@@ -173,13 +188,22 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
         </View>
 
         <View style={$actionsContainer}>
-          <TouchableOpacity style={[$actionBtn, $actionDoneBg]} onPress={handleToggleStatus}>
+          <TouchableOpacity
+            style={[$actionBtn, todo.isCompleted ? $actionMarkUndoneBg : $actionMarkDoneBg]}
+            onPress={handleToggleStatus}
+          >
             <Feather
-              name={todo.isCompleted ? "x" : "check"}
+              name={todo.isCompleted ? "rotate-ccw" : "check"}
               size={18}
-              color={colors.palette.secondary400}
+              color={todo.isCompleted ? colors.palette.accent500 : colors.palette.primary700}
             />
-            <Text preset="body" style={[$actionBtnText, $actionDoneText]}>
+            <Text
+              preset="body"
+              style={[
+                $actionBtnText,
+                todo.isCompleted ? $actionMarkUndoneText : $actionMarkDoneText,
+              ]}
+            >
               {todo.isCompleted ? "Mark Undone" : "Mark Done"}
             </Text>
           </TouchableOpacity>

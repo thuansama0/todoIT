@@ -1,5 +1,5 @@
 import { TextStyle, ViewStyle } from "react-native"
-import { colors, spacing } from "app/theme"
+import { colors, spacing, typography } from "app/theme"
 
 export const $screenContainer: ViewStyle = { flex: 1, backgroundColor: colors.palette.neutral100 }
 
@@ -30,7 +30,7 @@ export const $iconCircle: ViewStyle = {
 }
 export const $metaInfo: ViewStyle = { alignItems: "flex-end" }
 export const $timeText: TextStyle = { marginBottom: spacing.xxs }
-export const $readText: TextStyle = { color: colors.palette.secondary400 }
+export const $readText: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
 
 export const $title: TextStyle = {
   marginBottom: spacing.md,

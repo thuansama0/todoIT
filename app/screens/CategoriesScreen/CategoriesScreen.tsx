@@ -49,7 +49,7 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
     if (categoryStore.isLoading) {
       return (
         <View>
-          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} /> 
+          <ActivityIndicator size="large" color={colors.palette.primary700} style={$loadingSpinner} /> 
         </View>
       )
     }

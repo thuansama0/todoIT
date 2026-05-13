@@ -21,7 +21,7 @@ export const TodoItem: FC<TodoItemProps> = observer(function TodoItem(props) {
     <View style={[$container, isCompleted && $containerCompleted]}>
       <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
         {isCompleted ? (
-          <Ionicons name="checkmark-circle" size={28} color={colors.palette.success500} />
+          <Ionicons name="checkmark-circle" size={28} color={colors.palette.primary700} />
         ) : (
           <View style={$circleUnchecked} />
         )}
@@ -95,10 +95,10 @@ const $contentContainer: ViewStyle = {
 
 const $title: TextStyle = {
   fontSize: 16,
-  fontFamily: typography.primary.semiBold,
+  fontFamily: typography.primary.bold,
   color: colors.palette.neutral700,
   marginBottom: spacing.xxs + spacing.xxxs,
-};
+}
 
 const $titleCompleted: TextStyle = {
   textDecorationLine: 'line-through',
@@ -123,18 +123,18 @@ const $timeText: TextStyle = {
   fontFamily: typography.primary.medium,
 };
 
-const $badgeContainer: ViewStyle = { 
-  backgroundColor: colors.palette.secondary100,
+const $badgeContainer: ViewStyle = {
+  backgroundColor: colors.palette.primary900,
   paddingHorizontal: spacing.xs + spacing.xxs,
   paddingVertical: spacing.xxs,
   borderRadius: 12,
-};
+}
 
-const $badgeText: TextStyle = { 
+const $badgeText: TextStyle = {
   fontSize: 12,
-  color: colors.palette.info500,
-  fontFamily: typography.primary.semiBold,
-};
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
+}
 
 const $actionsContainer: ViewStyle = { 
   justifyContent: 'space-between', 

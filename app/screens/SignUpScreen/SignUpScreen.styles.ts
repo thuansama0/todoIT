@@ -13,7 +13,7 @@ export const $logoBox: ViewStyle = {
   width: 65,
   height: 65,
   borderRadius: 8,
-  backgroundColor: colors.palette.primary500,
+  backgroundColor: colors.palette.primary700,
   alignItems: "center",
   justifyContent: "center",
   marginBottom: spacing.lg,
@@ -40,7 +40,7 @@ export const $password: ViewStyle = {
   borderRadius: 20,
 }
 export const $signInButton: ViewStyle = {
-  backgroundColor: colors.palette.primary500,
+  backgroundColor: colors.palette.primary700,
   borderRadius: 20,
   marginTop: spacing.lg,
 }

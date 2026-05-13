@@ -33,6 +33,7 @@ import {
   $label,
   $loadingContainer,
   $nameText,
+  $profileTextFieldContainer,
   $saveBtn,
   $saveText,
   $screenContainer,
@@ -86,7 +87,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
   if (profileStore.isLoading) {
     return (
       <View style={$loadingContainer}>
-        <ActivityIndicator size="large" color={colors.palette.secondary400} />
+        <ActivityIndicator size="large" color={colors.palette.primary700} />
       </View>
     )
   }
@@ -133,7 +134,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
         {!isEditing ? (
           <>
             <TouchableOpacity style={$editProfileBtn} onPress={startEdit}>
-              <Feather name="edit-2" size={16} color={colors.palette.secondary400} />
+              <Feather name="edit-2" size={16} color={colors.palette.primary700} />
               <Text preset="body" style={$editProfileText}>
                 Edit Profile
               </Text>
@@ -143,6 +144,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
           <View style={$formSection}>
             <TextField
               label="Name *"
+              containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editName}
               onChangeText={setEditName}
@@ -151,6 +153,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
             <TextField
               label="Email *"
+              containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editEmail}
               onChangeText={setEditEmail}
@@ -161,6 +164,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
             <TextField
               label="New password (optional)"
+              containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editPassword}
               onChangeText={setEditPassword}

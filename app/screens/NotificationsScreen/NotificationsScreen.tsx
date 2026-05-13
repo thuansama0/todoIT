@@ -1,25 +1,25 @@
 import { FC, useEffect, useState } from "react"
 import {
-  View,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  TouchableOpacity,
+  View,
 } from "react-native"
-import { AppSectionHeader, Screen, Text, ListView, EmptyState } from "app/components"
+import { AppSectionHeader, EmptyState, ListView, Screen, Text } from "app/components"
 import { NotificationItem } from "app/components/NotificationItem"
-import { colors } from "app/theme"
-import { Feather } from "@expo/vector-icons"
-import { useNavigation, useIsFocused } from "@react-navigation/native"
-import { useStores } from "app/models"
-import { observer } from "mobx-react-lite"
-import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AppStackParamList } from "app/navigators"
 import type { TabParamList } from "app/navigators/TabNavigator"
+import { useStores } from "app/models"
+import { colors } from "app/theme"
 import { formatTimeAgo } from "app/utils/formatDate"
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
+import { useIsFocused, useNavigation } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { Feather } from "@expo/vector-icons"
+import { observer } from "mobx-react-lite"
 import {
-  $btnGreen,
   $btnRed,
+  $markAllReadBtn,
   $emptyContainer,
   $emptySub,
   $emptyTitle,
@@ -30,10 +30,10 @@ import {
   $screenFill,
   $topActions,
   $topBtn,
-  $topBtnGreenText,
+  $markAllReadText,
   $topBtnRedText,
   $topBtnText,
-} from "./NotificationsScreen.styles" 
+} from "./NotificationsScreen.styles"
 
 type NotificationListItem = {
   id: string
@@ -45,95 +45,82 @@ type NotificationListItem = {
 
 type NotificationsScreenProps = BottomTabScreenProps<TabParamList, "Notifications">
 
-export const NotificationsScreen: FC<NotificationsScreenProps> = observer(function NotificationsScreen() {
-  type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
-  const navigation = useNavigation<AppStackNavigation>()
-  const isFocused = useIsFocused()
-  const { notificationStore } = useStores()
-  const [, setTimeTick] = useState(0)
+export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
+  function NotificationsScreen() {
+    type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
+    const navigation = useNavigation<AppStackNavigation>()
+    const isFocused = useIsFocused()
+    const { notificationStore } = useStores()
+    const [, setTimeTick] = useState(0)
 
-  useEffect(() => {
-    if (!isFocused) return
-    const id = setInterval(() => setTimeTick((n) => n + 1), 15000)
-    return () => clearInterval(id)
-  }, [isFocused])
+    useEffect(() => {
+      if (!isFocused) return
+      const id = setInterval(() => setTimeTick((n) => n + 1), 15000)
+      return () => clearInterval(id)
+    }, [isFocused])
 
-  useEffect(() => {
-    if (isFocused) {
-      notificationStore.fetchNotifications()
+    useEffect(() => {
+      if (isFocused) {
+        notificationStore.fetchNotifications()
+      }
+    }, [isFocused, notificationStore])
+
+    async function handleMarkAllRead() {
+      await notificationStore.markAllRead()
     }
-  }, [isFocused, notificationStore])
 
-  const handleMarkAllRead = async () => {
-    await notificationStore.markAllRead()
-  }
-
-  const handleDeleteAll = () => {
-    Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa sạch thông báo?", [
-      { text: "Hủy", style: "cancel" },
-      {
-        text: "Xóa",
-        style: "destructive",
-        onPress: async () => {
-          await notificationStore.deleteAllNotifications()
+    function handleDeleteAll() {
+      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa sạch thông báo?", [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            await notificationStore.deleteAllNotifications()
+          },
         },
-      },
-    ])
-  }
+      ])
+    }
 
-  const handleMarkRead = async (id: string) => {
-    await notificationStore.markRead(id)
-  }
+    async function handleMarkRead(id: string) {
+      await notificationStore.markRead(id)
+    }
 
-  const handleDelete = async (id: string) => {
-    await notificationStore.deleteNotification(id)
-  }
+    async function handleDelete(id: string) {
+      await notificationStore.deleteNotification(id)
+    }
 
-  const renderEmpty = () => {
-    if (notificationStore.isLoading) return null
-  
-    // Dùng EmptyState của Ignite để thống nhất UI empty và tránh nhân đôi layout giữa các màn.
-    return (
-      <EmptyState
-        heading="No notifications"
-        content="You're all caught up"
-        button=""
-        style={$emptyContainer}
-        headingStyle={$emptyTitle}
-        contentStyle={$emptySub}
-      />
-    )
-  }
+    function renderEmpty() {
+      if (notificationStore.isLoading) return null
 
-  const notificationItems: NotificationListItem[] = notificationStore.items.map((item) => ({
-    id: item.id,
-    title: item.title,
-    content: item.content,
-    isRead: item.isRead,
-    sentAt: item.sentAt,
-  }))
+      // Dùng EmptyState của Ignite để thống nhất UI empty và tránh nhân đôi layout giữa các màn.
+      return (
+        <EmptyState
+          heading="No notifications"
+          content="You're all caught up"
+          button=""
+          style={$emptyContainer}
+          headingStyle={$emptyTitle}
+          contentStyle={$emptySub}
+        />
+      )
+    }
 
-  return (
-    <Screen
-      preset="fixed"
-      safeAreaEdges={["top"]}
-      style={$screenContainer}
-      contentContainerStyle={$screenFill}
-    >
-      <AppSectionHeader
-        title="Notifications"
-        subtitle={notificationStore.unreadCount > 0 ? `${notificationStore.unreadCount} unread` : undefined}
-        onRefresh={() => notificationStore.fetchNotifications()}
-      />
+    function renderTopActions() {
+      if (notificationStore.items.length === 0) return null
 
-      {notificationStore.items.length > 0 && (
+      const hasUnread = notificationStore.unreadCount > 0
+
+      return (
         <View style={$topActions}>
-          <TouchableOpacity style={[$topBtn, $btnGreen]} onPress={handleMarkAllRead}>
-            <Feather name="check-circle" size={16} color={colors.palette.secondary400} />
-            <Text preset="caption" style={[$topBtnText, $topBtnGreenText]}>
-              Mark all read
-            </Text>
-          </TouchableOpacity>
+          {hasUnread && (
+            <TouchableOpacity style={[$topBtn, $markAllReadBtn]} onPress={handleMarkAllRead}>
+              <Feather name="check-circle" size={16} color={colors.palette.primary700} />
+              <Text preset="caption" style={[$topBtnText, $markAllReadText]}>
+                Mark all read
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity style={[$topBtn, $btnRed]} onPress={handleDeleteAll}>
             <Feather name="trash-2" size={16} color={colors.palette.angry500} />
@@ -142,11 +129,25 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(functi
             </Text>
           </TouchableOpacity>
         </View>
-      )}
+      )
+    }
 
-      {notificationStore.isLoading ? (
-        <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
-      ) : (
+    function renderNotificationList() {
+      const notificationItems: NotificationListItem[] = notificationStore.items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        isRead: item.isRead,
+        sentAt: item.sentAt,
+      }))
+
+      if (notificationStore.isLoading) {
+        return (
+          <ActivityIndicator size="large" color={colors.palette.primary700} style={$loadingSpinner} />
+        )
+      }
+
+      return (
         <View style={$list}>
           <ListView<NotificationListItem>
             contentContainerStyle={notificationStore.items.length > 0 ? $listContent : undefined}
@@ -170,7 +171,27 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(functi
             )}
           />
         </View>
-      )}
-    </Screen>
-  )
-})
+      )
+    }
+
+    return (
+      <Screen
+        preset="fixed"
+        safeAreaEdges={["top"]}
+        style={$screenContainer}
+        contentContainerStyle={$screenFill}
+      >
+        <AppSectionHeader
+          title="Notifications"
+          subtitle={
+            notificationStore.unreadCount > 0 ? `${notificationStore.unreadCount} unread` : undefined
+          }
+          onRefresh={() => notificationStore.fetchNotifications()}
+        />
+
+        {renderTopActions()}
+        {renderNotificationList()}
+      </Screen>
+    )
+  },
+)

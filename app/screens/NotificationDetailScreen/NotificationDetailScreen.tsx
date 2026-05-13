@@ -60,7 +60,7 @@ export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = obser
         <View style={$card}>
           <View style={$cardHeader}>
             <View style={$iconCircle}>
-              <Feather name="bell" size={24} color={colors.palette.secondary400} />
+              <Feather name="bell" size={24} color={colors.palette.primary700} />
             </View>
             <View style={$metaInfo}>
               <Text preset="caption" style={$timeText}>

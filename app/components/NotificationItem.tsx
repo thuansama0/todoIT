@@ -43,7 +43,7 @@ export const NotificationItem: FC<NotificationItemProps> = observer(function Not
       <View style={$actionsContainer}>
         {!isRead && (
           <TouchableOpacity style={$actionBtn} onPress={onMarkRead}>
-            <Feather name="check-circle" size={20} color={colors.palette.success500} />
+            <Feather name="check-circle" size={20} color={colors.palette.primary700} />
           </TouchableOpacity>
         )}
         <TouchableOpacity style={$actionBtn} onPress={onDelete}>

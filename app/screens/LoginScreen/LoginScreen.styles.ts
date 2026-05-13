@@ -6,7 +6,7 @@ export const $logoBox: ViewStyle = {
   width: 65,
   height: 65,
   borderRadius: 8,
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   alignItems: "center",
   justifyContent: "center",
   marginBottom: spacing.lg,
@@ -26,7 +26,7 @@ export const $subtitle: TextStyle = {
 export const $fieldContainer: ViewStyle = { marginBottom: spacing.lg, marginTop: 5, borderRadius: 8 }
 export const $loginButton: ViewStyle = {
   marginTop: spacing.lg,
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   borderRadius: 20,
 }
 export const $footerText: TextStyle = {
@@ -43,7 +43,7 @@ export const $footerText1: TextStyle = {
 export const $fieldContainer1: ViewStyle = { marginBottom: spacing.lg, borderRadius: 10 }
 export const $ButtonText: TextStyle = { color: colors.palette.neutral100 }
 export const $logoCheck: TextStyle = {
-  color: colors.palette.neutral100,
+  color: colors.palette.primary800,
   fontSize: 30,
   fontFamily: typography.primary.bold,
 }

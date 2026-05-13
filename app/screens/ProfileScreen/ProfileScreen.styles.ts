@@ -14,7 +14,7 @@ export const $avatarCircle: ViewStyle = {
   width: 100,
   height: 100,
   borderRadius: 50,
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   justifyContent: "center",
   alignItems: "center",
   marginBottom: spacing.md,
@@ -37,7 +37,10 @@ export const $cameraBadge: ViewStyle = {
   borderColor: colors.palette.neutral300,
   elevation: 2,
 }
-export const $nameText: TextStyle = { marginBottom: spacing.xxs }
+export const $nameText: TextStyle = {
+  marginBottom: spacing.xxs,
+  fontFamily: typography.primary.bold,
+}
 export const $emailText: TextStyle = { color: colors.palette.neutral500 }
 export const $tapToChangeText: TextStyle = {
   color: colors.palette.neutral500,
@@ -46,7 +49,7 @@ export const $tapToChangeText: TextStyle = {
 
 export const $editProfileBtn: ViewStyle = {
   flexDirection: "row",
-  backgroundColor: colors.palette.secondary100,
+  backgroundColor: colors.palette.primary900,
   paddingVertical: spacing.md,
   borderRadius: 12,
   justifyContent: "center",
@@ -54,11 +57,14 @@ export const $editProfileBtn: ViewStyle = {
   marginBottom: spacing.xl,
 }
 export const $editProfileText: TextStyle = {
-  color: colors.palette.secondary400,
+  color: colors.palette.primary700,
   marginLeft: spacing.xs,
+  fontFamily: typography.primary.bold,
 }
 
 export const $formSection: ViewStyle = { marginBottom: spacing.xl }
+/** Khoảng cách giữa các ô nhập */
+export const $profileTextFieldContainer: ViewStyle = { marginBottom: spacing.lg }
 export const $label: TextStyle = {
   marginBottom: spacing.xs,
 }
@@ -77,7 +83,7 @@ export const $input: TextStyle = {
 export const $actionRow: ViewStyle = {
   flexDirection: "row",
   justifyContent: "space-between",
-  marginTop: spacing.xs,
+  marginTop: spacing.sm,
 }
 export const $actionBtn: ViewStyle = {
   flex: 1,
@@ -87,15 +93,17 @@ export const $actionBtn: ViewStyle = {
   justifyContent: "center",
 }
 export const $cancelBtn: ViewStyle = {
-  backgroundColor: colors.palette.secondary100,
+  backgroundColor: colors.palette.neutral200,
   marginRight: spacing.xs,
 }
-export const $saveBtn: ViewStyle = { backgroundColor: colors.palette.secondary400, marginLeft: spacing.xs }
+export const $saveBtn: ViewStyle = { backgroundColor: colors.palette.primary700, marginLeft: spacing.xs }
 export const $cancelText: TextStyle = {
-  color: colors.palette.secondary400,
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
 }
 export const $saveText: TextStyle = {
   color: colors.palette.neutral100,
+  fontFamily: typography.primary.bold,
 }
 
 export const $accountSection: ViewStyle = {
@@ -109,6 +117,7 @@ export const $sectionTitle: TextStyle = {
   color: colors.palette.neutral500,
   letterSpacing: 1,
   marginBottom: spacing.md,
+  fontFamily: typography.primary.bold,
 }
 export const $accountBtn: ViewStyle = {
   paddingVertical: spacing.md,
@@ -117,13 +126,15 @@ export const $accountBtn: ViewStyle = {
   justifyContent: "center",
   marginBottom: spacing.sm,
 }
-export const $signOutBtn: ViewStyle = { backgroundColor: colors.palette.secondary100 }
+export const $signOutBtn: ViewStyle = { backgroundColor: colors.palette.primary900 }
 export const $deleteBtn: ViewStyle = { backgroundColor: colors.errorBackground, marginBottom: 0 }
 export const $signOutText: TextStyle = {
-  color: colors.palette.secondary400,
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
 }
 export const $deleteText: TextStyle = {
   color: colors.palette.angry500,
+  fontFamily: typography.primary.bold,
 }
 export const $avatarImage: ImageStyle = {
   width: "100%",

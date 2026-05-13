@@ -9,7 +9,8 @@ import { observer } from "mobx-react-lite"
 import type { AppStackParamList } from "app/navigators"
 import { CreateTodoPayload } from "app/services/api/todoApi"
 import { formatDueDateFromTimestamp, getCurrentDateString, parseDateTime } from "app/utils/formatDate"
-
+import { DEFAULT_TODO_IMAGE_URL } from "app/config/media"
+import { TODO_REMINDER_MINUTE_OPTIONS } from "app/constants/todo"
 import {
   $disabledButton,
   $dropdownButton,
@@ -41,7 +42,6 @@ import {
   $submitButtonText,
 } from "./TodoFormScreen.styles"
 
-const DEFAULT_IMAGE_URL = "https://res.cloudinary.com/demo/image/upload/sample.jpg"
 
 export type TodoFormMode = "create" | "edit"
 
@@ -133,7 +133,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
       title,
       content,
       // Giữ contract backend ổn định trước khi hoàn thiện luồng upload/chọn ảnh thật.
-      imageUrl: DEFAULT_IMAGE_URL,
+      imageUrl: DEFAULT_TODO_IMAGE_URL,
       dueDate: finalDueDate,
       categoryId,
     }
@@ -229,7 +229,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
               Remind before
             </Text>
             <View style={$reminderRow}>
-              {[0, 5, 15, 30, 60].map((minute) => (
+              {TODO_REMINDER_MINUTE_OPTIONS.map((minute) => (
                 <TouchableOpacity
                   key={minute}
                   style={[$reminderChip, reminderMinutes === minute && $reminderChipActive]}
@@ -302,7 +302,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
           Image
         </Text>
         <TouchableOpacity style={$imagePickerWrapper}>
-          <Ionicons name="checkmark-circle-outline" size={24} color={colors.palette.secondary400} />
+          <Ionicons name="checkmark-circle-outline" size={24} color={colors.palette.primary700} />
           <Text style={$imagePickerText} preset="caption">
             Image selected (tap to change)
           </Text>

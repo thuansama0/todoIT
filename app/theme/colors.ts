@@ -18,12 +18,17 @@ const palette = {
   primary400: "#D28468",
   primary500: "#C76542",
   primary600: "#A54F31",
-
+  primary700: "#3B5ADB",
+  primary800: "#FFFFFF",
+  primary900: "#EDF2FE",
+  // todo: tại sao lại dùng secondary
   secondary100: "#DCDDE9",
   secondary200: "#BCC0D6",
   secondary300: "#9196B9",
   secondary400: "#626894",
   secondary500: "#41476E",
+  /** Darker secondary (avoid reusing for unrelated greens) */
+  secondary600: "#343852",
 
   accent100: "#FFEED4",
   accent200: "#FFE1B2",
@@ -31,15 +36,18 @@ const palette = {
   accent400: "#FBC878",
   accent500: "#FFBB50",
   info500: "#3B5998",
+  success100: "#D0FAE5",
   success500: "#4CAF50",
   slate500: "#78909C",
   gray500: "#9E9E9E",
+  /** Header refresh control & similar icon tint */
+  reload500: "#7F91D2",
   surfaceSoft: "#F8F9FF",
 
   angry100: "#F2D6CD",
   angry500: "#C03403",
 
-  overlay20: "rgba(25, 16, 21, 0.2)",
+  overlay20: "rgba(35, 34, 35, 0.2)",
   overlay50: "rgba(25, 16, 21, 0.5)",
 } as const
 
@@ -88,5 +96,11 @@ export const colors = {
    */
   errorBackground: palette.angry100,
   success: palette.success500,
+  /** Light green surfaces (e.g. Mark Done button) */
+  successSurface: palette.success100,
   info: palette.info500,
+  /**
+   * Header refresh icon — align with primary actions (primary700).
+   */
+  reloadIcon: palette.primary700,
 }

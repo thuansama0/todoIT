@@ -19,7 +19,7 @@ export const $fab: ViewStyle = {
   width: 60,
   height: 60,
   borderRadius: 30,
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   alignItems: "center",
   justifyContent: "center",
   elevation: 8,

@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, ReactElement } from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
 import { Header } from "./Header"
 import { IconTypes } from "./Icon"
@@ -13,8 +13,12 @@ interface AppSectionHeaderProps {
   leftIcon?: IconTypes
   onLeftPress?: () => void
   rightIcon?: IconTypes
+  /** Overrides reload / right icon tint when provided */
+  rightIconColor?: string
   onRightPress?: () => void
   rightText?: string
+  /** Custom right action (e.g. vector icon). Overrides rightIcon / rightText / refresh when set. */
+  RightActionComponent?: ReactElement
 }
 
 export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
@@ -25,10 +29,26 @@ export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
   leftIcon,
   onLeftPress,
   rightIcon,
+  rightIconColor,
   onRightPress,
   rightText,
+  RightActionComponent,
 }) => {
   const shouldShowRefresh = showRefresh && !!onRefresh
+  const resolvedRightIcon =
+    RightActionComponent != null
+      ? undefined
+      : rightIcon ?? (shouldShowRefresh ? "refresh" : undefined)
+  const resolvedRightIconColor =
+    rightIconColor ?? (resolvedRightIcon === "refresh" ? colors.reloadIcon : undefined)
+  const resolvedRightText =
+    RightActionComponent != null
+      ? undefined
+      : !rightIcon && !shouldShowRefresh
+        ? rightText
+        : undefined
+  const resolvedOnRightPress =
+    RightActionComponent != null ? undefined : onRightPress ?? (shouldShowRefresh ? onRefresh : undefined)
 
   return (
     <View style={$headerArea}>
@@ -40,9 +60,11 @@ export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
         style={$header}
         leftIcon={leftIcon}
         onLeftPress={onLeftPress}
-        rightIcon={rightIcon ?? (shouldShowRefresh ? "refresh" : undefined)}
-        rightText={!rightIcon && !shouldShowRefresh ? rightText : undefined}
-        onRightPress={onRightPress ?? (shouldShowRefresh ? onRefresh : undefined)}
+        rightIcon={resolvedRightIcon}
+        rightIconColor={resolvedRightIconColor}
+        rightText={resolvedRightText}
+        onRightPress={resolvedOnRightPress}
+        RightActionComponent={RightActionComponent}
       />
       {!!subtitle && <Text style={$subtitle}>{subtitle}</Text>}
     </View>

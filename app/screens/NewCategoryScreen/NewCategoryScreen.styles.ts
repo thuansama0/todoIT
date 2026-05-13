@@ -25,20 +25,22 @@ export const $switchRow: ViewStyle = {
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
+  marginTop: spacing.xxl,
   marginBottom: spacing.xl + spacing.xs,
 }
 export const $switchTextContainer: ViewStyle = { flex: 1, paddingRight: spacing.md }
 export const $switchTitle: TextStyle = {
   marginBottom: spacing.xxs,
+  fontFamily: typography.primary.bold,
 }
 export const $submitButton: ViewStyle = {
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   paddingVertical: spacing.md,
   borderRadius: 12,
   alignItems: "center",
   justifyContent: "center",
   minHeight: 56,
-}
+} 
 export const $submitButtonText: TextStyle = {
   color: colors.palette.neutral100,
   fontFamily: typography.primary.bold,

@@ -60,7 +60,7 @@ export const $footerContainer: ViewStyle = {
   borderColor: colors.palette.neutral300,
 }
 export const $submitButton: ViewStyle = {
-  backgroundColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
   paddingVertical: spacing.md,
   borderRadius: 12,
   alignItems: "center",
@@ -89,7 +89,7 @@ export const $dropdownItem: ViewStyle = {
   borderBottomWidth: 1,
   borderBottomColor: colors.palette.neutral200,
 }
-export const $dropdownItemActive: ViewStyle = { backgroundColor: colors.palette.secondary100 }
+export const $dropdownItemActive: ViewStyle = { backgroundColor: colors.palette.primary900 }
 export const $dueDateWrap: ViewStyle = { marginBottom: spacing.md }
 export const $reminderRow: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs }
 export const $reminderChip: ViewStyle = {
@@ -103,8 +103,8 @@ export const $reminderChip: ViewStyle = {
   marginBottom: spacing.xs,
 }
 export const $reminderChipActive: ViewStyle = {
-  backgroundColor: colors.palette.secondary400,
-  borderColor: colors.palette.secondary400,
+  backgroundColor: colors.palette.primary700,
+  borderColor: colors.palette.primary700,
 }
 export const $reminderChipTextActive: TextStyle = { color: colors.palette.neutral100 }
 export const $labelNoTop: TextStyle = { marginTop: 0 }

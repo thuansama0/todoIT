@@ -102,7 +102,7 @@ const $presets = {
 
   subheading: [$baseStyle, $sizeStyles.lg, $fontWeightStyles.medium] as StyleProp<TextStyle>,
 
-  formLabel: [$baseStyle, $fontWeightStyles.medium] as StyleProp<TextStyle>,
+  formLabel: [$baseStyle, $fontWeightStyles.bold] as StyleProp<TextStyle>,
 
   formHelper: [$baseStyle, $sizeStyles.sm, $fontWeightStyles.normal] as StyleProp<TextStyle>,
 
@@ -126,7 +126,7 @@ const $presets = {
     $baseStyle,
     $sizeStyles.sm,
     $fontWeightStyles.medium,
-    { color: colors.palette.primary500, textDecorationLine: "underline" },
+    { color: colors.palette.primary700, textDecorationLine: "underline" },
   ] as StyleProp<TextStyle>,
 }
 
