@@ -24,7 +24,7 @@ import {
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
-export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) { //todo: navigation tac dung gi và tại sao bên này khai báo navigation mà bên categoris lại dùng khác sếp tôi yêu cầu tôi tìm hiểu và dùng đúng 1 kiểu thôi
+export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) {
    const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -67,7 +67,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
           response.data?.message || "Email hoặc mật khẩu không chính xác.",
         )
       }
-      console.tron?.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data) // TODO: tim hieu tai sao k in
+      console.tron?.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data) // TODO: tim hieu tai sao k in // in ra máy 
     }
   }
 

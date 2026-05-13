@@ -10,7 +10,9 @@ import { CategoryItem } from "app/components/CategoryItem"
 import { colors } from "app/theme"
 import { observer } from "mobx-react-lite"
 import { Feather } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
+import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
+import type { CompositeScreenProps } from "@react-navigation/native"
+import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 
 import {
   $fab,
@@ -21,12 +23,17 @@ import {
   $screenInner,
 } from "./CategoriesScreen.styles"
 import { useStores } from "app/models"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { AppStackParamList } from "app/navigators"
+import type { AppStackParamList } from "app/navigators"
+import type { TabParamList } from "app/navigators/TabNavigator"
 
-export const CategoriesScreen: FC = observer(function CategoriesScreen() {
-  type AppStackNavigatorProps = NativeStackNavigationProp<AppStackParamList>
-  const navigation = useNavigation<AppStackNavigatorProps>()
+type CategoriesScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, "Categories">,
+  NativeStackScreenProps<AppStackParamList>
+>
+
+export const CategoriesScreen: FC<CategoriesScreenProps> = observer(function CategoriesScreen({
+  navigation,
+}) {
   const { categoryStore } = useStores()
 
   function handleDelete(id: string) {

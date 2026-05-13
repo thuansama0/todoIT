@@ -3,7 +3,7 @@ import { Alert, ScrollView, TouchableOpacity, View } from "react-native"
 import { AppSectionHeader, Button, Screen, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
 import { Feather, Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import type { AppStackParamList } from "app/navigators"
@@ -46,12 +46,15 @@ import {
 export type TodoFormMode = "create" | "edit"
 
 export type TodoFormScreenProps =
-  | { mode: "create" }
-  | { mode: "edit"; initialTodo: AppStackParamList["EditTodo"]["todoData"] }
-
+  | { mode: "create"; navigation: NativeStackNavigationProp<AppStackParamList, "NewTodo"> }
+  | {
+      mode: "edit"
+      initialTodo: AppStackParamList["EditTodo"]["todoData"]
+      navigation: NativeStackNavigationProp<AppStackParamList, "EditTodo">
+    }
 
 export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFormScreen(props) {
-  const navigation = useNavigation()
+  const { navigation } = props
   const { todoStore, categoryStore } = useStores()
 
   const [title, setTitle] = useState(() =>

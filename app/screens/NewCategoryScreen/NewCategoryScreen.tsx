@@ -4,7 +4,6 @@ import { observer } from "mobx-react-lite"
 import { AppStackScreenProps } from "app/navigators"
 import { AppSectionHeader, Screen, Button, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
-import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import {
   $disabledButton,
@@ -22,8 +21,9 @@ import {
 
 interface NewCategoryScreenProps extends AppStackScreenProps<"NewCategory"> {}
 
-export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function NewCategoryScreen() {
-  const navigation = useNavigation()
+export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function NewCategoryScreen({
+  navigation,
+}) {
   const { categoryStore } = useStores()
   const [name, setName] = useState("")
   const [isPublic, setIsPublic] = useState(false)

@@ -13,8 +13,9 @@ import { useStores } from "app/models"
 import { colors } from "app/theme"
 import { formatTimeAgo } from "app/utils/formatDate"
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
-import { useIsFocused, useNavigation } from "@react-navigation/native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import type { CompositeScreenProps } from "@react-navigation/native"
+import { useIsFocused } from "@react-navigation/native"
+import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { Feather } from "@expo/vector-icons"
 import { observer } from "mobx-react-lite"
 import {
@@ -43,12 +44,13 @@ type NotificationListItem = {
   sentAt: number
 }
 
-type NotificationsScreenProps = BottomTabScreenProps<TabParamList, "Notifications">
+type NotificationsScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, "Notifications">,
+  NativeStackScreenProps<AppStackParamList>
+>
 
 export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
-  function NotificationsScreen() {
-    type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
-    const navigation = useNavigation<AppStackNavigation>()
+  function NotificationsScreen({ navigation }) {
     const isFocused = useIsFocused()
     const { notificationStore } = useStores()
     const [, setTimeTick] = useState(0)
