@@ -29,10 +29,18 @@ export const CategoryItem: FC<CategoryItemProps> = observer(function CategoryIte
       RightComponent={
         isOwner ? (
           <View style={$actionsContainer}>
-            <TouchableOpacity style={$actionBtn} onPress={onEdit} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              style={$actionBtn}
+              onPress={onEdit}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Feather name="edit-2" size={16} color={colors.palette.slate500} />
             </TouchableOpacity>
-            <TouchableOpacity style={$actionBtn} onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              style={$actionBtn}
+              onPress={onDelete}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Feather name="trash-2" size={16} color={colors.palette.angry500} />
             </TouchableOpacity>
           </View>

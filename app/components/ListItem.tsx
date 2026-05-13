@@ -168,7 +168,7 @@ export function ListItem(props: ListItemProps) {
 function ListItemAction(props: ListItemActionProps) {
   const { icon, Component, iconColor, size, side } = props
 
-  const $iconContainerStyles = [$iconContainer]
+  const $iconContainerStyles = [$iconContainer, iconActionSlotHeightStyle(size)]
 
   if (Component) {
     return (
@@ -177,7 +177,7 @@ function ListItemAction(props: ListItemActionProps) {
           $iconContainer,
           side === "left" && $iconContainerLeft,
           side === "right" && $iconContainerRight,
-          { height: size, justifyContent: "center" },
+          iconActionSlotHeightStyle(size),
         ]}
       >
         {Component}
@@ -195,13 +195,16 @@ function ListItemAction(props: ListItemActionProps) {
           $iconContainerStyles,
           side === "left" && $iconContainerLeft,
           side === "right" && $iconContainerRight,
-          { height: size },
         ]}
       />
     )
   }
 
   return null
+}
+
+function iconActionSlotHeightStyle(height: number): ViewStyle {
+  return { height }
 }
 
 const $separatorTop: ViewStyle = {
