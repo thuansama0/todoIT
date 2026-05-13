@@ -61,10 +61,10 @@ export const CategoryStoreModel = types
       store.items.unshift(
         cast(
           normalizeCategory({
-          id: tempId,
-          name: normalizedName,
-          isPublic,
-          isOwner: true,
+            id: tempId,
+            name: normalizedName,
+            isPublic,
+            isOwner: true,
           }),
         ),
       )
@@ -79,7 +79,11 @@ export const CategoryStoreModel = types
       return response
     })
 
-    const updateCategory = flow(function* updateCategory(id: string, name: string, isPublic: boolean) {
+    const updateCategory = flow(function* updateCategory(
+      id: string,
+      name: string,
+      isPublic: boolean,
+    ) {
       const idx = store.items.findIndex((x) => x.id === id)
       const backup =
         idx >= 0
@@ -91,7 +95,9 @@ export const CategoryStoreModel = types
             }
           : null
       if (idx >= 0) {
-        store.items[idx] = cast(normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }))
+        store.items[idx] = cast(
+          normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }),
+        )
       }
 
       const response = yield categoryApi.updateCategory(id, name.trim(), isPublic)
@@ -119,7 +125,14 @@ export const CategoryStoreModel = types
       store.isLoading = false
     }
 
-    return { fetchCategories, loadIfNeeded, createCategory, updateCategory, deleteCategory, resetForAuthChange }
+    return {
+      fetchCategories,
+      loadIfNeeded,
+      createCategory,
+      updateCategory,
+      deleteCategory,
+      resetForAuthChange,
+    }
   })
 
 export interface CategoryStore extends Instance<typeof CategoryStoreModel> {}

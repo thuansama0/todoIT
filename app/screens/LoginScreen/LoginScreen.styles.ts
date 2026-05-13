@@ -23,7 +23,11 @@ export const $subtitle: TextStyle = {
   textAlign: "center",
   color: colors.palette.neutral600,
 }
-export const $fieldContainer: ViewStyle = { marginBottom: spacing.lg, marginTop: 5, borderRadius: 8 }
+export const $fieldContainer: ViewStyle = {
+  marginBottom: spacing.lg,
+  marginTop: 5,
+  borderRadius: 8,
+}
 export const $loginButton: ViewStyle = {
   marginTop: spacing.lg,
   backgroundColor: colors.palette.primary700,

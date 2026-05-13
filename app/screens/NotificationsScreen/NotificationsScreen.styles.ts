@@ -21,10 +21,16 @@ export const $topBtn: ViewStyle = {
 export const $markAllReadBtn: ViewStyle = { backgroundColor: colors.palette.primary900 }
 export const $btnRed: ViewStyle = { backgroundColor: colors.errorBackground }
 export const $topBtnText: TextStyle = { marginLeft: spacing.xxs + spacing.xxxs }
-export const $markAllReadText: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
+export const $markAllReadText: TextStyle = {
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
+}
 export const $topBtnRedText: TextStyle = { color: colors.palette.angry500 }
 export const $list: ViewStyle = { flex: 1 }
-export const $listContent: ViewStyle = { padding: spacing.md, paddingBottom: spacing.xl + spacing.xs }
+export const $listContent: ViewStyle = {
+  padding: spacing.md,
+  paddingBottom: spacing.xl + spacing.xs,
+}
 export const $emptyContainer: ViewStyle = {
   flex: 1,
   justifyContent: "center",

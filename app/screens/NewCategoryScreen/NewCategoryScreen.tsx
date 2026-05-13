@@ -17,8 +17,6 @@ import {
   $switchTitle,
 } from "./NewCategoryScreen.styles"
 
-
-
 interface NewCategoryScreenProps extends AppStackScreenProps<"NewCategory"> {}
 
 export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function NewCategoryScreen({
@@ -58,10 +56,14 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function N
 
   return (
     <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
-      <AppSectionHeader title="New Category" showRefresh={false} leftIcon="x" onLeftPress={() => navigation.goBack()} />
+      <AppSectionHeader
+        title="New Category"
+        showRefresh={false}
+        leftIcon="x"
+        onLeftPress={() => navigation.goBack()}
+      />
 
       <View style={$formContainer}>
-
         <TextField
           label="Category name *"
           LabelTextProps={{ preset: "formLabel", style: $label }}
@@ -80,18 +82,17 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function N
               {isPublic ? "Visible to all users" : "Only visible to you"}
             </Text>
           </View>
-          
+
           <Toggle variant="switch" value={isPublic} onValueChange={setIsPublic} />
         </View>
 
-        <Button 
-          text={isLoading ? "Creating..." : "Create Category"} 
+        <Button
+          text={isLoading ? "Creating..." : "Create Category"}
           disabled={isLoading}
-          style={[$submitButton, isLoading && $disabledButton]} 
+          style={[$submitButton, isLoading && $disabledButton]}
           textStyle={$submitButtonText}
-          onPress={handleCreateCategory} 
+          onPress={handleCreateCategory}
         />
-
       </View>
     </Screen>
   )

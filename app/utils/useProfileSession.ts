@@ -8,13 +8,8 @@ import { remove } from "app/utils/storage"
 
 export function useProfileSession() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>()
-  const {
-    profileStore,
-    authenticationStore,
-    notificationStore,
-    todoStore,
-    categoryStore,
-  } = useStores()
+  const { profileStore, authenticationStore, notificationStore, todoStore, categoryStore } =
+    useStores()
 
   const finishSession = useCallback(async () => {
     await remove("accessToken")
@@ -26,14 +21,7 @@ export function useProfileSession() {
     categoryStore.resetForAuthChange?.()
     profileStore.clearProfile()
     navigation.reset({ index: 0, routes: [{ name: "Login" }] })
-  }, [
-    authenticationStore,
-    categoryStore,
-    navigation,
-    notificationStore,
-    profileStore,
-    todoStore,
-  ])
+  }, [authenticationStore, categoryStore, navigation, notificationStore, profileStore, todoStore])
 
   const handleSignOut = useCallback(() => {
     Alert.alert("Đăng xuất", "Bạn muốn đăng xuất khỏi ứng dụng?", [

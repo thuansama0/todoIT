@@ -1,10 +1,6 @@
 import { FC, useState } from "react"
 import { observer } from "mobx-react-lite"
-import {
-  View,
-  Alert,
-  TouchableOpacity,
-} from "react-native"
+import { View, Alert, TouchableOpacity } from "react-native"
 import { AppSectionHeader, Screen, Button, Text, TextField, Toggle } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
@@ -29,104 +25,102 @@ import {
 
 type EditCategoryScreenProps = AppStackScreenProps<"EditCategory">
 
-export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(function EditCategoryScreen({
-  route,
-  navigation,
-}) {
-  const { categoryStore } = useStores()
+export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
+  function EditCategoryScreen({ route, navigation }) {
+    const { categoryStore } = useStores()
 
-  const { categoryData } = route.params as { categoryData: Category }
-  const [name, setName] = useState(categoryData.name)
-  const [isPublic, setIsPublic] = useState(categoryData.isPublic)
-  const [isLoading, setIsLoading] = useState(false)
+    const { categoryData } = route.params as { categoryData: Category }
+    const [name, setName] = useState(categoryData.name)
+    const [isPublic, setIsPublic] = useState(categoryData.isPublic)
+    const [isLoading, setIsLoading] = useState(false)
 
-  async function handleSaveChanges() {
-    if (!name.trim()) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập tên danh mục.")
-      return
+    async function handleSaveChanges() {
+      if (!name.trim()) {
+        Alert.alert("Thiếu thông tin", "Vui lòng nhập tên danh mục.")
+        return
+      }
+
+      setIsLoading(true)
+      const response = await categoryStore.updateCategory(categoryData.id, name.trim(), isPublic)
+      setIsLoading(false)
+
+      if (response.ok && response.data?.success) {
+        Alert.alert("Thành công", "Đã cập nhật danh mục!")
+        navigation.goBack()
+      } else {
+        Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật danh mục.")
+      }
     }
 
-    setIsLoading(true)
-    const response = await categoryStore.updateCategory(categoryData.id, name.trim(), isPublic)
-    setIsLoading(false)
-
-    if (response.ok && response.data?.success) {
-      Alert.alert("Thành công", "Đã cập nhật danh mục!")
-      navigation.goBack()
-    } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật danh mục.")
-    }
-  }
-
-  async function handleDelete() {
-    Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa danh mục này?", [
-      { text: "Hủy", style: "cancel" },
-      {
-        text: "Xóa",
-        style: "destructive",
-        onPress: async () => {
-          setIsLoading(true)
-          const response = await categoryStore.deleteCategory(categoryData.id)
-          if (response.ok && response.data?.success) {
-            navigation.goBack()
-          } else {
-            setIsLoading(false)
-            Alert.alert("Lỗi", "Không thể xóa danh mục.")
-          }
+    async function handleDelete() {
+      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa danh mục này?", [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            setIsLoading(true)
+            const response = await categoryStore.deleteCategory(categoryData.id)
+            if (response.ok && response.data?.success) {
+              navigation.goBack()
+            } else {
+              setIsLoading(false)
+              Alert.alert("Lỗi", "Không thể xóa danh mục.")
+            }
+          },
         },
-      },
-    ])
-  }
+      ])
+    }
 
-  return (
-    <Screen preset="scroll" safeAreaEdges={["top"]} style={$screenContainer}>
-      <AppSectionHeader
-        title="Edit Category"
-        showRefresh={false}
-        leftIcon="x"
-        onLeftPress={() => navigation.goBack()}
-      />
-
-      <View style={$formContainer}>
-        <TextField
-          label="Category name *"
-          LabelTextProps={{ preset: "formLabel", style: $label }}
-          placeholder="e.g. Work, Shopping, Health"
-          value={name}
-          onChangeText={setName}
-          placeholderTextColor={colors.palette.neutral400}
+    return (
+      <Screen preset="scroll" safeAreaEdges={["top"]} style={$screenContainer}>
+        <AppSectionHeader
+          title="Edit Category"
+          showRefresh={false}
+          leftIcon="x"
+          onLeftPress={() => navigation.goBack()}
         />
 
-        <View style={$switchRow}>
-          <View style={$switchTextContainer}>
-            <Text style={$switchTitle} preset="body">
-              Public category
-            </Text>
-            <Text preset="caption">
-              {isPublic ? "Visible to all users" : "Only visible to you"}
-            </Text>
+        <View style={$formContainer}>
+          <TextField
+            label="Category name *"
+            LabelTextProps={{ preset: "formLabel", style: $label }}
+            placeholder="e.g. Work, Shopping, Health"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor={colors.palette.neutral400}
+          />
+
+          <View style={$switchRow}>
+            <View style={$switchTextContainer}>
+              <Text style={$switchTitle} preset="body">
+                Public category
+              </Text>
+              <Text preset="caption">
+                {isPublic ? "Visible to all users" : "Only visible to you"}
+              </Text>
+            </View>
+
+            <Toggle variant="switch" value={isPublic} onValueChange={setIsPublic} />
           </View>
 
-          <Toggle variant="switch" value={isPublic} onValueChange={setIsPublic} />
-        </View>
+          <Button
+            text={isLoading ? "Saving..." : "Save Changes"}
+            disabled={isLoading}
+            style={[$submitButton, isLoading && $disabledButton]}
+            textStyle={$submitButtonText}
+            onPress={handleSaveChanges}
+          />
 
-        <Button
-          text={isLoading ? "Saving..." : "Save Changes"}
-          disabled={isLoading}
-          style={[$submitButton, isLoading && $disabledButton]}
-          textStyle={$submitButtonText}
-          onPress={handleSaveChanges}
-        />
-
-        <View style={$deleteContainer}>
-          <View style={$deleteOuterCircle}>
-            <TouchableOpacity style={$deleteInnerCircle} onPress={handleDelete}>
-              <Feather name="trash-2" size={24} color={colors.palette.neutral100} />
-            </TouchableOpacity>
+          <View style={$deleteContainer}>
+            <View style={$deleteOuterCircle}>
+              <TouchableOpacity style={$deleteInnerCircle} onPress={handleDelete}>
+                <Feather name="trash-2" size={24} color={colors.palette.neutral100} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    </Screen>
-  )
-})
-
+      </Screen>
+    )
+  },
+)

@@ -47,44 +47,45 @@ export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = obser
       ])
     }
 
-  return (
-    <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
-      <AppSectionHeader
-        title="Notification"
-        showRefresh={false}
-        leftIcon="back"
-        onLeftPress={() => navigation.goBack()}
-      />
+    return (
+      <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
+        <AppSectionHeader
+          title="Notification"
+          showRefresh={false}
+          leftIcon="back"
+          onLeftPress={() => navigation.goBack()}
+        />
 
-      <View style={$contentWrapper}>
-        <View style={$card}>
-          <View style={$cardHeader}>
-            <View style={$iconCircle}>
-              <Feather name="bell" size={24} color={colors.palette.primary700} />
+        <View style={$contentWrapper}>
+          <View style={$card}>
+            <View style={$cardHeader}>
+              <View style={$iconCircle}>
+                <Feather name="bell" size={24} color={colors.palette.primary700} />
+              </View>
+              <View style={$metaInfo}>
+                <Text preset="caption" style={$timeText}>
+                  {formatTimeAgo(notificationData.sentAt)}
+                </Text>
+                <Text preset="caption" style={$readText}>
+                  Read
+                </Text>
+              </View>
             </View>
-            <View style={$metaInfo}>
-              <Text preset="caption" style={$timeText}>
-                {formatTimeAgo(notificationData.sentAt)}
-              </Text>
-              <Text preset="caption" style={$readText}>
-                Read
-              </Text>
-            </View>
+
+            <Text preset="titleSm" style={$title}>
+              {notificationData.title}
+            </Text>
+            <Text preset="body">{notificationData.content}</Text>
           </View>
 
-          <Text preset="titleSm" style={$title}>
-            {notificationData.title}
-          </Text>
-          <Text preset="body">{notificationData.content}</Text>
+          <TouchableOpacity style={$deleteBtn} onPress={handleDelete}>
+            <Feather name="trash-2" size={20} color={colors.palette.angry500} />
+            <Text preset="body" style={$deleteBtnText}>
+              Delete Notification
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={$deleteBtn} onPress={handleDelete}>
-          <Feather name="trash-2" size={20} color={colors.palette.angry500} />
-          <Text preset="body" style={$deleteBtnText}>
-            Delete Notification
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </Screen>
-  )
-})
+      </Screen>
+    )
+  },
+)

@@ -40,7 +40,12 @@ const ListViewComponent = forwardRef(
       )
     }
 
-    return <FlashList {...(baseProps as FlashListProps<T>)} ref={ref as React.ForwardedRef<FlashList<T>>} />
+    return (
+      <FlashList
+        {...(baseProps as FlashListProps<T>)}
+        ref={ref as React.ForwardedRef<FlashList<T>>}
+      />
+    )
   },
 )
 

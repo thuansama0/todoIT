@@ -16,7 +16,7 @@ export async function claimReminderDeliverySlot(
 ): Promise<boolean> {
   const now = Date.now()
   const raw = (await load(STORAGE_KEY)) as Record<string, number> | null
-  let map: Record<string, number> = raw && typeof raw === "object" ? { ...raw } : {}
+  const map: Record<string, number> = raw && typeof raw === "object" ? { ...raw } : {}
 
   for (const k of Object.keys(map)) {
     if (now - map[k] > TTL_MS) delete map[k]

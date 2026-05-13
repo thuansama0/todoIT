@@ -1,10 +1,5 @@
 import { FC } from "react"
-import {
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
-} from "react-native"
+import { TouchableOpacity, View, ActivityIndicator, Alert } from "react-native"
 import { AppSectionHeader, Screen, ListView } from "app/components"
 import { CategoryItem } from "app/components/CategoryItem"
 import { colors } from "app/theme"
@@ -47,7 +42,7 @@ export const CategoriesScreen: FC<CategoriesScreenProps> = observer(function Cat
           if (!response.ok || !response.data?.success) {
             Alert.alert("Lỗi", "Không thể xóa danh mục.")
           }
-        }
+        },
       },
     ])
   }
@@ -56,7 +51,11 @@ export const CategoriesScreen: FC<CategoriesScreenProps> = observer(function Cat
     if (categoryStore.isLoading) {
       return (
         <View>
-          <ActivityIndicator size="large" color={colors.palette.primary700} style={$loadingSpinner} /> 
+          <ActivityIndicator
+            size="large"
+            color={colors.palette.primary700}
+            style={$loadingSpinner}
+          />
         </View>
       )
     }

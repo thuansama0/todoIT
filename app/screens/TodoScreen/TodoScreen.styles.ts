@@ -9,7 +9,11 @@ export const $list: ViewStyle = {
   paddingTop: 16,
   minHeight: 2,
 }
-export const $todoItemContainer: ViewStyle = { paddingHorizontal: 16, marginBottom: 0, paddingTop: 0 }
+export const $todoItemContainer: ViewStyle = {
+  paddingHorizontal: 16,
+  marginBottom: 0,
+  paddingTop: 0,
+}
 export const $flatListContent: ViewStyle = { paddingBottom: 100 }
 export const $loading: ViewStyle = { flex: 1, justifyContent: "center", alignItems: "center" }
 export const $fab: ViewStyle = {

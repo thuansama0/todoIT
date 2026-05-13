@@ -1,22 +1,22 @@
-import { FC } from 'react';
-import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';    
-import { Ionicons, Feather } from "@expo/vector-icons";
-import { colors, spacing, typography } from "app/theme";
+import { FC } from "react"
+import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from "react-native"
+import { Ionicons, Feather } from "@expo/vector-icons"
+import { colors, spacing, typography } from "app/theme"
 import { observer } from "mobx-react-lite"
 
 export interface TodoItemProps {
-  title: string;
-  isCompleted: boolean;
-  category: string;
-  timeText: string;
-  notes : string;
-  onToggle?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
+  title: string
+  isCompleted: boolean
+  category: string
+  timeText: string
+  notes: string
+  onToggle?: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
 export const TodoItem: FC<TodoItemProps> = observer(function TodoItem(props) {
-  const { title, isCompleted, category, timeText, notes, onToggle, onEdit, onDelete } = props;
+  const { title, isCompleted, category, timeText, notes, onToggle, onEdit, onDelete } = props
   return (
     <View style={[$container, isCompleted && $containerCompleted]}>
       <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
@@ -28,14 +28,10 @@ export const TodoItem: FC<TodoItemProps> = observer(function TodoItem(props) {
       </TouchableOpacity>
 
       <View style={$contentContainer}>
-        <Text style={[$title, isCompleted && $titleCompleted]}>
-          {title}
-        </Text>
-        {notes && ( 
-          <Text style={$notesText}>{notes}</Text> 
-        )}
+        <Text style={[$title, isCompleted && $titleCompleted]}>{title}</Text>
+        {notes && <Text style={$notesText}>{notes}</Text>}
         <View style={$metaRow}>
-          <View style={$timeContainer}> 
+          <View style={$timeContainer}>
             <Feather name="clock" size={14} color={colors.palette.gray500} />
             <Text style={$timeText}>{timeText}</Text>
           </View>
@@ -55,30 +51,29 @@ export const TodoItem: FC<TodoItemProps> = observer(function TodoItem(props) {
           <Feather name="trash-2" size={18} color={colors.palette.angry500} />
         </TouchableOpacity>
       </View>
-
     </View>
   )
 })
 
 const $container: ViewStyle = {
-  flexDirection: 'row',
+  flexDirection: "row",
   backgroundColor: colors.palette.neutral100,
   borderRadius: 16,
   padding: spacing.md,
   marginBottom: spacing.sm,
   borderWidth: 1,
   borderColor: colors.palette.neutral200,
-  elevation: 2, 
-};
+  elevation: 2,
+}
 
 const $containerCompleted: ViewStyle = {
   backgroundColor: colors.palette.neutral150,
-};
+}
 
 const $checkboxContainer: ViewStyle = {
   marginRight: spacing.sm,
   marginTop: spacing.xxxs,
-};
+}
 
 const $circleUnchecked: ViewStyle = {
   width: 26,
@@ -86,12 +81,12 @@ const $circleUnchecked: ViewStyle = {
   borderRadius: 13,
   borderWidth: 2,
   borderColor: colors.palette.neutral300,
-};
+}
 
 const $contentContainer: ViewStyle = {
   flex: 1,
-  justifyContent: 'center',
-};
+  justifyContent: "center",
+}
 
 const $title: TextStyle = {
   fontSize: 16,
@@ -101,27 +96,27 @@ const $title: TextStyle = {
 }
 
 const $titleCompleted: TextStyle = {
-  textDecorationLine: 'line-through',
+  textDecorationLine: "line-through",
   color: colors.palette.neutral400,
-};
+}
 
 const $metaRow: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-};
+  flexDirection: "row",
+  alignItems: "center",
+}
 
 const $timeContainer: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
+  flexDirection: "row",
+  alignItems: "center",
   marginRight: spacing.sm,
-};
+}
 
 const $timeText: TextStyle = {
   fontSize: 12,
   color: colors.palette.gray500,
   marginLeft: spacing.xxs,
   fontFamily: typography.primary.medium,
-};
+}
 
 const $badgeContainer: ViewStyle = {
   backgroundColor: colors.palette.primary900,
@@ -136,17 +131,17 @@ const $badgeText: TextStyle = {
   fontFamily: typography.primary.bold,
 }
 
-const $actionsContainer: ViewStyle = { 
-  justifyContent: 'space-between', 
-  paddingLeft: spacing.xxs,  
-};
+const $actionsContainer: ViewStyle = {
+  justifyContent: "space-between",
+  paddingLeft: spacing.xxs,
+}
 
-const $actionButton: ViewStyle = { 
+const $actionButton: ViewStyle = {
   padding: spacing.xs + spacing.xxxs,
-};
+}
 const $notesText: TextStyle = {
   fontSize: 14,
   color: colors.palette.neutral600,
   marginTop: 0,
   marginBottom: spacing.xs,
-};
+}

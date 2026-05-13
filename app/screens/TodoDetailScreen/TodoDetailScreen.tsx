@@ -85,7 +85,6 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
       ])
     }
 
-   
     if (todoStore.isLoading && !todo) {
       return (
         <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
@@ -181,7 +180,10 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
                 Status
               </Text>
             </View>
-            <Text preset="body" style={[$infoValue, todo.isCompleted ? $statusDone : $statusPending]}>
+            <Text
+              preset="body"
+              style={[$infoValue, todo.isCompleted ? $statusDone : $statusPending]}
+            >
               {todo.isCompleted ? "Completed" : "Pending"}
             </Text>
           </View>

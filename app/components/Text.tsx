@@ -118,7 +118,12 @@ const $presets = {
 
   caption: [$baseStyle, $sizeStyles.xs, $fontWeightStyles.normal] as StyleProp<TextStyle>,
 
-  error: [$baseStyle, $sizeStyles.xs, $fontWeightStyles.medium, { color: colors.error }] as StyleProp<TextStyle>,
+  error: [
+    $baseStyle,
+    $sizeStyles.xs,
+    $fontWeightStyles.medium,
+    { color: colors.error },
+  ] as StyleProp<TextStyle>,
 
   button: [$baseStyle, $sizeStyles.sm, $fontWeightStyles.medium] as StyleProp<TextStyle>,
 

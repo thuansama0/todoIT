@@ -14,8 +14,10 @@ export interface NotificationItemProps {
   onDelete?: () => void
 }
 
-export const NotificationItem: FC<NotificationItemProps> = observer(function NotificationItem(props) {
-  const { title, content, isRead, timeAgo, onPress, onMarkRead, onDelete } = props;
+export const NotificationItem: FC<NotificationItemProps> = observer(function NotificationItem(
+  props,
+) {
+  const { title, content, isRead, timeAgo, onPress, onMarkRead, onDelete } = props
   return (
     <TouchableOpacity
       style={[$container, !isRead && $containerUnread]}

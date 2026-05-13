@@ -1,6 +1,7 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Notification, notificationApi } from "app/services/api/notificationApi"
+import { DEFAULT_LIST_PAGE_SIZE } from "app/constants/pagination"
 import {
   appendLocalNotificationLog,
   clearLocalNotifications,
@@ -26,7 +27,7 @@ function toPlainNotification(item: any) {
     isRead: item.isRead,
     sentAt: item.sentAt,
   }
-} 
+}
 
 function normalizeNotification(input: Partial<Notification> & { id: string }) {
   return {
@@ -63,10 +64,10 @@ function dedupeMergedNotifications(
       prev.id.startsWith("local-") && !item.id.startsWith("local-")
         ? item
         : item.id.startsWith("local-") && !prev.id.startsWith("local-")
-          ? prev
-          : prev.sentAt >= item.sentAt
-            ? prev
-            : item
+        ? prev
+        : prev.sentAt >= item.sentAt
+        ? prev
+        : item
     byKey.set(key, {
       ...preferServer,
       id: preferServer.id,
@@ -77,7 +78,9 @@ function dedupeMergedNotifications(
     })
   }
 
-  return order.map((k) => byKey.get(k)!)
+  return order
+    .map((k) => byKey.get(k))
+    .filter((item): item is ReturnType<typeof normalizeNotification> => item !== undefined)
 }
 
 export const NotificationStoreModel = types
@@ -93,7 +96,7 @@ export const NotificationStoreModel = types
     const fetchNotifications = flow(function* fetchNotifications() {
       store.isLoading = true
       try {
-        const listRes = yield notificationApi.getNotifications(0, 50)
+        const listRes = yield notificationApi.getNotifications(0, DEFAULT_LIST_PAGE_SIZE)
 
         const localItems = yield loadLocalNotificationLog()
         if (listRes.ok && listRes.data?.success) {

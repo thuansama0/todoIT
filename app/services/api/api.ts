@@ -1,11 +1,6 @@
-import {
-  ApisauceInstance,
-  create,
-} from "apisauce"
+import { ApisauceInstance, create } from "apisauce"
 import Config from "../../config"
-import type {
-  ApiConfig,
-} from "./api.types"
+import type { ApiConfig } from "./api.types"
 import { loadString } from "../../utils/storage"
 
 export const DEFAULT_API_CONFIG: ApiConfig = {
@@ -35,7 +30,6 @@ export class Api {
       }
     })
   }
-
 }
 
 export const api = new Api()

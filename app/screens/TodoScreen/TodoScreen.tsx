@@ -1,11 +1,5 @@
 import { FC, useCallback, useState } from "react"
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native"
+import { ActivityIndicator, Alert, Pressable, TouchableOpacity, View } from "react-native"
 import { AppSectionHeader, ListView, Screen, TodoItem } from "app/components"
 import { AppStackParamList } from "app/navigators"
 import { TabParamList } from "app/navigators/TabNavigator"
@@ -77,7 +71,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
     // Spinner full vùng list chỉ khi chưa có item; đã có list thì giữ list + pull refresh (tránh trắng màn mỗi lần fetch trên Android).
     const showBlockingLoader = todoStore.isLoading && todoStore.items.length === 0
 
-    if (showBlockingLoader) { 
+    if (showBlockingLoader) {
       return (
         <View style={$loading}>
           <ActivityIndicator size="large" color={colors.palette.primary700} />

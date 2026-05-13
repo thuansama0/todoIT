@@ -170,7 +170,20 @@ function ListItemAction(props: ListItemActionProps) {
 
   const $iconContainerStyles = [$iconContainer]
 
-  if (Component) return Component
+  if (Component) {
+    return (
+      <View
+        style={[
+          $iconContainer,
+          side === "left" && $iconContainerLeft,
+          side === "right" && $iconContainerRight,
+          { height: size, justifyContent: "center" },
+        ]}
+      >
+        {Component}
+      </View>
+    )
+  }
 
   if (icon !== undefined) {
     return (
@@ -210,7 +223,7 @@ const $textStyle: TextStyle = {
 
 const $touchableStyle: ViewStyle = {
   flexDirection: "row",
-  alignItems: "flex-start",
+  alignItems: "center",
 }
 
 const $iconContainer: ViewStyle = {

@@ -27,11 +27,11 @@ export type AppStackParamList = {
   SignUp: undefined
   MainTabs: NavigatorScreenParams<TabParamList> | undefined
   NewTodo: undefined
-  TodoDetail: {id: string}
+  TodoDetail: { id: string }
   NewCategory: undefined
-  EditCategory:{categoryData: Category}
-  EditTodo: {todoData: EditTodoRouteData}
-  NotificationDetail: {notificationData: Notification}
+  EditCategory: { categoryData: Category }
+  EditTodo: { todoData: EditTodoRouteData }
+  NotificationDetail: { notificationData: Notification }
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -46,18 +46,16 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 
 const AppStack = observer(function AppStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false, navigationBarColor: colors.background }}
-    >
-          <Stack.Screen name="Login" component={Screens.LoginScreen} />
-          <Stack.Screen name="SignUp" component={Screens.SignUpScreen} />
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
-          <Stack.Screen name="NewTodo" component={Screens.NewTodoScreen} />
-          <Stack.Screen name="TodoDetail" component={Screens.TodoDetailScreen} />
-          <Stack.Screen name="NewCategory" component={Screens.NewCategoryScreen} />
-          <Stack.Screen name="EditCategory" component={Screens.EditCategoryScreen} />
-          <Stack.Screen name="EditTodo" component={Screens.EditTodoScreen} />
-          <Stack.Screen name="NotificationDetail" component={Screens.NotificationDetailScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: false, navigationBarColor: colors.background }}>
+      <Stack.Screen name="Login" component={Screens.LoginScreen} />
+      <Stack.Screen name="SignUp" component={Screens.SignUpScreen} />
+      <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen name="NewTodo" component={Screens.NewTodoScreen} />
+      <Stack.Screen name="TodoDetail" component={Screens.TodoDetailScreen} />
+      <Stack.Screen name="NewCategory" component={Screens.NewCategoryScreen} />
+      <Stack.Screen name="EditCategory" component={Screens.EditCategoryScreen} />
+      <Stack.Screen name="EditTodo" component={Screens.EditTodoScreen} />
+      <Stack.Screen name="NotificationDetail" component={Screens.NotificationDetailScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

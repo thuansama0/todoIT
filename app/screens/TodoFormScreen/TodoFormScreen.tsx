@@ -8,7 +8,11 @@ import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import type { AppStackParamList } from "app/navigators"
 import { CreateTodoPayload } from "app/services/api/todoApi"
-import { formatDueDateFromTimestamp, getCurrentDateString, parseDateTime } from "app/utils/formatDate"
+import {
+  formatDueDateFromTimestamp,
+  getCurrentDateString,
+  parseDateTime,
+} from "app/utils/formatDate"
 import { DEFAULT_TODO_IMAGE_URL } from "app/config/media"
 import { TODO_REMINDER_MINUTE_OPTIONS } from "app/constants/todo"
 import {
@@ -42,7 +46,6 @@ import {
   $submitButtonText,
 } from "./TodoFormScreen.styles"
 
-
 export type TodoFormMode = "create" | "edit"
 
 export type TodoFormScreenProps =
@@ -61,7 +64,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     props.mode === "edit" ? props.initialTodo.title || "" : "",
   )
   const [content, setContent] = useState(() =>
-    props.mode === "edit" ? props.initialTodo.content || "" : "", 
+    props.mode === "edit" ? props.initialTodo.content || "" : "",
   )
   const [isLoading, setIsLoading] = useState(false)
 
@@ -142,7 +145,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     }
 
     if (props.mode === "create") {
-      const response = todoStore.createTodo(payload, reminderMinutes) 
+      const response = todoStore.createTodo(payload, reminderMinutes)
       setIsLoading(false)
       if (response.ok && response.data?.success) {
         navigation.goBack()
@@ -162,7 +165,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
     }
   }
-//
+  //
   const headerTitle = props.mode === "create" ? "New Todo" : "Edit Todo"
   const submitLabel =
     props.mode === "create"
@@ -170,8 +173,8 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         ? "Creating..."
         : "Create Todo"
       : isLoading
-        ? "Saving..."
-        : "Save Changes"
+      ? "Saving..."
+      : "Save Changes"
 
   return (
     <Screen
@@ -232,20 +235,22 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
               Remind before
             </Text>
             <View style={$reminderRow}>
-              {TODO_REMINDER_MINUTE_OPTIONS.map((minute) => (
-                <TouchableOpacity
-                  key={minute}
-                  style={[$reminderChip, reminderMinutes === minute && $reminderChipActive]}
-                  onPress={() => setReminderMinutes(minute)}
-                >
-                  <Text
-                    preset="caption"
-                    style={[reminderMinutes === minute && $reminderChipTextActive]}
+              {TODO_REMINDER_MINUTE_OPTIONS.map(
+                (minute: (typeof TODO_REMINDER_MINUTE_OPTIONS)[number]) => (
+                  <TouchableOpacity
+                    key={minute}
+                    style={[$reminderChip, reminderMinutes === minute && $reminderChipActive]}
+                    onPress={() => setReminderMinutes(minute)}
                   >
-                    {minute === 0 ? "Off" : minute >= 60 ? "1h" : `${minute}m`}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      preset="caption"
+                      style={reminderMinutes === minute && $reminderChipTextActive}
+                    >
+                      {minute === 0 ? "Off" : minute >= 60 ? "1h" : `${minute}m`}
+                    </Text>
+                  </TouchableOpacity>
+                ),
+              )}
             </View>
           </View>
         )}

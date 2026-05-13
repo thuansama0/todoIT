@@ -1,10 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import {
-  ActivityIndicator,
-  Alert,
-  TouchableOpacity,
-  View,
-} from "react-native"
+import { ActivityIndicator, Alert, TouchableOpacity, View } from "react-native"
 import { AppSectionHeader, EmptyState, ListView, Screen, Text } from "app/components"
 import { NotificationItem } from "app/components/NotificationItem"
 import { AppStackParamList } from "app/navigators"
@@ -145,7 +140,11 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
 
       if (notificationStore.isLoading) {
         return (
-          <ActivityIndicator size="large" color={colors.palette.primary700} style={$loadingSpinner} />
+          <ActivityIndicator
+            size="large"
+            color={colors.palette.primary700}
+            style={$loadingSpinner}
+          />
         )
       }
 
@@ -186,7 +185,9 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
         <AppSectionHeader
           title="Notifications"
           subtitle={
-            notificationStore.unreadCount > 0 ? `${notificationStore.unreadCount} unread` : undefined
+            notificationStore.unreadCount > 0
+              ? `${notificationStore.unreadCount} unread`
+              : undefined
           }
           onRefresh={() => notificationStore.fetchNotifications()}
         />

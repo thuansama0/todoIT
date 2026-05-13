@@ -24,8 +24,6 @@ export interface UserApiResult {
   data?: UserProfile
 }
 
-
-
 export const userApi = {
   getMe: async (): Promise<ApiResponse<UserApiResult>> => {
     return await api.apisauce.get<UserApiResult>("/user/me")

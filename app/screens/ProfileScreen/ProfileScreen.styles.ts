@@ -96,7 +96,10 @@ export const $cancelBtn: ViewStyle = {
   backgroundColor: colors.palette.neutral200,
   marginRight: spacing.xs,
 }
-export const $saveBtn: ViewStyle = { backgroundColor: colors.palette.primary700, marginLeft: spacing.xs }
+export const $saveBtn: ViewStyle = {
+  backgroundColor: colors.palette.primary700,
+  marginLeft: spacing.xs,
+}
 export const $cancelText: TextStyle = {
   color: colors.palette.primary700,
   fontFamily: typography.primary.bold,

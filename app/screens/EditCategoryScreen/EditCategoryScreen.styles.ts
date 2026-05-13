@@ -3,7 +3,11 @@ import { colors } from "app/theme"
 
 export * from "../NewCategoryScreen/NewCategoryScreen.styles"
 
-export const $deleteContainer: ViewStyle = { alignItems: "center", marginTop: 80, paddingBottom: 40 }
+export const $deleteContainer: ViewStyle = {
+  alignItems: "center",
+  marginTop: 80,
+  paddingBottom: 40,
+}
 export const $deleteOuterCircle: ViewStyle = {
   width: 80,
   height: 80,

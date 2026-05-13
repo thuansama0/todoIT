@@ -25,7 +25,7 @@ import {
 interface LoginScreenProps extends AppStackScreenProps<"Login"> {}
 
 export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({ navigation }) {
-   const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -67,7 +67,9 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
           response.data?.message || "Email hoặc mật khẩu không chính xác.",
         )
       }
-      console.tron?.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data) // TODO: tim hieu tai sao k in // in ra máy 
+      if (__DEV__) {
+        console.tron.log("Chi tiết lỗi Sign-in:", response.problem, response.data)
+      }
     }
   }
 

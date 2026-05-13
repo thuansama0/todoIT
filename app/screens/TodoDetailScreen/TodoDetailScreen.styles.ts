@@ -2,7 +2,10 @@ import { TextStyle, ViewStyle } from "react-native"
 import { colors, spacing, typography } from "app/theme"
 
 export const $screenContainer: ViewStyle = { flex: 1, backgroundColor: colors.palette.neutral100 }
-export const $content: ViewStyle = { paddingHorizontal: spacing.md + spacing.xxs, paddingBottom: spacing.xl + spacing.xs }
+export const $content: ViewStyle = {
+  paddingHorizontal: spacing.md + spacing.xxs,
+  paddingBottom: spacing.xl + spacing.xs,
+}
 export const $loadingSpinner: ViewStyle = { marginTop: spacing.xxl + spacing.xs }
 
 /** Header right: Feather edit control, align with Header icon hit area */
@@ -55,10 +58,15 @@ export const $infoIconText: ViewStyle = { flexDirection: "row", alignItems: "cen
 export const $infoLabel: TextStyle = {
   marginLeft: spacing.sm,
 }
-export const $infoValue: TextStyle = {
+export const $infoValue: TextStyle = {}
+export const $categoryValue: TextStyle = {
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
 }
-export const $categoryValue: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
-export const $statusDone: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
+export const $statusDone: TextStyle = {
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
+}
 export const $statusPending: TextStyle = { color: colors.palette.accent500 }
 export const $divider: ViewStyle = {
   height: 1,
@@ -79,7 +87,10 @@ export const $actionBtnText: TextStyle = {
 }
 /** Mark Done — nền xanh nhạt (mẫu Pale Cactus) */
 export const $actionMarkDoneBg: ViewStyle = { backgroundColor: colors.palette.primary900 }
-export const $actionMarkDoneText: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
+export const $actionMarkDoneText: TextStyle = {
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
+}
 /** Mark Undone / Mark Pending — nền vàng nhạt, chữ cam */
 export const $actionMarkUndoneBg: ViewStyle = { backgroundColor: colors.palette.accent100 }
 export const $actionMarkUndoneText: TextStyle = { color: colors.palette.accent500 }

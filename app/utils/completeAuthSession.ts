@@ -29,10 +29,10 @@ export async function completeAuthSession<S extends keyof AppStackParamList>(
     // Gom ve mot setter chung de tranh phat sinh nhieu action setter trung lap.
     stores.authenticationStore.setProp("authToken", accessToken)
     await saveString("accessToken", accessToken)
-    void syncExpoPushTokenWithServer(accessToken).catch(() => {})
+    syncExpoPushTokenWithServer(accessToken).catch(() => undefined)
     // Sau login store đã reset (rỗng) → fetch một lần chạy nền; không await để không kẹt màn Login.
-    void stores.todoStore.loadIfNeeded()
-    void stores.categoryStore.loadIfNeeded?.()
+    stores.todoStore.loadIfNeeded().catch(() => undefined)
+    ;(stores.categoryStore.loadIfNeeded?.() ?? Promise.resolve()).catch(() => undefined)
   }
 
   navigation.navigate("MainTabs")

@@ -30,7 +30,10 @@ export const $iconCircle: ViewStyle = {
 }
 export const $metaInfo: ViewStyle = { alignItems: "flex-end" }
 export const $timeText: TextStyle = { marginBottom: spacing.xxs }
-export const $readText: TextStyle = { color: colors.palette.primary700, fontFamily: typography.primary.bold }
+export const $readText: TextStyle = {
+  color: colors.palette.primary700,
+  fontFamily: typography.primary.bold,
+}
 
 export const $title: TextStyle = {
   marginBottom: spacing.md,

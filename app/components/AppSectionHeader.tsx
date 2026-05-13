@@ -45,10 +45,12 @@ export const AppSectionHeader: FC<AppSectionHeaderProps> = ({
     RightActionComponent != null
       ? undefined
       : !rightIcon && !shouldShowRefresh
-        ? rightText
-        : undefined
+      ? rightText
+      : undefined
   const resolvedOnRightPress =
-    RightActionComponent != null ? undefined : onRightPress ?? (shouldShowRefresh ? onRefresh : undefined)
+    RightActionComponent != null
+      ? undefined
+      : onRightPress ?? (shouldShowRefresh ? onRefresh : undefined)
 
   return (
     <View style={$headerArea}>

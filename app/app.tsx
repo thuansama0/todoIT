@@ -16,7 +16,7 @@ import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { ViewStyle } from "react-native"
-import { usePushNotifications } from "./utils/usePushNotifications";
+import { usePushNotifications } from "./utils/usePushNotifications"
 import Toast from "react-native-toast-message"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
@@ -55,10 +55,10 @@ function App(props: AppProps) {
     initialNavigationState, // State của navigation khi khởi tạo app
     onNavigationStateChange, // Hàm callback khi state navigation thay đổi
     isRestored: isNavigationStateRestored,
-  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY) 
+  } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY)
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
-// khởi tạo store và hiển thị splash screen
+  // khởi tạo store và hiển thị splash screen
   const { rootStore, rehydrated } = useInitialRootStore(() => {
     setTimeout(hideSplashScreen, 500)
   })
@@ -66,8 +66,8 @@ function App(props: AppProps) {
   useEffect(() => {
     if (!rehydrated) return
     if (!rootStore.authenticationStore.authToken) return
-    void rootStore.todoStore.loadIfNeeded()
-    void rootStore.categoryStore.loadIfNeeded()
+    rootStore.todoStore.loadIfNeeded().catch(() => undefined)
+    rootStore.categoryStore.loadIfNeeded().catch(() => undefined)
   }, [rehydrated, rootStore])
 
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
@@ -76,7 +76,7 @@ function App(props: AppProps) {
     prefixes: [prefix],
     config,
   }
- // 
+  //
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <RootStoreProvider value={rootStore}>

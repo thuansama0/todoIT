@@ -13,10 +13,7 @@ import {
   getReminderPayloadByNotificationId,
 } from "./todoReminder"
 import { normalizeNotificationData } from "./notificationPayload"
-import {
-  buildTodoReminderCanonicalKey,
-  claimReminderDeliverySlot,
-} from "./reminderDeliveryDedupe"
+import { buildTodoReminderCanonicalKey, claimReminderDeliverySlot } from "./reminderDeliveryDedupe"
 import { loadString } from "app/utils/storage"
 import { userApi } from "app/services/api/userApi"
 import { colors } from "app/theme"
@@ -171,7 +168,9 @@ export const usePushNotifications = () => {
   }
 
   /** Trả về true nếu đã ghi vào store/log (để tránh Toast khi không có dòng list tương ứng). */
-  const pushIncomingReminder = async (notification: Notifications.Notification): Promise<boolean> => {
+  const pushIncomingReminder = async (
+    notification: Notifications.Notification,
+  ): Promise<boolean> => {
     const rawData = normalizeNotificationData(notification.request.content.data)
     const { title, body, fireAtMs } = await resolveNotificationText(notification)
     if (!title.trim() && !body.trim() && fireAtMs <= 0) {
@@ -236,19 +235,22 @@ export const usePushNotifications = () => {
             (typeof item?.content?.body === "string" ? item.content.body.trim() : "") ||
             "Còn ít phút nữa đến lịch của bạn"
 
-          const sweepKey =
-            buildTodoReminderCanonicalKey(data) ?? `sweep|${title}|${body}|${fireAt}`
+          const sweepKey = buildTodoReminderCanonicalKey(data) ?? `sweep|${title}|${body}|${fireAt}`
           const sweepClaimed = await claimReminderDeliverySlot(item.identifier, sweepKey)
           if (!sweepClaimed) {
-            await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(() => {})
+            await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(
+              () => undefined,
+            )
             continue
           }
 
           await notificationStore.addIncomingNotification(title, body, undefined, fireAt)
-          await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(() => {})
+          await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(
+            () => undefined,
+          )
         }
       }
-    })()
+    })().catch(() => undefined)
 
     // Một số máy Android không gọi listener khi app mở từ notification, nên cần đọc response cuối cùng từ Expo.
     ;(async () => {
@@ -260,17 +262,19 @@ export const usePushNotifications = () => {
         handledResponseIds.current.add(id)
         await pushIncomingReminder(last.notification)
         stopWaitingNav = navigateToNotificationsWhenReady()
-      } catch {}
-    })()
+      } catch {
+        return undefined
+      }
+    })().catch(() => undefined)
 
-    ensureNotificationPermissionsAsync().catch(() => {})
+    ensureNotificationPermissionsAsync().catch(() => undefined)
 
     if (authenticationStore.authToken) {
-      syncExpoPushTokenWithServer(authenticationStore.authToken).catch(() => {})
+      syncExpoPushTokenWithServer(authenticationStore.authToken).catch(() => undefined)
     }
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      void (async () => {
+      ;(async () => {
         const didRecord = await pushIncomingReminder(notification)
         if (!didRecord) return
         const { title, body } = await resolveNotificationText(notification)
@@ -280,7 +284,7 @@ export const usePushNotifications = () => {
           text2: body.trim() ? body : "Còn ít phút nữa đến lịch của bạn",
           position: "top",
         })
-      })()
+      })().catch(() => undefined)
     })
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -288,7 +292,7 @@ export const usePushNotifications = () => {
       const id = response.notification.request.identifier || String(response.notification.date)
       if (handledResponseIds.current.has(id)) return
       handledResponseIds.current.add(id)
-      void pushIncomingReminder(response.notification)
+      pushIncomingReminder(response.notification).catch(() => undefined)
       navigateToNotificationsTab()
     })
 
@@ -317,8 +321,6 @@ export async function syncExpoPushTokenWithServer(accessToken?: string) {
 }
 
 async function registerForPushNotificationsAsync() {
-  let token
-
   const finalStatus = await ensureNotificationPermissionsAsync()
   if (finalStatus !== "granted") {
     return undefined
@@ -329,7 +331,7 @@ async function registerForPushNotificationsAsync() {
   }
 
   const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId
-  token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
+  const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data
 
   return token
 }

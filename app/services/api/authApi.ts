@@ -15,7 +15,6 @@ export interface LoginResult {
   }
 }
 
-
 export const authApi = {
   signIn: async (email: string, password: string): Promise<ApiResponse<LoginResult>> => {
     const response = await api.apisauce.post<LoginResult>("/auth/sign-in", {

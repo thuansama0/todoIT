@@ -40,7 +40,7 @@ export const $submitButton: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: 56,
-} 
+}
 export const $submitButtonText: TextStyle = {
   color: colors.palette.neutral100,
   fontFamily: typography.primary.bold,

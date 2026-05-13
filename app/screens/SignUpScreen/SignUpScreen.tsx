@@ -59,7 +59,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
     }
   }
 
-  return (  
+  return (
     <Screen
       preset="scroll"
       contentContainerStyle={$screenContainer}

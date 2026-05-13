@@ -180,15 +180,15 @@ export const TodoStoreModel = types
       })
       store.items.replace([optimisticTodo, ...store.items.map(toPlainTodo)])
       if (reminderMinutes > 0 && (optimisticTodo.dueDate ?? 0) > 0) {
-        void scheduleTodoReminder({
+        scheduleTodoReminder({
           todoId: tempId,
           title: optimisticTodo.title,
           dueDate: optimisticTodo.dueDate ?? 0,
           reminderMinutes,
-        })
+        }).catch(() => undefined)
       }
 
-      void syncCreateTodoInBackground(tempId, payload, reminderMinutes)
+      syncCreateTodoInBackground(tempId, payload, reminderMinutes).catch(() => undefined)
       // Trả success sớm để UI phản hồi tức thì; phần sync server được tách chạy nền.
       return {
         ok: true,
@@ -240,9 +240,7 @@ export const TodoStoreModel = types
       const previousStatus = idx >= 0 ? store.items[idx].isCompleted : false
       if (idx >= 0) {
         const nextItems = store.items.map((todo) =>
-          todo.id === id
-            ? { ...toPlainTodo(todo), isCompleted: newStatus }
-            : toPlainTodo(todo),
+          todo.id === id ? { ...toPlainTodo(todo), isCompleted: newStatus } : toPlainTodo(todo),
         )
         store.items.replace(nextItems)
       }
@@ -299,8 +297,6 @@ export const TodoStoreModel = types
       resetForAuthChange,
     }
   })
-
-
 
 export interface TodoStore extends Instance<typeof TodoStoreModel> {}
 export interface TodoStoreSnapshot extends SnapshotOut<typeof TodoStoreModel> {}

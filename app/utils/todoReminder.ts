@@ -7,7 +7,10 @@ const TODO_REMINDER_PAYLOAD_STORAGE_KEY = "todo-reminder-payload-map"
 
 type ReminderMap = Record<string, string>
 type ReminderMinutesMap = Record<string, number>
-type ReminderPayloadMap = Record<string, { displayTitle: string; displayBody: string; fireAtMs: number }>
+type ReminderPayloadMap = Record<
+  string,
+  { displayTitle: string; displayBody: string; fireAtMs: number }
+>
 
 async function loadReminderMap(): Promise<ReminderMap> {
   const raw = await load(TODO_REMINDER_STORAGE_KEY)
@@ -68,7 +71,7 @@ export async function cancelTodoReminder(todoId: string) {
   const map = await loadReminderMap()
   const existingId = map[todoId]
   if (existingId) {
-    await Notifications.cancelScheduledNotificationAsync(existingId).catch(() => {})
+    await Notifications.cancelScheduledNotificationAsync(existingId).catch(() => undefined)
     delete map[todoId]
     await saveReminderMap(map)
     const payloadMap = await loadReminderPayloadMap()

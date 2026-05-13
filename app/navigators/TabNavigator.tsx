@@ -1,22 +1,32 @@
 import React from "react"
-import { Platform, View } from "react-native"
+import { Platform, StyleSheet, View } from "react-native"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { Ionicons } from "@expo/vector-icons" 
+import { Ionicons } from "@expo/vector-icons"
 import { colors, typography } from "app/theme"
-
 
 import { TodoScreen, ProfileScreen, NotificationsScreen, CategoriesScreen } from "../screens"
 
 export type TabParamList = {
-    Todo: undefined
-    Profile: undefined
-    Notifications: undefined
-    Categories: undefined
+  Todo: undefined
+  Profile: undefined
+  Notifications: undefined
+  Categories: undefined
 }
 
 const Tab = createBottomTabNavigator<TabParamList>()
 const TAB_BAR_HEIGHT = 95
 const TAB_BAR_PADDING_BOTTOM = 35
+
+const $focusedTabIconPill = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    backgroundColor: colors.palette.primary900,
+    borderRadius: 8,
+    height: 32,
+    justifyContent: "center",
+    width: 56,
+  },
+})
 
 export function TabNavigator() {
   return (
@@ -29,59 +39,58 @@ export function TabNavigator() {
         // lazy: false đã gây mount đồng thời mọi tab ẩn → khung 0px → FlashList cảnh báo / lỗi đo kích thước.
         ...(Platform.OS === "android" ? { freezeOnBlur: false } : {}),
         tabBarActiveTintColor: colors.palette.primary700,
-        tabBarInactiveTintColor: colors.palette.gray500, 
-        
+        tabBarInactiveTintColor: colors.palette.gray500,
+
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
-// todo : su khac nha 2= vaf 3=
-          if (route.name === 'Categories') {
-            iconName = focused ? 'pricetag' : 'pricetag-outline';
-          } else if (route.name === 'Todo') {
-            iconName = focused ? 'checkbox' : 'checkbox-outline';
-          } else if (route.name === 'Notifications') {
-            iconName = focused ? 'notifications' : 'notifications-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+          let iconName: keyof typeof Ionicons.glyphMap
+          // todo : su khac nha 2= vaf 3=
+          if (route.name === "Categories") {
+            iconName = focused ? "pricetag" : "pricetag-outline"
+          } else if (route.name === "Todo") {
+            iconName = focused ? "checkbox" : "checkbox-outline"
+          } else if (route.name === "Notifications") {
+            iconName = focused ? "notifications" : "notifications-outline"
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline"
           } else {
-            iconName = 'help-outline'; 
+            iconName = "help-outline"
           }
 
           if (focused) {
-            return ( // todo:tachs style ra 
-              <View
-                style={{
-                  backgroundColor: colors.palette.primary900,
-                  width: 56,
-                  height: 32,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  borderRadius: 8,
-                }}
-              >
+            return (
+              <View style={$focusedTabIconPill.container}>
                 <Ionicons name={iconName} size={size} color={color} />
               </View>
-            );
+            )
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={size} color={color} />
         },
-        
+
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: typography.primary.bold,
           marginTop: 5,
         },
-        
+
         tabBarStyle: {
-          height: TAB_BAR_HEIGHT, 
+          height: TAB_BAR_HEIGHT,
           paddingBottom: TAB_BAR_PADDING_BOTTOM,
-          paddingTop: 10, 
-        }
+          paddingTop: 10,
+        },
       })}
     >
-      <Tab.Screen name="Categories" component={CategoriesScreen} options={{ tabBarLabel: "Categories" }} />
+      <Tab.Screen
+        name="Categories"
+        component={CategoriesScreen}
+        options={{ tabBarLabel: "Categories" }}
+      />
       <Tab.Screen name="Todo" component={TodoScreen} options={{ tabBarLabel: "Todos" }} />
-      <Tab.Screen name="Notifications" component={NotificationsScreen} options={{ tabBarLabel: "Notifications" }} />
+      <Tab.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ tabBarLabel: "Notifications" }}
+      />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: "Profile" }} />
     </Tab.Navigator>
   )

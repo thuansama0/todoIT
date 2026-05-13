@@ -4,7 +4,10 @@ import { colors, spacing, typography } from "app/theme"
 export const $screenFill: ViewStyle = { flex: 1 }
 export const $screenContainer: ViewStyle = { flex: 1, backgroundColor: colors.palette.neutral200 }
 export const $formContainer: ViewStyle = { flex: 1 }
-export const $formContent: ViewStyle = { padding: spacing.md, paddingBottom: spacing.xl + spacing.xs }
+export const $formContent: ViewStyle = {
+  padding: spacing.md,
+  paddingBottom: spacing.xl + spacing.xs,
+}
 export const $label: TextStyle = {
   marginBottom: spacing.xs,
   marginTop: spacing.md,
@@ -71,7 +74,10 @@ export const $submitButtonText: TextStyle = {
   color: colors.palette.neutral100,
   fontFamily: typography.primary.bold,
 }
-export const $dropdownButtonOpen: ViewStyle = { borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }
+export const $dropdownButtonOpen: ViewStyle = {
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+}
 export const $dropdownList: ViewStyle = {
   backgroundColor: colors.palette.neutral100,
   borderWidth: 1,
