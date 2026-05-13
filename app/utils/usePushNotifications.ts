@@ -13,7 +13,11 @@ import {
   getReminderPayloadByNotificationId,
 } from "./todoReminder"
 import { normalizeNotificationData } from "./notificationPayload"
-import { load, loadString, save } from "app/utils/storage"
+import {
+  buildTodoReminderCanonicalKey,
+  claimReminderDeliverySlot,
+} from "./reminderDeliveryDedupe"
+import { loadString } from "app/utils/storage"
 import { userApi } from "app/services/api/userApi"
 import { colors } from "app/theme"
 
@@ -95,8 +99,6 @@ Notifications.setNotificationHandler({
   }),
 })
 
-const LAST_HANDLED_RESPONSE_KEY = "last-handled-notification-response"
-
 export const usePushNotifications = () => {
   const { authenticationStore, notificationStore, profileStore } = useStores()
   const notificationListener = useRef<Notifications.Subscription>()
@@ -170,6 +172,7 @@ export const usePushNotifications = () => {
 
   /** Trả về true nếu đã ghi vào store/log (để tránh Toast khi không có dòng list tương ứng). */
   const pushIncomingReminder = async (notification: Notifications.Notification): Promise<boolean> => {
+    const rawData = normalizeNotificationData(notification.request.content.data)
     const { title, body, fireAtMs } = await resolveNotificationText(notification)
     if (!title.trim() && !body.trim() && fireAtMs <= 0) {
       return false
@@ -177,19 +180,15 @@ export const usePushNotifications = () => {
     const finalTitle = title.trim() ? title : "Nhắc việc: Todo"
     const finalBody = body.trim() ? body : "Còn ít phút nữa đến lịch của bạn"
     const deliveredAtMs = fireAtMs > 0 ? fireAtMs : extractDeliveredAtMs(notification)
-    const dedupeKey = `${finalTitle}|${finalBody}|${deliveredAtMs}`
-    const lastHandled = (await load(LAST_HANDLED_RESPONSE_KEY)) as {
-      key?: string
-      at?: number
-    } | null
-    if (
-      lastHandled?.key === dedupeKey &&
-      typeof lastHandled?.at === "number" &&
-      Date.now() - lastHandled.at < 120_000
-    ) {
+    const canonicalKey =
+      buildTodoReminderCanonicalKey(rawData) ??
+      (notification.request.identifier && notification.request.identifier !== "0"
+        ? `nid|${notification.request.identifier}`
+        : `txt|${finalTitle}|${finalBody}|${deliveredAtMs}`)
+    const claimed = await claimReminderDeliverySlot(notification.request.identifier, canonicalKey)
+    if (!claimed) {
       return false
     }
-    await save(LAST_HANDLED_RESPONSE_KEY, { key: dedupeKey, at: Date.now() })
     let userId = profileStore.profile?.id
     if (!userId) {
       const profileRes = await profileStore.fetchProfile()
@@ -236,6 +235,14 @@ export const usePushNotifications = () => {
             data.displayBody?.trim() ||
             (typeof item?.content?.body === "string" ? item.content.body.trim() : "") ||
             "Còn ít phút nữa đến lịch của bạn"
+
+          const sweepKey =
+            buildTodoReminderCanonicalKey(data) ?? `sweep|${title}|${body}|${fireAt}`
+          const sweepClaimed = await claimReminderDeliverySlot(item.identifier, sweepKey)
+          if (!sweepClaimed) {
+            await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(() => {})
+            continue
+          }
 
           await notificationStore.addIncomingNotification(title, body, undefined, fireAt)
           await Notifications.cancelScheduledNotificationAsync(item.identifier).catch(() => {})

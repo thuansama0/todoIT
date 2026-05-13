@@ -5,7 +5,7 @@ if (__DEV__) {
 import "./i18n"
 import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
-import React from "react"
+import React, { useEffect } from "react"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import * as Linking from "expo-linking"
 import { RootStoreProvider, useInitialRootStore } from "app/models"
@@ -58,10 +58,17 @@ function App(props: AppProps) {
   } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY) 
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
-
+// khởi tạo store và hiển thị splash screen
   const { rootStore, rehydrated } = useInitialRootStore(() => {
     setTimeout(hideSplashScreen, 500)
   })
+
+  useEffect(() => {
+    if (!rehydrated) return
+    if (!rootStore.authenticationStore.authToken) return
+    void rootStore.todoStore.loadIfNeeded()
+    void rootStore.categoryStore.loadIfNeeded()
+  }, [rehydrated, rootStore])
 
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 

@@ -157,6 +157,11 @@ export const TodoStoreModel = types
 
     const loadIfNeeded = flow(function* loadIfNeeded() {
       if (store.isLoading || store.isLoaded) return
+      // Đã có todo trong persist → hiển thị ngay, không GET mỗi lần mở app (đồng bộ khi kéo refresh).
+      if (store.items.length > 0) {
+        store.isLoaded = true
+        return
+      }
       yield fetchTodos()
     })
 

@@ -42,6 +42,44 @@ function unreadCountFromItems(items: readonly { isRead: boolean }[]) {
   return items.reduce((n, item) => n + (item.isRead ? 0 : 1), 0)
 }
 
+/** Gộp bản ghi trùng nội dung (local-* vs server id) — merge theo id một mình không đủ. */
+function dedupeMergedNotifications(
+  items: ReturnType<typeof normalizeNotification>[],
+): ReturnType<typeof normalizeNotification>[] {
+  const sorted = [...items].sort((a, b) => b.sentAt - a.sentAt)
+  const byKey = new Map<string, ReturnType<typeof normalizeNotification>>()
+  const order: string[] = []
+
+  for (const item of sorted) {
+    const secondBucket = Math.floor(item.sentAt / 1000)
+    const key = `${item.title}\u0000${item.content}\u0000${secondBucket}`
+    const prev = byKey.get(key)
+    if (!prev) {
+      byKey.set(key, item)
+      order.push(key)
+      continue
+    }
+    const preferServer =
+      prev.id.startsWith("local-") && !item.id.startsWith("local-")
+        ? item
+        : item.id.startsWith("local-") && !prev.id.startsWith("local-")
+          ? prev
+          : prev.sentAt >= item.sentAt
+            ? prev
+            : item
+    byKey.set(key, {
+      ...preferServer,
+      id: preferServer.id,
+      title: preferServer.title,
+      content: preferServer.content,
+      sentAt: preferServer.sentAt,
+      isRead: prev.isRead && item.isRead,
+    })
+  }
+
+  return order.map((k) => byKey.get(k)!)
+}
+
 export const NotificationStoreModel = types
   .model("NotificationStore")
   .props({
@@ -64,11 +102,16 @@ export const NotificationStoreModel = types
           ;[...localItems.map(normalizeNotification), ...serverItems].forEach((item) => {
             mergedById.set(item.id, item)
           })
-          const mergedItems = Array.from(mergedById.values()).sort((a, b) => b.sentAt - a.sentAt)
+          const mergedItems = dedupeMergedNotifications(Array.from(mergedById.values())).sort(
+            (a, b) => b.sentAt - a.sentAt,
+          )
           store.items.replace(mergedItems)
           store.isLoaded = true
         } else if (localItems.length > 0) {
-          store.items.replace(localItems.map(normalizeNotification))
+          const fromLocal = dedupeMergedNotifications(localItems.map(normalizeNotification)).sort(
+            (a, b) => b.sentAt - a.sentAt,
+          )
+          store.items.replace(fromLocal)
           store.isLoaded = true
         }
         // Một nguồn sự thật: đếm từ danh sách đã merge — tránh server unread + local unread
@@ -217,6 +260,7 @@ export const NotificationStoreModel = types
         }
         yield replaceLocalIdWithServerNotification(local.id, normalized)
       }
+      store.unreadCount = unreadCountFromItems(store.items.slice())
       return response
     })
 

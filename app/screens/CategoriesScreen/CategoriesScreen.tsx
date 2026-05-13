@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react"
+import { FC } from "react"
 import {
   TouchableOpacity,
   View,
@@ -29,10 +29,6 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
   const navigation = useNavigation<AppStackNavigatorProps>()
   const { categoryStore } = useStores()
 
-  useEffect(() => {
-    categoryStore.loadIfNeeded()
-  }, [categoryStore])
-
   function handleDelete(id: string) {
     Alert.alert("Xác nhận", "Xóa danh mục này?", [
       { text: "Hủy", style: "cancel" },
@@ -53,7 +49,7 @@ export const CategoriesScreen: FC = observer(function CategoriesScreen() {
     if (categoryStore.isLoading) {
       return (
         <View>
-          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} />
+          <ActivityIndicator size="large" color={colors.palette.secondary400} style={$loadingSpinner} /> 
         </View>
       )
     }

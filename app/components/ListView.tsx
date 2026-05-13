@@ -1,5 +1,5 @@
 import React, { forwardRef, PropsWithoutRef } from "react"
-import { FlatList, type FlatListProps } from "react-native"
+import { FlatList, Platform, type FlatListProps } from "react-native"
 import { isRTL } from "app/i18n"
 import { FlashList, FlashListProps } from "@shopify/flash-list"
 
@@ -16,8 +16,8 @@ export type ListViewProps<T> = PropsWithoutRef<FlashListProps<T>>
  * Because FlashList's props are a superset of FlatList's, you must pass estimatedItemSize
  * to this component if you want to use it.
  *
- * This is a temporary workaround until the FlashList component supports RTL at
- * which point this component can be removed and we will default to using FlashList everywhere.
+ * Android: FlashList báo lỗi / WARN khi cha có size ~0 lúc đổi tab (native screens) — dùng FlatList cho ổn định.
+ * RTL: FlashList chưa hỗ trợ đủ — dùng FlatList.
  * @see {@link https://github.com/Shopify/flash-list/issues/544|RTL Bug Android}
  * @see {@link https://github.com/Shopify/flash-list/issues/840|Flashlist Not Support RTL}
  * @param {FlashListProps | FlatListProps} props - The props for the `ListView` component.
@@ -29,8 +29,8 @@ const ListViewComponent = forwardRef(
     // FlashList warns when `style` is passed directly.
     const { style: _style, ...baseProps } = props as ListViewProps<T> & { style?: unknown }
 
-    if (isRTL) {
-      // FlatList does not use FlashList-only props (e.g. estimatedItemSize).
+    const useRNFlatList = isRTL || Platform.OS === "android"
+    if (useRNFlatList) {
       const { estimatedItemSize: _estimatedItemSize, ...flatListProps } = baseProps
       return (
         <FlatList

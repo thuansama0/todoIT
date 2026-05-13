@@ -2,6 +2,7 @@ import { FC } from "react"
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from "react-native"
 import { Feather } from "@expo/vector-icons"
 import { colors, spacing, typography } from "app/theme"
+import { observer } from "mobx-react-lite"
 
 export interface NotificationItemProps {
   title: string
@@ -13,15 +14,8 @@ export interface NotificationItemProps {
   onDelete?: () => void
 }
 
-export const NotificationItem: FC<NotificationItemProps> = ({
-  title,
-  content,
-  isRead,
-  timeAgo,
-  onPress,
-  onMarkRead,
-  onDelete,
-}) => {
+export const NotificationItem: FC<NotificationItemProps> = observer(function NotificationItem(props) {
+  const { title, content, isRead, timeAgo, onPress, onMarkRead, onDelete } = props;
   return (
     <TouchableOpacity
       style={[$container, !isRead && $containerUnread]}
@@ -58,7 +52,7 @@ export const NotificationItem: FC<NotificationItemProps> = ({
       </View>
     </TouchableOpacity>
   )
-}
+})
 
 const $container: ViewStyle = {
   flexDirection: "row",

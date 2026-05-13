@@ -21,12 +21,13 @@ export async function setupRootStore(rootStore: RootStore) {
       categoryStore: {
         items: restoredState?.categoryStore?.items ?? [],
         isLoading: false,
-        isLoaded: false,
+        // Không ép false — tránh mở app/Todo tab là GET lại dù đã có snapshot (giống cảm giác “chỉ load lần đầu”).
+        isLoaded: restoredState?.categoryStore?.isLoaded ?? false,
       },
       todoStore: {
         items: restoredState?.todoStore?.items ?? [],
         isLoading: false,
-        isLoaded: false,
+        isLoaded: restoredState?.todoStore?.isLoaded ?? false,
       },
       notificationStore: {
         items: Array.isArray(restoredNotificationItems) ? restoredNotificationItems : [],

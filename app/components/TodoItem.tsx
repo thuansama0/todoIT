@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle, TextStyle } from 'react-native';    
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { colors, spacing, typography } from "app/theme";
+import { observer } from "mobx-react-lite"
 
 export interface TodoItemProps {
   title: string;
@@ -14,16 +15,8 @@ export interface TodoItemProps {
   onDelete?: () => void;
 }
 
-export const TodoItem: FC<TodoItemProps> = ({ 
-  title, 
-  isCompleted, 
-  category, 
-  timeText, 
-  notes, 
-  onToggle, 
-  onEdit,   
-  onDelete  
-}) => {
+export const TodoItem: FC<TodoItemProps> = observer(function TodoItem(props) {
+  const { title, isCompleted, category, timeText, notes, onToggle, onEdit, onDelete } = props;
   return (
     <View style={[$container, isCompleted && $containerCompleted]}>
       <TouchableOpacity style={$checkboxContainer} onPress={onToggle}>
@@ -64,8 +57,8 @@ export const TodoItem: FC<TodoItemProps> = ({
       </View>
 
     </View>
-  );
-};
+  )
+})
 
 const $container: ViewStyle = {
   flexDirection: 'row',

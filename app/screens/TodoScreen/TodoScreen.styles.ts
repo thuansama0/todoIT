@@ -2,7 +2,13 @@ import { ViewStyle } from "react-native"
 import { colors } from "app/theme"
 
 export const $screenInner: ViewStyle = { flex: 1 }
-export const $list: ViewStyle = { flex: 1, paddingTop: 16 }
+/** Chiếm phần còn lại dưới safe area để vùng list có chiều cao xác định cho FlashList. */
+export const $body: ViewStyle = { flex: 1 }
+export const $list: ViewStyle = {
+  flex: 1,
+  paddingTop: 16,
+  minHeight: 2,
+}
 export const $todoItemContainer: ViewStyle = { paddingHorizontal: 16, marginBottom: 0, paddingTop: 0 }
 export const $flatListContent: ViewStyle = { paddingBottom: 100 }
 export const $loading: ViewStyle = { flex: 1, justifyContent: "center", alignItems: "center" }

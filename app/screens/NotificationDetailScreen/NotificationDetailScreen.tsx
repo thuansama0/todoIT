@@ -1,10 +1,12 @@
 import { FC } from "react"
 import { View, TouchableOpacity, Alert } from "react-native"
+import { observer } from "mobx-react-lite"
 import { AppSectionHeader, Screen, Text } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
-import { notificationApi, Notification } from "app/services/api/notificationApi"
+import { Notification } from "app/services/api/notificationApi"
 import type { AppStackScreenProps } from "app/navigators"
+import { useStores } from "app/models"
 import { formatTimeAgo } from "app/utils/formatDate"
 import {
   $card,
@@ -22,22 +24,28 @@ import {
 
 type NotificationDetailScreenProps = AppStackScreenProps<"NotificationDetail">
 
-export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = ({ route, navigation }) => {
-  const { notificationData } = route.params as { notificationData: Notification }
+export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = observer(
+  function NotificationDetailScreen({ route, navigation }) {
+    const { notificationStore } = useStores()
+    const { notificationData } = route.params as { notificationData: Notification }
 
-  const handleDelete = () => {
-    Alert.alert("Xác nhận", "Xóa thông báo này?", [
-      { text: "Hủy", style: "cancel" },
-      {
-        text: "Xóa",
-        style: "destructive",
-        onPress: async () => {
-          await notificationApi.deleteNotification(notificationData.id)
-          navigation.goBack()
+    const handleDelete = () => {
+      Alert.alert("Xác nhận", "Xóa thông báo này?", [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            const response = await notificationStore.deleteNotification(notificationData.id)
+            if (response?.ok && response?.data?.success) {
+              navigation.goBack()
+            } else {
+              Alert.alert("Lỗi", "Không thể xóa thông báo. Vui lòng thử lại.")
+            }
+          },
         },
-      },
-    ])
-  }
+      ])
+    }
 
   return (
     <Screen preset="fixed" safeAreaEdges={["top"]} style={$screenContainer}>
@@ -79,4 +87,4 @@ export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = ({ ro
       </View>
     </Screen>
   )
-}
+})

@@ -1,11 +1,11 @@
-import { FC, useEffect } from "react"
+import { FC, useCallback, useState } from "react"
 import {  TouchableOpacity, View, ActivityIndicator, Alert, Pressable } from "react-native"
 import { AppSectionHeader, Screen, TodoItem, ListView } from "app/components"
 import { colors } from "app/theme"
 import { AppStackParamList } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { Feather } from "@expo/vector-icons"
-import { CompositeScreenProps, useIsFocused } from "@react-navigation/native"
+import { CompositeScreenProps } from "@react-navigation/native"
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { TabParamList } from "app/navigators/TabNavigator"
@@ -14,6 +14,7 @@ import { useStores } from "app/models"
 import { formatTodoDate } from "app/utils/formatDate"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import {
+  $body,
   $fab,
   $flatListContent,
   $list,
@@ -29,19 +30,21 @@ type TodoScreenProps = CompositeScreenProps<
 
 export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ navigation }) {
   const { todoStore } = useStores()
-  const isFocused = useIsFocused()
-
-  // Refetch khi quay lại màn này để tránh hiển thị dữ liệu cũ sau khi tạo/sửa ở màn khác.
-  useEffect(() => {
-    if (isFocused) {
-      todoStore.fetchTodos()
+  // Không gắn refreshing của List với todoStore.isLoading: trên Android mỗi lần GET là RefreshControl nhấp nháy → giống reload cả trang (Categories/Profile không bị vì thường đã load xong trước khi vào tab).
+  const [pullRefreshing, setPullRefreshing] = useState(false)
+  const runTodoRefresh = useCallback(async () => {
+    setPullRefreshing(true)
+    try {
+      await todoStore.fetchTodos()
+    } finally {
+      setPullRefreshing(false)
     }
-  }, [isFocused, todoStore])
+  }, [todoStore])
 
   async function handleToggleStatus(id: string, currentStatus: boolean) {
     const newStatus = !currentStatus
     const response = await todoStore.toggleTodoStatus(id, newStatus)
-    if (!isMutationSuccess(response)) {
+    if (!isMutationSuccess(response)) { // nếu không thành công thì hiển thị thông báo lỗi
       Alert.alert("Lỗi", "Không thể cập nhật trạng thái.")
     }
   }
@@ -64,6 +67,8 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
   }
 
   const todoItems = todoStore.items.map(toPlainTodo)
+  // Chỉ chặn cả màn bằng spinner khi chưa có dữ liệu; đã có list thì giữ list + indicator kéo (tránh “trắng trang” mỗi lần fetch trên Android).
+  const showBlockingLoader = todoStore.isLoading && todoStore.items.length === 0
 
   return (
     <Screen
@@ -72,44 +77,47 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
       style={$screenInner}
       contentContainerStyle={$screenInner}
     >
-      <AppSectionHeader title="My Todos" onRefresh={() => todoStore.fetchTodos()} />
+      {/* Bọc header + list trong flex:1 để FlashList luôn có cha có chiều cao (tránh cảnh báo size cha nhỏ trên Android). */}
+      <View style={$body}>
+        <AppSectionHeader title="My Todos" onRefresh={runTodoRefresh} />
 
-      {todoStore.isLoading ? (
-        <View style={$loading}>
-          <ActivityIndicator size="large" color={colors.palette.secondary400} />
-        </View>
-      ) : (
-        <View style={$list}>
-          <ListView
-            data={todoItems}
-            keyExtractor={(item) => item.id}
-            refreshing={todoStore.isLoading}
-            onRefresh={() => todoStore.fetchTodos()}
-            estimatedItemSize={56}
-            renderItem={({ item }) => (
-              <View style={$todoItemContainer}>
-                <Pressable
-                  onPress={() => navigation.navigate("TodoDetail", { id: item.id })}
-                >
-                  <TodoItem
-                    title={item.title}
-                    notes={item.content}
-                    timeText={formatTodoDate(item.dueDate)}
-                    category={item.category?.name || "General"}
-                    isCompleted={item.isCompleted}
-                    onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
-                    onDelete={() => handleDelete(item.id)}
-                    onEdit={() => {
-                      navigation.navigate("EditTodo", { todoData: toPlainTodo(item) })
-                    }}
-                  />
-                </Pressable>
-              </View>
-            )}
-            contentContainerStyle={$flatListContent}
-          />
-        </View>
-      )}
+        {showBlockingLoader ? (
+          <View style={$loading}>
+            <ActivityIndicator size="large" color={colors.palette.secondary400} />
+          </View>
+        ) : (
+          <View style={$list}>
+            <ListView
+              data={todoItems}
+              keyExtractor={(item) => item.id}
+              refreshing={pullRefreshing}
+              onRefresh={runTodoRefresh}
+              estimatedItemSize={56}
+              renderItem={({ item }) => (
+                <View style={$todoItemContainer}>
+                  <Pressable
+                    onPress={() => navigation.navigate("TodoDetail", { id: item.id })}
+                  >
+                    <TodoItem
+                      title={item.title}
+                      notes={item.content}
+                      timeText={formatTodoDate(item.dueDate)}
+                      category={item.category?.name || "General"}
+                      isCompleted={item.isCompleted}
+                      onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
+                      onDelete={() => handleDelete(item.id)}
+                      onEdit={() => {
+                        navigation.navigate("EditTodo", { todoData: toPlainTodo(item) })
+                      }}
+                    />
+                  </Pressable>
+                </View>
+              )}
+              contentContainerStyle={$flatListContent}
+            />
+          </View>
+        )}
+      </View>
 
       {/* Giữ action thêm todo luôn dễ chạm ở mọi trạng thái của danh sách. */}
       <TouchableOpacity style={$fab} onPress={() => navigation.navigate("NewTodo")}>

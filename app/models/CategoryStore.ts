@@ -46,8 +46,11 @@ export const CategoryStoreModel = types
     })
 
     const loadIfNeeded = flow(function* loadIfNeeded() {
-      // Chặn request lặp lại khi nhiều màn mở gần nhau hoặc re-render liên tiếp.
       if (store.isLoaded || store.isLoading) return
+      if (store.items.length > 0) {
+        store.isLoaded = true
+        return
+      }
       yield fetchCategories()
     })
 

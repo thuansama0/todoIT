@@ -1,23 +1,17 @@
-import { FC, useEffect, useState } from "react"
-import {
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  Image,
-} from "react-native"
-import * as ImagePicker from "expo-image-picker"
+import { FC } from "react"
+import { View, TouchableOpacity, ActivityIndicator, Image } from "react-native"
 import { AppSectionHeader, Screen, Text, TextField } from "app/components"
 import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
-import { useNavigation, useIsFocused } from "@react-navigation/native"
+import { useIsFocused } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { observer } from "mobx-react-lite"
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { AppStackParamList } from "app/navigators"
 import type { TabParamList } from "app/navigators/TabNavigator"
-import { remove } from "app/utils/storage"
+import { useAvatarImagePicker } from "app/utils/useAvatarImagePicker"
+import { useProfileEditForm } from "app/utils/useProfileEditForm"
+import { useProfileLoadOnFocus } from "app/utils/useProfileLoadOnFocus"
+import { useProfileSession } from "app/utils/useProfileSession"
 import {
   $accountBtn,
   $accountSection,
@@ -51,188 +45,42 @@ import {
 
 type ProfileScreenProps = BottomTabScreenProps<TabParamList, "Profile">
 
+function getInitials(name: string) {
+  if (!name) return "U"
+  const words = name.split(" ")
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
+  return name.substring(0, 2).toUpperCase()
+}
+
 export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileScreen() {
-  type AppStackNavigation = NativeStackNavigationProp<AppStackParamList>
-  const navigation = useNavigation<AppStackNavigation>()
   const isFocused = useIsFocused()
-  const { profileStore, authenticationStore, notificationStore, todoStore, categoryStore } = useStores()
-  const [isSaving, setIsSaving] = useState(false)
+  const { profileStore } = useStores()
 
-  const [isEditing, setIsEditing] = useState(false)
+  useProfileLoadOnFocus(isFocused, profileStore)
 
-  const [editImageUrl, setEditImageUrl] = useState("")
-  const [editName, setEditName] = useState("")
-  const [editEmail, setEditEmail] = useState("")
-  const [editPassword, setEditPassword] = useState("")
+  const {
+    isEditing,
+    startEdit,
+    cancelEdit,
+    isSaving,
+    editName,
+    setEditName,
+    editEmail,
+    setEditEmail,
+    editPassword,
+    setEditPassword,
+    editImageUrl,
+    setEditImageUrl,
+    saveProfile,
+  } = useProfileEditForm(profileStore)
 
-  const normalizeImageUri = (uri?: string | null) => {
-    if (!uri) return ""
-    const normalized = uri.trim()
-    if (!normalized || normalized.toLowerCase() === "null") return ""
-    return normalized
-  }
+  const { openImageSourcePicker } = useAvatarImagePicker(setEditImageUrl)
 
-  useEffect(() => {
-    if (isFocused) {
-      profileStore.loadIfNeeded()
-    }
-  }, [isFocused, profileStore])
+  const { handleSignOut, handleDeleteAccount } = useProfileSession()
 
-  useEffect(() => {
-    if (profileStore.profile) {
-      setEditName(profileStore.profile.name)
-      setEditEmail(profileStore.profile.email)
-      setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
-    }
-  }, [profileStore.profile])
-
-  const handleStartEdit = () => {
-    setIsEditing(true)
-    // Không giữ password cũ trong form để tránh gửi nhầm dữ liệu nhạy cảm.
-    setEditPassword("")
-  }
-  // hủy edit
-  const handleCancelEdit = () => {
-    setIsEditing(false)
-    if (profileStore.profile) {
-      setEditName(profileStore.profile.name)
-      setEditEmail(profileStore.profile.email)
-      setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
-    }
-  }
-  // chọn ảnh từ thư viện
-  async function pickImageFromLibrary() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
-
-    if (!permission.granted) {
-      Alert.alert("Cần quyền truy cập", "Vui lòng cho phép app truy cập thư viện ảnh.")
-      return
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    })
-
-    if (!result.canceled) {
-      setEditImageUrl(result.assets[0].uri)
-    }
-  }
-  // chụp ảnh
-  async function takePhoto() {
-    const permission = await ImagePicker.requestCameraPermissionsAsync()
-
-    if (!permission.granted) {
-      Alert.alert("Cần quyền camera", "Vui lòng cho phép app sử dụng camera.")
-      return
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    })
-
-    if (!result.canceled) {
-      setEditImageUrl(result.assets[0].uri)
-    }
-  }
-  // đổi ảnh đại diện
-  function handleChangePhoto() {
+  const handleChangePhoto = () => {
     if (!isEditing) return
-
-    Alert.alert("Đổi ảnh đại diện", "Chọn nguồn ảnh", [
-      { text: "Thư viện", onPress: pickImageFromLibrary },
-      { text: "Chụp ảnh", onPress: takePhoto },
-      { text: "Hủy", style: "cancel" },
-    ])
-  }
-  // lưu profile
-  const handleSaveProfile = async () => {
-    if (!editName.trim() || !editEmail.trim()) {
-      Alert.alert("Lỗi", "Tên và Email không được để trống!")
-      return
-    }
-
-    setIsSaving(true)
-    const payload: any = {
-      name: editName,
-      email: editEmail,
-    }
-    if (editPassword.trim() !== "") {
-      payload.password = editPassword
-    }
-
-    const response = await profileStore.updateProfile(payload)
-    setIsSaving(false)
-
-    if (response.ok && response.data?.success) {
-      Alert.alert("Thành công", "Đã cập nhật thông tin cá nhân!")
-      setIsEditing(false)
-    } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
-    }
-  }
-
-  const finishSession = async () => {
-    // Xóa token/snapshot cũ để request transform không dùng nhầm session trước.
-    await remove("accessToken")
-    await remove("root-v1")
-    authenticationStore.logout()
-  
-    // Dọn notification state để tránh lẫn dữ liệu giữa các tài khoản.
-    await notificationStore.resetForAuthChange?.()
-    // Dọn todo và category state để tránh lẫn dữ liệu giữa các tài khoản.
-    await todoStore.resetForAuthChange?.()
-    categoryStore.resetForAuthChange?.()
-    profileStore.clearProfile()
-    // Reset stack để không back về màn cần đăng nhập.
-    navigation.reset({ index: 0, routes: [{ name: "Login" }] })
-  }
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "CẢNH BÁO",
-      "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này không? Hành động này không thể hoàn tác.",
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa vĩnh viễn",
-          style: "destructive",
-          onPress: async () => {
-            const response = await profileStore.deleteAccount()
-          
-            if (response?.ok && response?.data?.success !== false) {
-              await finishSession()
-            } else {
-              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa tài khoản lúc này.")
-            }
-          },
-        },
-      ],
-    )
-  }
-
-  const handleSignOut = () => {
-    Alert.alert("Đăng xuất", "Bạn muốn đăng xuất khỏi ứng dụng?", [
-      { text: "Hủy", style: "cancel" },
-      {
-        text: "Đăng xuất",
-        style: "destructive",
-        onPress: async () => {
-          await finishSession()
-        },
-      },
-    ])
-  }
-
-  const getInitials = (name: string) => {
-    if (!name) return "U"
-    const words = name.split(" ")
-    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
-    return name.substring(0, 2).toUpperCase()
+    openImageSourcePicker()
   }
 
   if (profileStore.isLoading) {
@@ -284,7 +132,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
         {!isEditing ? (
           <>
-            <TouchableOpacity style={$editProfileBtn} onPress={handleStartEdit}>
+            <TouchableOpacity style={$editProfileBtn} onPress={startEdit}>
               <Feather name="edit-2" size={16} color={colors.palette.secondary400} />
               <Text preset="body" style={$editProfileText}>
                 Edit Profile
@@ -321,7 +169,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
             />
 
             <View style={$actionRow}>
-              <TouchableOpacity style={[$actionBtn, $cancelBtn]} onPress={handleCancelEdit}>
+              <TouchableOpacity style={[$actionBtn, $cancelBtn]} onPress={cancelEdit}>
                 <Text preset="body" style={$cancelText}>
                   Cancel
                 </Text>
@@ -329,7 +177,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
               <TouchableOpacity
                 style={[$actionBtn, $saveBtn]}
-                onPress={handleSaveProfile}
+                onPress={saveProfile}
                 disabled={isSaving}
               >
                 {isSaving ? (

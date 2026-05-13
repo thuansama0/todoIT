@@ -1,5 +1,5 @@
 import React from "react"
-import { View } from "react-native"
+import { Platform, View } from "react-native"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Ionicons } from "@expo/vector-icons" 
 import { colors, typography } from "app/theme"
@@ -18,16 +18,20 @@ const Tab = createBottomTabNavigator<TabParamList>()
 
 export function TabNavigator() {
   return (
-    <Tab.Navigator 
+    <Tab.Navigator
+      // Android mặc định detach tab không focus → unmount màn → useEffect/loadIfNeeded chạy lại mỗi lần vào tab.
+      detachInactiveScreens={false}
       initialRouteName="Todo"
       screenOptions={({ route }) => ({
         headerShown: false,
+        // lazy: false đã gây mount đồng thời mọi tab ẩn → khung 0px → FlashList cảnh báo / lỗi đo kích thước.
+        ...(Platform.OS === "android" ? { freezeOnBlur: false } : {}),
         tabBarActiveTintColor: colors.palette.info500, 
         tabBarInactiveTintColor: colors.palette.gray500, 
         
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
-
+// todo : su khac nha 2= vaf 3=
           if (route.name === 'Categories') {
             iconName = focused ? 'pricetag' : 'pricetag-outline';
           } else if (route.name === 'Todo') {
@@ -41,7 +45,7 @@ export function TabNavigator() {
           }
 
           if (focused) {
-            return (
+            return ( // todo:tachs style ra 
               <View style={{ 
                 backgroundColor: colors.palette.secondary100, 
                 width: 56,

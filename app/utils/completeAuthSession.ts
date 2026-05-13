@@ -9,8 +9,8 @@ export type CompleteAuthSessionStores = {
   authenticationStore: AuthStoreLike
   profileStore: { clearProfile: () => void }
   notificationStore: { resetForAuthChange: () => Promise<void> }
-  todoStore: { resetForAuthChange: () => Promise<void> }
-  categoryStore: { resetForAuthChange?: () => void }
+  todoStore: { resetForAuthChange: () => Promise<void>; loadIfNeeded: () => Promise<unknown> }
+  categoryStore: { resetForAuthChange?: () => void; loadIfNeeded?: () => Promise<unknown> }
 }
 
 export async function completeAuthSession<S extends keyof AppStackParamList>(
@@ -30,6 +30,9 @@ export async function completeAuthSession<S extends keyof AppStackParamList>(
     stores.authenticationStore.setProp("authToken", accessToken)
     await saveString("accessToken", accessToken)
     void syncExpoPushTokenWithServer(accessToken).catch(() => {})
+    // Sau login store đã reset (rỗng) → fetch một lần chạy nền; không await để không kẹt màn Login.
+    void stores.todoStore.loadIfNeeded()
+    void stores.categoryStore.loadIfNeeded?.()
   }
 
   navigation.navigate("MainTabs")
