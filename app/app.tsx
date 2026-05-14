@@ -44,6 +44,7 @@ interface AppProps {
   hideSplashScreen: () => Promise<boolean>
 }
 
+// Component rỗng chỉ để gắn hook — listener phải sống suốt lifecycle app, không gắn vào từng màn.
 function PushNotificationHandler() {
   usePushNotifications()
   return null
@@ -63,6 +64,7 @@ function App(props: AppProps) {
     setTimeout(hideSplashScreen, 500)
   })
 
+  // Token đã có từ persist → kéo list nhẹ ở nền; user vào tab vẫn có fetch theo focus (README mục Todo flow).
   useEffect(() => {
     if (!rehydrated) return
     if (!rootStore.authenticationStore.authToken) return
@@ -76,7 +78,7 @@ function App(props: AppProps) {
     prefixes: [prefix],
     config,
   }
-  //
+
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <RootStoreProvider value={rootStore}>

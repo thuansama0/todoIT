@@ -26,7 +26,7 @@ export async function completeAuthSession<S extends keyof AppStackParamList>(
   stores.categoryStore.resetForAuthChange?.()
 
   if (accessToken) {
-    // Gom ve mot setter chung de tranh phat sinh nhieu action setter trung lap.
+    // Một chỗ set token thôi — tránh rải nhiều setter kiểu cũ.
     stores.authenticationStore.setProp("authToken", accessToken)
     await saveString("accessToken", accessToken)
     syncExpoPushTokenWithServer(accessToken).catch(() => undefined)

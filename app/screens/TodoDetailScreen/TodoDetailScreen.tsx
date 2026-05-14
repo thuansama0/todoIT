@@ -9,6 +9,7 @@ import { observer } from "mobx-react-lite"
 import { toPlainTodo } from "app/utils/todoMapper"
 import { formatTodoDate } from "app/utils/formatDate"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
+import { formatReminderSettingLabel } from "app/utils/todoReminder"
 import {
   $actionBtn,
   $actionBtnText,
@@ -150,6 +151,20 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
             </View>
             <Text preset="body" style={$infoValue}>
               {formatTodoDate(todo.dueDate)}
+            </Text>
+          </View>
+
+          <View style={$divider} />
+
+          <View style={$infoRow}>
+            <View style={$infoIconText}>
+              <Feather name="bell" size={16} color={colors.palette.neutral500} />
+              <Text preset="caption" style={$infoLabel}>
+                Reminder
+              </Text>
+            </View>
+            <Text preset="body" style={$infoValue}>
+              {!todo.dueDate ? "—" : formatReminderSettingLabel(todo.reminderMinutes)}
             </Text>
           </View>
 

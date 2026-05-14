@@ -149,8 +149,8 @@ Các file sau gom logic dùng chung, tránh copy-paste giữa screen/store:
 | `app/utils/todoMapper.ts`          | `toPlainTodo`: chuyển MST todo / snapshot sang object thường (navigation, replace list, tránh lỗi node MST)           |
 | `app/utils/formatDate.ts`          | `formatTodoDate`, `formatTimeAgo`, `formatDueDateFromTimestamp`, `getCurrentDateString`, `parseDateTime`, ...         |
 | `app/utils/isMutationSuccess.ts`   | Kiểm tra response mutation `ok` và `data.success` thống nhất                                                          |
-| `app/utils/completeAuthSession.ts` | Sau login/signup: `setAuthToken`, lưu token storage, `syncExpoPushTokenWithServer`, `navigation.navigate("MainTabs")` |
-| `app/services/api/apiTypes.ts`     | `ApiResult` dùng chung cho response generic (`authApi`, `userApi`, ...)                                               |
+| `app/utils/completeAuthSession.ts` | Sau login/signup: reset store theo user cũ, `setProp("authToken")`, lưu token, `syncExpoPushTokenWithServer`, `loadIfNeeded` nền, `navigate("MainTabs")` |
+| `app/services/api/api.types.ts`    | `ApiResult` dùng chung cho response generic (`authApi`, `userApi`, ...)                                             |
 
 
 ---
@@ -344,7 +344,7 @@ Các store domain trên đều gắn `withSetPropAction` nên có thêm `setProp
 
 ## 7. API layer theo file và theo hàm
 
-- `app/services/api/apiTypes.ts`: `ApiResult` (`success`, `message`, `errors?`, `data?`) cho envelope response dùng chung
+- `app/services/api/api.types.ts`: `ApiResult` (`success`, `message`, `errors?`, `data?`) cho envelope response dùng chung
 
 ## 7.1 `authApi.ts`
 
@@ -409,8 +409,7 @@ Flow:
 1. Validate email/password không rỗng
 2. Gọi `authApi.signIn`
 3. Thành công -> lấy `accessToken`
-4. Reset dữ liệu theo user cũ (tránh lộ dữ liệu tab khác): `notificationStore.resetForAuthChange()`, `todoStore.resetForAuthChange()`, `categoryStore.resetForAuthChange()`
-5. Gọi `completeAuthSession(authenticationStore, navigation, accessToken)` (token + storage + sync push token + vào `MainTabs`)
+4. Gọi `completeAuthSession({ …stores }, navigation, accessToken)` — bên trong: `clearProfile`, `resetForAuthChange` (notification/todo/category), set token + lưu storage + sync push token, `loadIfNeeded` nền, rồi `navigation.navigate("MainTabs")`
 
 ### SignUp
 
@@ -422,7 +421,7 @@ Flow tương tự login:
 
 1. Validate name/email/password
 2. Gọi `authApi.signUp`
-3. Thành công -> reset `notificationStore` / `todoStore` / `categoryStore` như login, rồi `completeAuthSession(...)`
+3. Thành công -> `completeAuthSession` giống login (gom reset store + token + vào `MainTabs`)
 
 ## 8.2 Todo flow
 
@@ -433,6 +432,10 @@ File chính:
 - `NewTodoScreen.tsx` (wrapper create)
 - `EditTodoScreen.tsx` (wrapper edit)
 - `TodoDetailScreen.tsx`
+
+### Chi tiết Todo (`TodoDetailScreen`)
+
+- Due date, reminder (Off / `Xm` before due / `1h` — cùng logic với chip form), category, status; Mark done / Delete.
 
 ### Danh sách Todo (`TodoScreen`)
 
@@ -577,6 +580,7 @@ Hàm chính:
 - `getReminderPayloadByNotificationId(notificationId)`
 - `getNearestReminderPayload(nowMs, maxDeltaMs)`
 - `formatLeadTime(minutes)`
+- `formatReminderSettingLabel(minutes)` — nhãn ngắn cho UI (chi tiết todo / đồng bộ với chip form)
 
 Dữ liệu local được lưu:
 
@@ -676,15 +680,16 @@ Kết quả của cách làm này:
 
 ## 14. Scripts dùng trong quá trình phát triển
 
+Có thể dùng `npm` hoặc `bun` (tương đương):
+
 ```bash
-npm run compile
-npm run lint
-npm run test
-npm run start
-npm run start:dev
-npm run android
-npm run ios
+bun compile    # hoặc: npm run compile — kiểm tra TypeScript
+bun lint       # hoặc: npm run lint — eslint + prettier
+bun test       # hoặc: npm run test
+bun start      # expo dev server
 ```
+
+Các lệnh `npm run …` trong `package.json` vẫn dùng được như cũ (`start:dev`, `android`, `ios`, …).
 
 Build EAS local:
 
@@ -713,3 +718,8 @@ npm run build:ios:prod
   - component tái sử dụng tốt
   - sẵn sàng mở rộng tính năng.
 
+---
+
+## 16. Ghi chú trong mã nguồn
+
+Ở vài chỗ “nối hệ thống” (auth, notification, optimistic todo) có comment tiếng Việt ngắn — mục đích là giải thích **vì sao** làm vậy chứ không lặp lại tên hàm. Không spam comment trên từng dòng; phần còn lại để tên biến/hàm tự nói.

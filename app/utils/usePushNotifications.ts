@@ -70,6 +70,7 @@ function extractDeliveredAtMs(notification: Notifications.Notification): number 
   return Date.now()
 }
 
+// Đôi khi iOS đẩy response “rỗng” (tap ghost) — bỏ qua cho khỏi nhảy tab + ghi log rác.
 function shouldHandleNotificationResponse(response: Notifications.NotificationResponse | null) {
   if (!response) return false
   if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return false

@@ -91,6 +91,13 @@ export function formatLeadTime(minutes: number) {
   return `Còn ${minutes} phút nữa`
 }
 
+/** Dùng trên màn chi tiết / form: cùng “từ vựng” với chip (Off, 5m, 1h…), khác với `formatLeadTime` (câu trong notification). */
+export function formatReminderSettingLabel(minutes: number): string {
+  if (!minutes) return "Off"
+  if (minutes >= 60) return "1h before due"
+  return `${minutes}m before due`
+}
+
 export async function scheduleTodoReminder(params: {
   todoId: string
   title: string

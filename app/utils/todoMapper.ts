@@ -19,8 +19,7 @@ export type TodoPlain = {
 }
 
 export function toPlainTodo(todo: any): TodoPlain {
-  // Uu tien snapshot cua MST de lay plain object an toan, sau do normalize default
-  // de tranh undefined khi data den tu optimistic/local hoac backend thieu field.
+  // Ưu tiên snapshot MST: đưa về object thường trước khi replace list / navigate — tránh lỗi node “detach”.
   const raw = isStateTreeNode(todo) ? getSnapshot(todo) : todo
 
   return {

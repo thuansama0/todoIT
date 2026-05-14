@@ -167,6 +167,7 @@ export const TodoStoreModel = types
       yield fetchTodos()
     })
 
+    // Thêm bản ghi tạm ngay + sync nền; nếu API fail thì flow khác rollback (update path).
     const createTodo = (payload: CreateTodoPayload, reminderMinutes = 0) => {
       const tempId = `${TEMP_TODO_ID_PREFIX}${Date.now()}`
       const optimisticTodo = normalizeTodo({

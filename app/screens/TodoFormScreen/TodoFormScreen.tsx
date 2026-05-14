@@ -231,8 +231,9 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
               placeholderTextColor={colors.palette.neutral400}
             />
 
+            {/* Chip sync với TODO_REMINDER_MINUTE_OPTIONS + backend reminderMinutes */}
             <Text style={$label} preset="formLabel">
-              Remind before
+              Reminder before due
             </Text>
             <View style={$reminderRow}>
               {TODO_REMINDER_MINUTE_OPTIONS.map(
