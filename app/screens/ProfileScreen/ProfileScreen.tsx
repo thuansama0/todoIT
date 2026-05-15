@@ -57,7 +57,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
   const isFocused = useIsFocused()
   const { profileStore } = useStores()
 
-  useProfileLoadOnFocus(isFocused, profileStore)
+  useProfileLoadOnFocus(isFocused, profileStore) // gọi api để lấy thông tin người dùng
 
   const {
     isEditing,
