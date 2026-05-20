@@ -1,7 +1,7 @@
 import { ApisauceInstance, create } from "apisauce"
 import Config from "../../config"
 import type { ApiConfig } from "./api.types"
-import { loadString } from "../../utils/storage"
+import { getAccessToken } from "../../utils/accessToken"
 
 export const DEFAULT_API_CONFIG: ApiConfig = {
   url: Config.API_URL,
@@ -22,7 +22,7 @@ export class Api {
       },
     })
     this.apisauce.addAsyncRequestTransform(async (request) => {
-      const token = await loadString("accessToken")
+      const token = await getAccessToken()
 
       if (token && !request.headers?.Authorization) {
         request.headers = request.headers ?? {}

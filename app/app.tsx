@@ -12,6 +12,7 @@ import { RootStoreProvider, useInitialRootStore } from "app/models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import * as storage from "./utils/storage"
+import { syncAccessTokenToStorage } from "./utils/accessToken"
 import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
@@ -74,7 +75,9 @@ function App(props: AppProps) {
   // Token đã có từ persist → kéo list nhẹ ở nền; user vào tab vẫn có fetch theo focus (README mục Todo flow).
   useEffect(() => {
     if (!rehydrated) return
-    if (!rootStore.authenticationStore.authToken) return
+    const token = rootStore.authenticationStore.authToken
+    if (!token) return
+    syncAccessTokenToStorage(token).catch(() => undefined)
     rootStore.todoStore.loadIfNeeded().catch(() => undefined)
     rootStore.categoryStore.loadIfNeeded().catch(() => undefined)
   }, [rehydrated, rootStore])

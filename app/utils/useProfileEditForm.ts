@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react"
 import { Alert } from "react-native"
+import type { AuthenticationStore } from "app/models/AuthenticationStore"
 import type { ProfileStore } from "app/models/ProfileStore"
+import { uploadProfileImage, type LocalImageFilePart } from "app/services/api/uploadApi"
+import type { PickedAvatarImage } from "app/utils/useAvatarImagePicker"
 import type { UpdateUserPayload } from "app/services/api/userApi"
 import { translate } from "app/i18n"
+import { isLocalPickedImageUri } from "app/utils/imageUri"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import { getPasswordValidationError } from "app/utils/passwordValidation"
-
 function normalizeImageUri(uri?: string | null) {
   if (!uri) return ""
   const normalized = uri.trim()
@@ -13,21 +16,35 @@ function normalizeImageUri(uri?: string | null) {
   return normalized
 }
 
-export function useProfileEditForm(profileStore: ProfileStore) {
+export function useProfileEditForm(
+  profileStore: ProfileStore,
+  authenticationStore: AuthenticationStore,
+) {
   const [isSaving, setIsSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editImageUrl, setEditImageUrl] = useState("")
   const [editName, setEditName] = useState("")
   const [editEmail, setEditEmail] = useState("")
   const [editPassword, setEditPassword] = useState("")
+  const [localPickedFile, setLocalPickedFile] = useState<LocalImageFilePart | null>(null)
 
   useEffect(() => {
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
       setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
+      setLocalPickedFile(null)
     }
   }, [profileStore.profile])
+
+  const setEditImageFromPicker = useCallback((picked: PickedAvatarImage) => {
+    setEditImageUrl(picked.uri)
+    setLocalPickedFile({
+      uri: picked.uri,
+      mimeType: picked.mimeType,
+      fileName: picked.fileName,
+    })
+  }, [])
 
   const startEdit = useCallback(() => {
     setIsEditing(true)
@@ -40,6 +57,7 @@ export function useProfileEditForm(profileStore: ProfileStore) {
       setEditName(profileStore.profile.name)
       setEditEmail(profileStore.profile.email)
       setEditImageUrl(normalizeImageUri(profileStore.profile.imageUrl))
+      setLocalPickedFile(null)
     }
   }, [profileStore.profile])
 
@@ -55,13 +73,46 @@ export function useProfileEditForm(profileStore: ProfileStore) {
       return
     }
 
+    const editedImage = normalizeImageUri(editImageUrl)
+    const currentImage = normalizeImageUri(profileStore.profile?.imageUrl)
+
     setIsSaving(true)
+
+    let resolvedImageUrl: string | undefined
+    try {
+      if (editedImage === "") {
+        resolvedImageUrl = undefined
+      } else if (isLocalPickedImageUri(editedImage)) {
+        const filePart: LocalImageFilePart = localPickedFile?.uri === editedImage
+          ? localPickedFile
+          : { uri: editedImage }
+        resolvedImageUrl = await uploadProfileImage(filePart, authenticationStore.authToken)
+      } else {
+        resolvedImageUrl = editedImage
+      }
+    } catch (e) {
+      setIsSaving(false)
+      const code = e instanceof Error ? e.message : ""
+      let detail = translate("profileScreen.imageUploadFailed")
+      if (code === "AUTH_REQUIRED" || code === "AUTH_INVALID") {
+        detail = translate("profileScreen.imageUploadAuthError")
+      } else if (code === "UPLOAD_BAD_REQUEST") {
+        detail = translate("profileScreen.imageUploadBadRequest")
+      } else if (__DEV__ && e instanceof Error) {
+        detail = e.message
+      }
+      Alert.alert(translate("profileScreen.imageUploadTitle"), detail)
+      return
+    }
     const payload: UpdateUserPayload = {
       name: editName.trim(),
       email: editEmail.trim(),
     }
     if (editPassword.trim() !== "") {
       payload.password = editPassword
+    }
+    if (resolvedImageUrl !== undefined && resolvedImageUrl !== currentImage) {
+      payload.imageUrl = resolvedImageUrl
     }
 
     const response = await profileStore.updateProfile(payload)
@@ -74,7 +125,15 @@ export function useProfileEditForm(profileStore: ProfileStore) {
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
     }
-  }, [editName, editEmail, editPassword, profileStore])
+  }, [
+    editName,
+    editEmail,
+    editPassword,
+    editImageUrl,
+    localPickedFile,
+    profileStore,
+    authenticationStore.authToken,
+  ])
 
   return {
     isEditing,
@@ -89,6 +148,7 @@ export function useProfileEditForm(profileStore: ProfileStore) {
     setEditPassword,
     editImageUrl,
     setEditImageUrl,
+    setEditImageFromPicker,
     saveProfile,
   }
 }

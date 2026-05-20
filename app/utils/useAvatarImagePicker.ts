@@ -2,7 +2,26 @@ import { useCallback } from "react"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 
-export function useAvatarImagePicker(onUriPicked: (uri: string) => void) {
+export type PickedAvatarImage = {
+  uri: string
+  mimeType?: string | null
+  fileName?: string | null
+}
+
+export function useAvatarImagePicker(onPicked: (image: PickedAvatarImage) => void) {
+  const handleResult = useCallback(
+    (result: ImagePicker.ImagePickerResult) => {
+      if (result.canceled || !result.assets[0]) return
+      const asset = result.assets[0]
+      onPicked({
+        uri: asset.uri,
+        mimeType: asset.mimeType,
+        fileName: asset.fileName,
+      })
+    },
+    [onPicked],
+  )
+
   const pickImageFromLibrary = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
@@ -18,10 +37,8 @@ export function useAvatarImagePicker(onUriPicked: (uri: string) => void) {
       quality: 0.8,
     })
 
-    if (!result.canceled) {
-      onUriPicked(result.assets[0].uri)
-    }
-  }, [onUriPicked])
+    handleResult(result)
+  }, [handleResult])
 
   const takePhoto = useCallback(async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync()
@@ -37,10 +54,8 @@ export function useAvatarImagePicker(onUriPicked: (uri: string) => void) {
       quality: 0.8,
     })
 
-    if (!result.canceled) {
-      onUriPicked(result.assets[0].uri)
-    }
-  }, [onUriPicked])
+    handleResult(result)
+  }, [handleResult])
 
   const openImageSourcePicker = useCallback(() => {
     Alert.alert("Đổi ảnh đại diện", "Chọn nguồn ảnh", [

@@ -22,6 +22,11 @@ const en = {
     newPasswordPlaceholder: "Min {{min}} characters — leave blank to keep current",
     passwordInvalidTitle: "Invalid password",
     passwordInvalidMessage: "Password must be at least {{min}} characters.",
+    imageUploadTitle: "Upload error",
+    imageUploadFailed: "Could not upload the image. Please try again.",
+    imageUploadAuthError: "Session expired or invalid. Please sign out and sign in again, then try uploading.",
+    imageUploadBadRequest:
+      "The server could not read the image file. Try another photo or sign in again.",
   },
 }
 

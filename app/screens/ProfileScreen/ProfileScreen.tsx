@@ -56,7 +56,7 @@ function getInitials(name: string) {
 
 export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileScreen() {
   const isFocused = useIsFocused()
-  const { profileStore } = useStores()
+  const { profileStore, authenticationStore } = useStores()
 
   useProfileLoadOnFocus(isFocused, profileStore) // gọi api để lấy thông tin người dùng
 
@@ -72,11 +72,11 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
     editPassword,
     setEditPassword,
     editImageUrl,
-    setEditImageUrl,
+    setEditImageFromPicker,
     saveProfile,
-  } = useProfileEditForm(profileStore)
+  } = useProfileEditForm(profileStore, authenticationStore)
 
-  const { openImageSourcePicker } = useAvatarImagePicker(setEditImageUrl)
+  const { openImageSourcePicker } = useAvatarImagePicker(setEditImageFromPicker)
 
   const { handleSignOut, handleDeleteAccount } = useProfileSession()
 
