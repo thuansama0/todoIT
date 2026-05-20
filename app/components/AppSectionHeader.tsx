@@ -2,7 +2,7 @@ import { FC, ReactElement } from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
 import { Header } from "./Header"
 import { IconTypes } from "./Icon"
-import { colors } from "app/theme"
+import { colors, spacing } from "app/theme"
 import { Text } from "./Text"
 
 interface AppSectionHeaderProps {
@@ -95,11 +95,13 @@ const $subtitle: TextStyle = {
   textAlign: "center",
   color: colors.palette.neutral500,
   fontSize: 14,
+  marginTop: spacing.xxs,
+  marginBottom: spacing.xs,
 }
 
 const $headerArea: ViewStyle = {
   backgroundColor: colors.palette.neutral100,
-  paddingBottom: 12,
+  paddingBottom: 0,
   borderBottomWidth: 1,
   borderColor: colors.palette.neutral300,
 }
