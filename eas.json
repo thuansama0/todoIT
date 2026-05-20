@@ -6,6 +6,7 @@
     "development": {
       "extends": "production",
       "distribution": "internal",
+      "environment": "development",
       "android": {
         "gradleCommand": ":app:assembleDebug"
       },
@@ -17,6 +18,7 @@
     "development:device": {
       "extends": "development",
       "distribution": "internal",
+      "environment": "development",
       "ios": {
         "buildConfiguration": "Debug",
         "simulator": false
@@ -25,14 +27,18 @@
     "preview": {
       "extends": "production",
       "distribution": "internal",
+      "environment": "preview",
       "ios": { "simulator": true },
       "android": { "buildType": "apk" }
     },
     "preview:device": {
       "extends": "preview",
+      "environment": "preview",
       "ios": { "simulator": false }
     },
-    "production": {}
+    "production": {
+      "environment": "production"
+    }
   },
   "submit": {
     "production": {}
