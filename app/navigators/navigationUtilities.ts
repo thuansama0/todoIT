@@ -9,6 +9,10 @@ import Config from "../config"
 import type { PersistNavigationConfig } from "../config/config.base"
 import { useIsMounted } from "../utils/useIsMounted"
 import type { AppStackParamList, NavigationProps } from "./AppNavigator"
+import {
+  getNavigationSessionCache,
+  markNavigationRestoredInSession,
+} from "../utils/appSession"
 
 import * as storage from "../utils/storage"
 
@@ -116,12 +120,16 @@ function navigationRestoredDefaultState(persistNavigation: PersistNavigationConf
  * @returns {object} - The navigation state and persistence functions.
  */
 export function useNavigationPersistence(storage: Storage, persistenceKey: string) {
-  const [initialNavigationState, setInitialNavigationState] =
-    useState<NavigationProps["initialState"]>()
+  const navigationSession = getNavigationSessionCache()
+  const [initialNavigationState, setInitialNavigationState] = useState<
+    NavigationProps["initialState"]
+  >(navigationSession.state)
   const isMounted = useIsMounted()
 
   const initNavState = navigationRestoredDefaultState(Config.persistNavigation)
-  const [isRestored, setIsRestored] = useState(initNavState)
+  const [isRestored, setIsRestored] = useState(
+    initNavState || navigationSession.restored,
+  )
 
   const routeNameRef = useRef<keyof AppStackParamList | undefined>()
 
@@ -131,14 +139,25 @@ export function useNavigationPersistence(storage: Storage, persistenceKey: strin
 
       routeNameRef.current = currentRouteName as keyof AppStackParamList
 
+      markNavigationRestoredInSession(state as NavigationProps["initialState"])
       storage.save(persistenceKey, state)
     }
   }
 
   const restoreState = async () => {
+    if (getNavigationSessionCache().restored) {
+      if (isMounted()) setIsRestored(true)
+      return
+    }
+
     try {
       const state = (await storage.load(persistenceKey)) as NavigationProps["initialState"] | null
-      if (state) setInitialNavigationState(state)
+      if (state) {
+        setInitialNavigationState(state)
+        markNavigationRestoredInSession(state)
+      } else {
+        markNavigationRestoredInSession()
+      }
     } finally {
       if (isMounted()) setIsRestored(true)
     }

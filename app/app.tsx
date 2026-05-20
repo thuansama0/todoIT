@@ -18,6 +18,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { ViewStyle } from "react-native"
 import { usePushNotifications } from "./utils/usePushNotifications"
 import Toast from "react-native-toast-message"
+import {
+  consumeSplashHideRequest,
+  hasAppNavigatorMountedInSession,
+  markAppNavigatorMountedInSession,
+} from "./utils/appSession"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -61,7 +66,9 @@ function App(props: AppProps) {
   const [areFontsLoaded] = useFonts(customFontsToLoad)
   // khởi tạo store và hiển thị splash screen
   const { rootStore, rehydrated } = useInitialRootStore(() => {
-    setTimeout(hideSplashScreen, 500)
+    if (consumeSplashHideRequest()) {
+      setTimeout(hideSplashScreen, 500)
+    }
   })
 
   // Token đã có từ persist → kéo list nhẹ ở nền; user vào tab vẫn có fetch theo focus (README mục Todo flow).
@@ -72,26 +79,35 @@ function App(props: AppProps) {
     rootStore.categoryStore.loadIfNeeded().catch(() => undefined)
   }, [rehydrated, rootStore])
 
-  if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
-
   const linking = {
     prefixes: [prefix],
     config,
   }
 
+  const isAppReady = rehydrated && isNavigationStateRestored && areFontsLoaded
+  const shouldShowApp = isAppReady || hasAppNavigatorMountedInSession()
+
+  useEffect(() => {
+    if (shouldShowApp) {
+      markAppNavigatorMountedInSession()
+    }
+  }, [shouldShowApp])
+
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <RootStoreProvider value={rootStore}>
-        <ErrorBoundary catchErrors={Config.catchErrors}>
-          <GestureHandlerRootView style={$container}>
-            <PushNotificationHandler />
-            <AppNavigator
-              linking={linking}
-              initialState={initialNavigationState}
-              onStateChange={onNavigationStateChange}
-            />
-          </GestureHandlerRootView>
-        </ErrorBoundary>
+        <PushNotificationHandler />
+        {shouldShowApp ? (
+          <ErrorBoundary catchErrors={Config.catchErrors}>
+            <GestureHandlerRootView style={$container}>
+              <AppNavigator
+                linking={linking}
+                initialState={initialNavigationState}
+                onStateChange={onNavigationStateChange}
+              />
+            </GestureHandlerRootView>
+          </ErrorBoundary>
+        ) : null}
       </RootStoreProvider>
       <Toast />
     </SafeAreaProvider>

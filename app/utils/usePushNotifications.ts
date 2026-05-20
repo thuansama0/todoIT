@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react"
-import { Platform } from "react-native"
+import { useEffect, useRef, type MutableRefObject } from "react"
+import { AppState, Platform } from "react-native"
 import * as Device from "expo-device"
 import * as Notifications from "expo-notifications"
 import Toast from "react-native-toast-message"
 import Constants from "expo-constants"
 
-import { navigationRef } from "../navigators/navigationUtilities"
+import { getActiveRouteName, navigationRef } from "../navigators/navigationUtilities"
 import { useStores } from "app/models"
 import {
   formatLeadTime,
@@ -14,12 +14,35 @@ import {
 } from "./todoReminder"
 import { normalizeNotificationData } from "./notificationPayload"
 import { buildTodoReminderCanonicalKey, claimReminderDeliverySlot } from "./reminderDeliveryDedupe"
+import {
+  clearLastNotificationResponseIfSupported,
+  getStableNotificationResponseKey,
+  isNotificationResponseHandled,
+  markNotificationResponseHandled,
+} from "./notificationResponseDedupe"
 import { loadString } from "app/utils/storage"
 import { userApi } from "app/services/api/userApi"
 import { colors } from "app/theme"
 
+const APP_BOOT_AT = Date.now()
+const COLD_START_NAV_WINDOW_MS = 8000
+let notificationBootstrapDone = false
+let lastClaimedResponseKeyInSession: string | null = null
+
 function navigateToNotificationsTab() {
   if (!navigationRef.isReady()) return
+
+  const rootState = navigationRef.getRootState()
+  const activeRoute = getActiveRouteName(rootState)
+  const hasMainTabs = rootState.routes.some((route) => route.name === "MainTabs")
+
+  if (activeRoute === "Notifications") return
+
+  if (hasMainTabs && activeRoute !== "Login" && activeRoute !== "SignUp") {
+    navigationRef.navigate("MainTabs", { screen: "Notifications" })
+    return
+  }
+
   navigationRef.resetRoot({
     index: 0,
     routes: [
@@ -37,11 +60,6 @@ function navigateToNotificationsTab() {
       },
     ],
   } as never)
-  setTimeout(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate("MainTabs", { screen: "Notifications" })
-    }
-  }, 250)
 }
 
 function navigateToNotificationsWhenReady() {
@@ -70,7 +88,6 @@ function extractDeliveredAtMs(notification: Notifications.Notification): number 
   return Date.now()
 }
 
-// Đôi khi iOS đẩy response “rỗng” (tap ghost) — bỏ qua cho khỏi nhảy tab + ghi log rác.
 function shouldHandleNotificationResponse(response: Notifications.NotificationResponse | null) {
   if (!response) return false
   if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return false
@@ -89,6 +106,57 @@ function shouldHandleNotificationResponse(response: Notifications.NotificationRe
   return true
 }
 
+async function claimNotificationResponse(
+  response: Notifications.NotificationResponse,
+  handledResponseIds: MutableRefObject<Set<string>>,
+): Promise<string | null> {
+  if (!shouldHandleNotificationResponse(response)) return null
+
+  const key = getStableNotificationResponseKey(response)
+  if (lastClaimedResponseKeyInSession === key) return null
+  if (handledResponseIds.current.has(key)) return null
+  if (await isNotificationResponseHandled(key)) {
+    lastClaimedResponseKeyInSession = key
+    handledResponseIds.current.add(key)
+    return null
+  }
+
+  lastClaimedResponseKeyInSession = key
+  handledResponseIds.current.add(key)
+  await markNotificationResponseHandled(key)
+  return key
+}
+
+async function handleNotificationResponse(
+  response: Notifications.NotificationResponse,
+  handledResponseIds: MutableRefObject<Set<string>>,
+  pushIncomingReminder: (notification: Notifications.Notification) => Promise<boolean>,
+  source: "cold-start" | "listener",
+  appWasBackgroundRef: MutableRefObject<boolean>,
+): Promise<{ handled: boolean; shouldNavigate: boolean }> {
+  const key = await claimNotificationResponse(response, handledResponseIds)
+  if (!key) return { handled: false, shouldNavigate: false }
+
+  await clearLastNotificationResponseIfSupported()
+
+  // Tap từ background: received listener sẽ ghi — không ghi ở đây (tránh double).
+  // Cold start sau khi kill: received thường không fire lại → ghi một lần ở đây.
+  if (source === "cold-start") {
+    await pushIncomingReminder(response.notification)
+    return { handled: true, shouldNavigate: false }
+  }
+
+  const openedFromNotificationTap =
+    appWasBackgroundRef.current || Date.now() - APP_BOOT_AT <= COLD_START_NAV_WINDOW_MS
+
+  if (openedFromNotificationTap) {
+    appWasBackgroundRef.current = false
+    return { handled: true, shouldNavigate: true }
+  }
+
+  return { handled: true, shouldNavigate: false }
+}
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -102,6 +170,7 @@ export const usePushNotifications = () => {
   const notificationListener = useRef<Notifications.Subscription>()
   const responseListener = useRef<Notifications.Subscription>()
   const handledResponseIds = useRef<Set<string>>(new Set())
+  const appWasBackgroundRef = useRef(false)
 
   const resolveNotificationText = async (notification: Notifications.Notification) => {
     const content = notification.request.content
@@ -168,7 +237,6 @@ export const usePushNotifications = () => {
     return data?.message === "duplicate skipped"
   }
 
-  /** Trả về true nếu đã ghi vào store/log (để tránh Toast khi không có dòng list tương ứng). */
   const pushIncomingReminder = async (
     notification: Notifications.Notification,
   ): Promise<boolean> => {
@@ -205,9 +273,28 @@ export const usePushNotifications = () => {
     return !isDuplicateNotificationResult(result)
   }
 
+  const navigateIfNeeded = (shouldNavigate: boolean) => {
+    if (!shouldNavigate) return
+    if (navigationRef.isReady()) {
+      navigateToNotificationsTab()
+      return
+    }
+    return navigateToNotificationsWhenReady()
+  }
+
   useEffect(() => {
+    if (notificationBootstrapDone) return
+    notificationBootstrapDone = true
+
     let cancelled = false
     let stopWaitingNav: (() => void) | undefined
+
+    const appStateSub = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "background" || nextState === "inactive") {
+        appWasBackgroundRef.current = true
+      }
+    })
+
     ;(async () => {
       const scheduled = await Notifications.getAllScheduledNotificationsAsync().catch(() => [])
       if (Platform.OS === "android") {
@@ -253,16 +340,18 @@ export const usePushNotifications = () => {
       }
     })().catch(() => undefined)
 
-    // Một số máy Android không gọi listener khi app mở từ notification, nên cần đọc response cuối cùng từ Expo.
     ;(async () => {
       try {
         const last = await Notifications.getLastNotificationResponseAsync()
-        if (!last || cancelled || !shouldHandleNotificationResponse(last)) return
-        const id = last.notification.request.identifier || String(last.notification.date)
-        if (handledResponseIds.current.has(id)) return
-        handledResponseIds.current.add(id)
-        await pushIncomingReminder(last.notification)
-        stopWaitingNav = navigateToNotificationsWhenReady()
+        if (!last || cancelled) return
+        const result = await handleNotificationResponse(
+          last,
+          handledResponseIds,
+          pushIncomingReminder,
+          "cold-start",
+          appWasBackgroundRef,
+        )
+        stopWaitingNav = navigateIfNeeded(result.shouldNavigate)
       } catch {
         return undefined
       }
@@ -289,17 +378,24 @@ export const usePushNotifications = () => {
     })
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      if (!shouldHandleNotificationResponse(response)) return
-      const id = response.notification.request.identifier || String(response.notification.date)
-      if (handledResponseIds.current.has(id)) return
-      handledResponseIds.current.add(id)
-      pushIncomingReminder(response.notification).catch(() => undefined)
-      navigateToNotificationsTab()
+      handleNotificationResponse(
+        response,
+        handledResponseIds,
+        pushIncomingReminder,
+        "listener",
+        appWasBackgroundRef,
+      )
+        .then((result) => {
+          const waitNav = navigateIfNeeded(result.shouldNavigate)
+          if (waitNav) stopWaitingNav = waitNav
+        })
+        .catch(() => undefined)
     })
 
     return () => {
       cancelled = true
       stopWaitingNav?.()
+      appStateSub.remove()
       if (notificationListener.current)
         Notifications.removeNotificationSubscription(notificationListener.current)
       if (responseListener.current)

@@ -48,7 +48,13 @@ export const NotificationItem: FC<NotificationItemProps> = observer(function Not
             <Feather name="check-circle" size={20} color={colors.palette.primary700} />
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={$actionBtn} onPress={onDelete}>
+        <TouchableOpacity
+          style={$actionBtn}
+          onPress={(e) => {
+            e?.stopPropagation?.()
+            onDelete?.()
+          }}
+        >
           <Feather name="trash-2" size={20} color={colors.palette.angry500} />
         </TouchableOpacity>
       </View>

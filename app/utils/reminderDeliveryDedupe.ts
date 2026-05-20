@@ -3,6 +3,17 @@ import { load, save } from "app/utils/storage"
 const STORAGE_KEY = "reminder-delivery-dedupe-v1"
 const TTL_MS = 72 * 60 * 60 * 1000
 const MAX_KEYS = 200
+const claimedReminderSlots = new Set<string>()
+
+function rememberClaimedSlot(keys: string[]) {
+  for (const key of keys) {
+    claimedReminderSlots.add(key)
+  }
+}
+
+function isSlotClaimedInMemory(keys: string[]): boolean {
+  return keys.some((key) => claimedReminderSlots.has(key))
+}
 
 /**
  * Trên Android, cùng một nhắc việc có thể đi qua nhiều đường (received listener + sweep scheduled,
@@ -35,7 +46,12 @@ export async function claimReminderDeliverySlot(
     }
   }
 
+  if (isSlotClaimedInMemory(keysToCheck)) {
+    return false
+  }
+
   const ts = now
+  rememberClaimedSlot(keysToCheck)
   for (const key of keysToCheck) {
     map[key] = ts
   }

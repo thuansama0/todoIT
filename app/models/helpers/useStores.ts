@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { RootStore, RootStoreModel } from "../RootStore"
 import { setupRootStore } from "./setupRootStore"
+import {
+  isRootStoreRehydratedInSession,
+  markRootStoreRehydratedInSession,
+} from "../../utils/appSession"
 
 const _rootStore = RootStoreModel.create({})
 
@@ -12,25 +16,32 @@ export const useStores = () => useContext(RootStoreContext)
 
 export const useInitialRootStore = (callback?: () => void | Promise<void>) => {
   const rootStore = useStores()
-  const [rehydrated, setRehydrated] = useState(false)
+  const [rehydrated, setRehydrated] = useState(isRootStoreRehydratedInSession())
 
   useEffect(() => {
-    let _unsubscribe: () => void | undefined
+    let cancelled = false
+
     ;(async () => {
-      const { unsubscribe } = await setupRootStore(rootStore)
-      _unsubscribe = unsubscribe
+      if (isRootStoreRehydratedInSession()) {
+        await setupRootStore(rootStore, { skipRestore: true })
+        if (!cancelled) setRehydrated(true)
+        if (callback) await callback()
+        return
+      }
+
+      await setupRootStore(rootStore)
+      markRootStoreRehydratedInSession()
 
       if (__DEV__) {
         console.tron.trackMstNode(rootStore)
       }
 
-      setRehydrated(true)
-
-      if (callback) callback()
+      if (!cancelled) setRehydrated(true)
+      if (callback) await callback()
     })()
 
     return () => {
-      if (_unsubscribe !== undefined) _unsubscribe()
+      cancelled = true
     }
   }, [])
 

@@ -8,6 +8,7 @@ import { Notification } from "app/services/api/notificationApi"
 import type { AppStackScreenProps } from "app/navigators"
 import { useStores } from "app/models"
 import { formatTimeAgo } from "app/utils/formatDate"
+import { isDeleteMutationSuccess } from "app/utils/isMutationSuccess"
 import {
   $card,
   $cardHeader,
@@ -37,10 +38,10 @@ export const NotificationDetailScreen: FC<NotificationDetailScreenProps> = obser
           style: "destructive",
           onPress: async () => {
             const response = await notificationStore.deleteNotification(notificationData.id)
-            if (response?.ok && response?.data?.success) {
+            if (isDeleteMutationSuccess(response)) {
               navigation.goBack()
             } else {
-              Alert.alert("Lỗi", "Không thể xóa thông báo. Vui lòng thử lại.")
+              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa thông báo. Vui lòng thử lại.")
             }
           },
         },

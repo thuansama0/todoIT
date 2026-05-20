@@ -7,6 +7,7 @@ import type { TabParamList } from "app/navigators/TabNavigator"
 import { useStores } from "app/models"
 import { colors } from "app/theme"
 import { formatTimeAgo } from "app/utils/formatDate"
+import { isDeleteMutationSuccess, isMutationSuccess } from "app/utils/isMutationSuccess"
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import type { CompositeScreenProps } from "@react-navigation/native"
 import { useIsFocused } from "@react-navigation/native"
@@ -63,7 +64,10 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
     }, [isFocused, notificationStore])
 
     async function handleMarkAllRead() {
-      await notificationStore.markAllRead()
+      const response = await notificationStore.markAllRead()
+      if (!isMutationSuccess(response)) {
+        Alert.alert("Lỗi", "Không thể đánh dấu đã đọc.")
+      }
     }
 
     function handleDeleteAll() {
@@ -73,18 +77,36 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
           text: "Xóa",
           style: "destructive",
           onPress: async () => {
-            await notificationStore.deleteAllNotifications()
+            const response = await notificationStore.deleteAllNotifications()
+            if (!isDeleteMutationSuccess(response)) {
+              Alert.alert("Lỗi", "Không thể xóa thông báo.")
+            }
           },
         },
       ])
     }
 
     async function handleMarkRead(id: string) {
-      await notificationStore.markRead(id)
+      const response = await notificationStore.markRead(id)
+      if (!isMutationSuccess(response)) {
+        Alert.alert("Lỗi", "Không thể đánh dấu đã đọc.")
+      }
     }
 
-    async function handleDelete(id: string) {
-      await notificationStore.deleteNotification(id)
+    function handleDelete(id: string) {
+      Alert.alert("Xác nhận", "Bạn có muốn xóa thông báo này không?", [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            const response = await notificationStore.deleteNotification(id)
+            if (!isDeleteMutationSuccess(response)) {
+              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa thông báo.")
+            }
+          },
+        },
+      ])
     }
 
     function renderEmpty() {

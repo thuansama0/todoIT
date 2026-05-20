@@ -145,7 +145,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     }
 
     if (props.mode === "create") {
-      const response = todoStore.createTodo(payload, reminderMinutes)
+      const response = await todoStore.createTodo(payload, reminderMinutes)
       setIsLoading(false)
       if (response.ok && response.data?.success) {
         navigation.goBack()

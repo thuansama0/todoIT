@@ -1,6 +1,7 @@
 import { cast, Instance, SnapshotOut, flow, types } from "mobx-state-tree"
 import { Category, categoryApi } from "app/services/api/categoryApi"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
 
 const CategoryModel = types.model("Category", {
   id: types.identifier,
@@ -55,26 +56,10 @@ export const CategoryStoreModel = types
     })
 
     const createCategory = flow(function* createCategory(name: string, isPublic: boolean) {
-      const normalizedName = name.trim()
-      const tempId = `temp-${Date.now()}`
-      // Optimistic insert để danh sách phản hồi ngay thay vì chờ round-trip network.
-      store.items.unshift(
-        cast(
-          normalizeCategory({
-            id: tempId,
-            name: normalizedName,
-            isPublic,
-            isOwner: true,
-          }),
-        ),
-      )
-
       const response = yield categoryApi.createCategory(name.trim(), isPublic)
-      if (response.ok && response.data?.success) {
+      if (isMutationSuccess(response)) {
         // Refetch để đồng bộ metadata do server quyết định (id thật, quyền, thứ tự...).
         yield fetchCategories()
-      } else {
-        store.items.replace(store.items.filter((category) => category.id !== tempId))
       }
       return response
     })
@@ -84,28 +69,17 @@ export const CategoryStoreModel = types
       name: string,
       isPublic: boolean,
     ) {
+      const response = yield categoryApi.updateCategory(id, name.trim(), isPublic)
+      if (!isMutationSuccess(response)) {
+        return response
+      }
+
       const idx = store.items.findIndex((x) => x.id === id)
-      const backup =
-        idx >= 0
-          ? {
-              id: store.items[idx].id,
-              name: store.items[idx].name,
-              isPublic: store.items[idx].isPublic,
-              isOwner: store.items[idx].isOwner,
-            }
-          : null
       if (idx >= 0) {
         store.items[idx] = cast(
           normalizeCategory({ ...store.items[idx], name: name.trim(), isPublic }),
         )
-      }
-
-      const response = yield categoryApi.updateCategory(id, name.trim(), isPublic)
-      if (!response.ok || !response.data?.success) {
-        if (idx >= 0 && backup) {
-          store.items[idx] = cast(backup)
-        }
-      } else if (idx < 0) {
+      } else {
         yield fetchCategories()
       }
       return response

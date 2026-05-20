@@ -1,6 +1,7 @@
 import { flow, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { UpdateUserPayload, userApi } from "app/services/api/userApi"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
 
 const ProfileModel = types.model("Profile", {
   id: types.identifier,
@@ -58,31 +59,19 @@ export const ProfileStoreModel = types
     })
 
     const updateProfile = flow(function* updateProfile(payload: UpdateUserPayload) {
-      const backup = store.profile
-        ? {
-            id: store.profile.id,
-            email: store.profile.email,
-            name: store.profile.name,
-            imageUrl: store.profile.imageUrl,
-            accessToken: store.profile.accessToken,
-            pushToken: store.profile.pushToken,
-          }
-        : undefined
-
-      if (store.profile) {
+      const response = yield userApi.updateProfile(payload)
+      if (!isMutationSuccess(response)) {
+        return response
+      }
+      if (response.data?.data) {
+        store.profile = toProfileSnapshot(response.data.data)
+      } else if (store.profile) {
         store.profile = toProfileSnapshot({
           ...toProfileSnapshot(store.profile),
           ...(payload.name !== undefined ? { name: payload.name } : {}),
           ...(payload.email !== undefined ? { email: payload.email } : {}),
           ...(payload.imageUrl !== undefined ? { imageUrl: payload.imageUrl } : {}),
         })
-      }
-
-      const response = yield userApi.updateProfile(payload)
-      if (!response.ok || !response.data?.success) {
-        if (backup) store.profile = toProfileSnapshot(backup)
-      } else if (response.data.data) {
-        store.profile = toProfileSnapshot(response.data.data)
       }
       return response
     })

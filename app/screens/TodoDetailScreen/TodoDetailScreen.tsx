@@ -75,10 +75,10 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           text: "Xóa",
           style: "destructive",
           onPress: async () => {
-            const responsePromise = todoStore.deleteTodo(id)
-            navigation.goBack()
-            const response = await responsePromise
-            if (!isMutationSuccess(response)) {
+            const response = await todoStore.deleteTodo(id)
+            if (isMutationSuccess(response)) {
+              navigation.goBack()
+            } else {
               Alert.alert("Lỗi", "Không thể xóa công việc.")
             }
           },

@@ -5,11 +5,14 @@ import { DEFAULT_LIST_PAGE_SIZE } from "app/constants/pagination"
 import {
   appendLocalNotificationLog,
   clearLocalNotifications,
-  deleteLocalNotification,
   loadLocalNotificationLog,
+  markAllLocalNotificationsAsRead,
   markLocalNotificationAsRead,
-  replaceLocalIdWithServerNotification,
+  notificationContentKey,
+  persistServerNotification,
+  purgeNotificationFromLocalLog,
 } from "app/utils/localNotificationLog"
+import { isDeleteMutationSuccess, isMutationSuccess } from "app/utils/isMutationSuccess"
 
 const NotificationModel = types.model("Notification", {
   id: types.identifier,
@@ -18,16 +21,6 @@ const NotificationModel = types.model("Notification", {
   isRead: types.boolean,
   sentAt: types.number,
 })
-
-function toPlainNotification(item: any) {
-  return {
-    id: item.id,
-    title: item.title,
-    content: item.content,
-    isRead: item.isRead,
-    sentAt: item.sentAt,
-  }
-}
 
 function normalizeNotification(input: Partial<Notification> & { id: string }) {
   return {
@@ -52,8 +45,8 @@ function dedupeMergedNotifications(
   const order: string[] = []
 
   for (const item of sorted) {
-    const secondBucket = Math.floor(item.sentAt / 1000)
-    const key = `${item.title}\u0000${item.content}\u0000${secondBucket}`
+    const minuteBucket = Math.floor(item.sentAt / 60_000)
+    const key = `${item.title}\u0000${item.content}\u0000${minuteBucket}`
     const prev = byKey.get(key)
     if (!prev) {
       byKey.set(key, item)
@@ -64,10 +57,10 @@ function dedupeMergedNotifications(
       prev.id.startsWith("local-") && !item.id.startsWith("local-")
         ? item
         : item.id.startsWith("local-") && !prev.id.startsWith("local-")
-        ? prev
-        : prev.sentAt >= item.sentAt
-        ? prev
-        : item
+          ? prev
+          : prev.sentAt >= item.sentAt
+            ? prev
+            : item
     byKey.set(key, {
       ...preferServer,
       id: preferServer.id,
@@ -93,6 +86,10 @@ export const NotificationStoreModel = types
   })
   .actions(withSetPropAction)
   .actions((store) => {
+    const syncUnreadCount = () => {
+      store.unreadCount = unreadCountFromItems(store.items.slice())
+    }
+
     const fetchNotifications = flow(function* fetchNotifications() {
       store.isLoading = true
       try {
@@ -117,9 +114,7 @@ export const NotificationStoreModel = types
           store.items.replace(fromLocal)
           store.isLoaded = true
         }
-        // Một nguồn sự thật: đếm từ danh sách đã merge — tránh server unread + local unread
-        // đếm trùng cùng một thông báo (hiện "3 chưa đọc" cho 1 thông báo).
-        store.unreadCount = unreadCountFromItems(store.items.slice())
+        syncUnreadCount()
         return { listRes }
       } finally {
         store.isLoading = false
@@ -136,69 +131,85 @@ export const NotificationStoreModel = types
       if (idx < 0) return { ok: true, data: { success: true } }
       if (store.items[idx].isRead) return { ok: true, data: { success: true } }
 
-      store.items[idx] = { ...store.items[idx], isRead: true }
-      store.unreadCount = Math.max(0, store.unreadCount - 1)
-
       if (id.startsWith("local-")) {
         yield markLocalNotificationAsRead(id)
+        store.items[idx] = { ...store.items[idx], isRead: true }
+        syncUnreadCount()
         return { ok: true, data: { success: true } }
       }
 
       const response = yield notificationApi.markAsRead(id)
-      if (!response.ok || !response.data?.success) {
-        store.items[idx] = { ...store.items[idx], isRead: false }
-        store.unreadCount += 1
+      if (isMutationSuccess(response)) {
+        store.items[idx] = { ...store.items[idx], isRead: true }
+        syncUnreadCount()
       }
       return response
     })
 
     const markAllRead = flow(function* markAllRead() {
-      const backupItems = store.items.map(toPlainNotification)
-      const backupUnread = store.unreadCount
-      store.items.replace(store.items.map((n) => ({ ...n, isRead: true })))
-      store.unreadCount = 0
-
       const response = yield notificationApi.markAllAsRead()
-      if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems)
-        store.unreadCount = backupUnread
+      if (!isMutationSuccess(response)) {
+        return response
       }
+
+      yield markAllLocalNotificationsAsRead()
+      store.items.replace(store.items.map((n) => ({ ...n, isRead: true })))
+      syncUnreadCount()
       return response
     })
 
+    const removeNotificationFromStore = (id: string, target?: { title: string; content: string; sentAt: number }) => {
+      const contentKey = target
+        ? notificationContentKey(target.title, target.content, target.sentAt)
+        : null
+      store.items.replace(
+        store.items.filter((n) => {
+          if (n.id === id) return false
+          if (contentKey && notificationContentKey(n.title, n.content, n.sentAt) === contentKey) {
+            return false
+          }
+          return true
+        }),
+      )
+      syncUnreadCount()
+    }
+
     const deleteNotification = flow(function* deleteNotification(id: string) {
-      const backupItems = store.items.map(toPlainNotification)
-      const backupUnread = store.unreadCount
-      const targetIsUnread = store.items.some((n) => n.id === id && !n.isRead)
-      store.items.replace(store.items.filter((n) => n.id !== id))
-      if (targetIsUnread) store.unreadCount = Math.max(0, store.unreadCount - 1)
+      const target = store.items.find((n) => n.id === id)
 
       if (id.startsWith("local-")) {
-        yield deleteLocalNotification(id)
+        yield purgeNotificationFromLocalLog({
+          id,
+          title: target?.title,
+          content: target?.content,
+          sentAt: target?.sentAt,
+        })
+        removeNotificationFromStore(id, target)
         return { ok: true, data: { success: true } }
       }
 
       const response = yield notificationApi.deleteNotification(id)
-      if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems)
-        store.unreadCount = backupUnread
+      if (isDeleteMutationSuccess(response)) {
+        yield purgeNotificationFromLocalLog({
+          id,
+          title: target?.title,
+          content: target?.content,
+          sentAt: target?.sentAt,
+        })
+        removeNotificationFromStore(id, target)
       }
       return response
     })
 
     const deleteAllNotifications = flow(function* deleteAllNotifications() {
-      const backupItems = store.items.map(toPlainNotification)
-      const backupUnread = store.unreadCount
-      store.items.clear()
-      store.unreadCount = 0
-
       const response = yield notificationApi.deleteAllNotifications()
-      if (!response.ok || !response.data?.success) {
-        store.items.replace(backupItems)
-        store.unreadCount = backupUnread
-      } else {
-        yield clearLocalNotifications()
+      if (!isDeleteMutationSuccess(response)) {
+        return response
       }
+
+      store.items.clear()
+      syncUnreadCount()
+      yield clearLocalNotifications()
       return response
     })
 
@@ -214,7 +225,7 @@ export const NotificationStoreModel = types
       })
       const normalized = normalizeNotification(local)
       store.items.unshift(normalized)
-      store.unreadCount += 1
+      syncUnreadCount()
       return local
     })
 
@@ -224,46 +235,35 @@ export const NotificationStoreModel = types
       userId?: string,
       sentAtMs?: number,
     ) {
-      const fingerprintTime = sentAtMs ?? Date.now()
       const duplicate = store.items.some(
-        (item) =>
-          item.title === title &&
-          item.content === content &&
-          Math.abs((item.sentAt ?? 0) - fingerprintTime) <= 60_000,
+        (item) => item.title === title && item.content === content,
       )
       if (duplicate) {
         return { ok: true, data: { success: true, message: "duplicate skipped" } }
       }
 
-      const local = yield addLocalNotification(title, content, sentAtMs)
-      if (!userId) return local
+      if (!userId) {
+        return yield addLocalNotification(title, content, sentAtMs)
+      }
 
       const response = yield notificationApi.createNotification({ userId, title, content })
-      if (response.ok && response.data?.success && response.data.data) {
-        const serverRaw = response.data.data
-        const normalized = normalizeNotification({
-          ...serverRaw,
-          // Ưu tiên nội dung local vì BE đôi khi trả placeholder sau cold start.
-          title: title || serverRaw.title,
-          content: content || serverRaw.content,
-          sentAt: sentAtMs ?? serverRaw.sentAt ?? Date.now(),
-        })
-        const localIdx = store.items.findIndex((item) => item.id === local.id)
-        const serverExisted = store.items.some((item) => item.id === normalized.id)
-        if (localIdx >= 0) {
-          if (serverExisted) {
-            const removedWasUnread = !store.items[localIdx].isRead
-            store.items.splice(localIdx, 1)
-            if (removedWasUnread) {
-              store.unreadCount = Math.max(0, store.unreadCount - 1)
-            }
-          } else {
-            store.items[localIdx] = normalized
-          }
-        }
-        yield replaceLocalIdWithServerNotification(local.id, normalized)
+      if (!isMutationSuccess(response) || !response.data?.data) {
+        return response
       }
-      store.unreadCount = unreadCountFromItems(store.items.slice())
+
+      const serverRaw = response.data.data
+      const normalized = normalizeNotification({
+        ...serverRaw,
+        title: title || serverRaw.title,
+        content: content || serverRaw.content,
+        sentAt: sentAtMs ?? serverRaw.sentAt ?? Date.now(),
+      })
+
+      if (!store.items.some((item) => item.id === normalized.id)) {
+        store.items.unshift(normalized)
+      }
+      yield persistServerNotification(normalized)
+      syncUnreadCount()
       return response
     })
 

@@ -6,11 +6,18 @@ import * as storage from "../../utils/storage"
 const ROOT_STATE_STORAGE_KEY = "root-v1"
 
 let _disposer: IDisposer | undefined
-export async function setupRootStore(rootStore: RootStore) {
+
+export function ensureRootStorePersistence(rootStore: RootStore) {
+  if (_disposer) return
+  _disposer = onSnapshot(rootStore, (snapshot) => storage.save(ROOT_STATE_STORAGE_KEY, snapshot))
+}
+
+export async function setupRootStore(rootStore: RootStore, options?: { skipRestore?: boolean }) {
   let restoredState: RootStoreSnapshot | undefined | null
 
-  try {
-    restoredState = ((await storage.load(ROOT_STATE_STORAGE_KEY)) ?? {}) as RootStoreSnapshot
+  if (!options?.skipRestore) {
+    try {
+      restoredState = ((await storage.load(ROOT_STATE_STORAGE_KEY)) ?? {}) as RootStoreSnapshot
     const restoredNotificationItems = restoredState?.notificationStore?.items ?? []
     const notificationUnreadFromList = Array.isArray(restoredNotificationItems)
       ? restoredNotificationItems.filter((n: { isRead?: boolean }) => n && !n.isRead).length
@@ -42,16 +49,15 @@ export async function setupRootStore(rootStore: RootStore) {
         isLoaded: !!restoredState?.profileStore?.profile,
       },
     } as RootStoreSnapshot
-    applySnapshot(rootStore, snapshotToApply)
-  } catch (e) {
-    if (__DEV__) {
-      if (e instanceof Error) console.error(e.message)
+      applySnapshot(rootStore, snapshotToApply)
+    } catch (e) {
+      if (__DEV__) {
+        if (e instanceof Error) console.error(e.message)
+      }
     }
   }
 
-  if (_disposer) _disposer()
-
-  _disposer = onSnapshot(rootStore, (snapshot) => storage.save(ROOT_STATE_STORAGE_KEY, snapshot))
+  ensureRootStorePersistence(rootStore)
 
   const unsubscribe = () => {
     _disposer?.()
