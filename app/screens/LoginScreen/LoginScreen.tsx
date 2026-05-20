@@ -88,7 +88,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
       </View>
 
       <TextField
-        label="Email"
+        label="Email *"
         value={email}
         onChangeText={setEmail}
         placeholder="you@example.com"
@@ -98,7 +98,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
       />
 
       <TextField
-        label="Password"
+        label="Password *"
         value={password}
         onChangeText={setPassword}
         placeholder="Enter your password"

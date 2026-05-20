@@ -205,7 +205,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         />
 
         <TextField
-          label="Notes (optional)"
+          label="Notes"
           LabelTextProps={{ preset: "formLabel", style: $label }}
           placeholder="Add any details..."
           multiline
@@ -257,7 +257,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         )}
 
         <Text style={[$label, $labelSmallTop]} preset="formLabel">
-          Category
+          {props.mode === "create" ? "Category *" : "Category"}
         </Text>
         <TouchableOpacity
           style={[$dropdownButton, isDropdownOpen && $dropdownButtonOpen]}

@@ -19,6 +19,12 @@ const ko: Translations = {
       button: "다시 시도해봅시다",
     },
   },
+  profileScreen: {
+    newPassword: "New password",
+    newPasswordPlaceholder: "Min {{min}} characters — leave blank to keep current",
+    passwordInvalidTitle: "Invalid password",
+    passwordInvalidMessage: "Password must be at least {{min}} characters.",
+  },
 }
 
 export default ko

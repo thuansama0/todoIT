@@ -12,6 +12,7 @@ import { useAvatarImagePicker } from "app/utils/useAvatarImagePicker"
 import { useProfileEditForm } from "app/utils/useProfileEditForm"
 import { useProfileLoadOnFocus } from "app/utils/useProfileLoadOnFocus"
 import { useProfileSession } from "app/utils/useProfileSession"
+import { MIN_PASSWORD_LENGTH } from "app/constants/auth"
 import {
   $accountBtn,
   $accountSection,
@@ -163,13 +164,15 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
             />
 
             <TextField
-              label="New password (optional)"
+              labelTx="profileScreen.newPassword"
+              placeholderTx="profileScreen.newPasswordPlaceholder"
+              placeholderTxOptions={{ min: MIN_PASSWORD_LENGTH }}
               containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editPassword}
               onChangeText={setEditPassword}
-              placeholder="Leave blank to keep current"
               secureTextEntry
+              autoCapitalize="none"
             />
 
             <View style={$actionRow}>

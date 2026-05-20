@@ -19,6 +19,12 @@ const ar: Translations = {
       button: "لنحاول هذا مرّة أخرى",
     },
   },
+  profileScreen: {
+    newPassword: "New password",
+    newPasswordPlaceholder: "Min {{min}} characters — leave blank to keep current",
+    passwordInvalidTitle: "Invalid password",
+    passwordInvalidMessage: "Password must be at least {{min}} characters.",
+  },
 }
 
 export default ar

@@ -20,6 +20,12 @@ const fr: Translations = {
       button: "Essayons à nouveau",
     },
   },
+  profileScreen: {
+    newPassword: "New password",
+    newPasswordPlaceholder: "Min {{min}} characters — leave blank to keep current",
+    passwordInvalidTitle: "Invalid password",
+    passwordInvalidMessage: "Password must be at least {{min}} characters.",
+  },
 }
 
 export default fr

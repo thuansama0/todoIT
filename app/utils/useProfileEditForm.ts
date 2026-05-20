@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from "react"
 import { Alert } from "react-native"
 import type { ProfileStore } from "app/models/ProfileStore"
 import type { UpdateUserPayload } from "app/services/api/userApi"
+import { translate } from "app/i18n"
+import { isMutationSuccess } from "app/utils/isMutationSuccess"
+import { getPasswordValidationError } from "app/utils/passwordValidation"
 
 function normalizeImageUri(uri?: string | null) {
   if (!uri) return ""
@@ -46,10 +49,16 @@ export function useProfileEditForm(profileStore: ProfileStore) {
       return
     }
 
+    const passwordError = getPasswordValidationError(editPassword)
+    if (passwordError) {
+      Alert.alert(translate("profileScreen.passwordInvalidTitle"), passwordError)
+      return
+    }
+
     setIsSaving(true)
     const payload: UpdateUserPayload = {
-      name: editName,
-      email: editEmail,
+      name: editName.trim(),
+      email: editEmail.trim(),
     }
     if (editPassword.trim() !== "") {
       payload.password = editPassword
@@ -58,9 +67,10 @@ export function useProfileEditForm(profileStore: ProfileStore) {
     const response = await profileStore.updateProfile(payload)
     setIsSaving(false)
 
-    if (response.ok && response.data?.success) {
+    if (isMutationSuccess(response)) {
       Alert.alert("Thành công", "Đã cập nhật thông tin cá nhân!")
       setIsEditing(false)
+      setEditPassword("")
     } else {
       Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
     }

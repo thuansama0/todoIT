@@ -74,21 +74,21 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
         <Text text="Start organizing your life with Todoit" preset="body" style={$subtitle} />
       </View>
       <TextField
-        label="Name"
+        label="Name *"
         value={username}
         onChangeText={setUsername}
         placeholder="Your full name"
         style={$name}
       />
       <TextField
-        label="Email"
+        label="Email *"
         value={email}
         onChangeText={setEmail}
         placeholder="you@example.com"
         style={$email}
       />
       <TextField
-        label="Password"
+        label="Password *"
         value={password}
         onChangeText={setPassword}
         placeholder="Min 6 characters"
