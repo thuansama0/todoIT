@@ -53,7 +53,7 @@ export function useProfileEditForm(
     setEditPassword("")
   }, [])
 
-  const cancelEdit = useCallbacnk(() => {
+  const cancelEdit = useCallback(() => {
     setIsEditing(false)
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
