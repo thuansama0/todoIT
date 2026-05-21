@@ -18,6 +18,7 @@ import {
   $screenInner,
 } from "./CategoriesScreen.styles"
 import { useStores } from "app/models"
+import { translate } from "app/i18n"
 import type { AppStackParamList } from "app/navigators"
 import type { TabParamList } from "app/navigators/TabNavigator"
 
@@ -32,15 +33,15 @@ export const CategoriesScreen: FC<CategoriesScreenProps> = observer(function Cat
   const { categoryStore } = useStores()
 
   function handleDelete(id: string) {
-    Alert.alert("Xác nhận", "Xóa danh mục này?", [
-      { text: "Hủy", style: "cancel" },
+    Alert.alert(translate("common.confirm"), translate("categoriesScreen.deleteConfirm"), [
+      { text: translate("common.cancel"), style: "cancel" },
       {
-        text: "Xóa",
+        text: translate("common.delete"),
         style: "destructive",
         onPress: async () => {
           const response = await categoryStore.deleteCategory(id)
           if (!response.ok || !response.data?.success) {
-            Alert.alert("Lỗi", "Không thể xóa danh mục.")
+            Alert.alert(translate("common.error"), translate("categoriesScreen.deleteFailed"))
           }
         },
       },
@@ -100,7 +101,10 @@ export const CategoriesScreen: FC<CategoriesScreenProps> = observer(function Cat
       style={$screenFill}
       contentContainerStyle={$screenInner}
     >
-      <AppSectionHeader title="Categories" onRefresh={() => categoryStore.fetchCategories()} />
+      <AppSectionHeader
+        title={translate("categoriesScreen.title")}
+        onRefresh={() => categoryStore.fetchCategories()}
+      />
       {renderCategoriesList()}
       {renderAddButton()}
     </Screen>

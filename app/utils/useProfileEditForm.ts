@@ -9,6 +9,7 @@ import { translate } from "app/i18n"
 import { isLocalPickedImageUri } from "app/utils/imageUri"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import { getPasswordValidationError } from "app/utils/passwordValidation"
+
 function normalizeImageUri(uri?: string | null) {
   if (!uri) return ""
   const normalized = uri.trim()
@@ -63,7 +64,7 @@ export function useProfileEditForm(
 
   const saveProfile = useCallback(async () => {
     if (!editName.trim() || !editEmail.trim()) {
-      Alert.alert("Lỗi", "Tên và Email không được để trống!")
+      Alert.alert(translate("common.error"), translate("profileScreen.missingNameEmail"))
       return
     }
 
@@ -83,9 +84,8 @@ export function useProfileEditForm(
       if (editedImage === "") {
         resolvedImageUrl = undefined
       } else if (isLocalPickedImageUri(editedImage)) {
-        const filePart: LocalImageFilePart = localPickedFile?.uri === editedImage
-          ? localPickedFile
-          : { uri: editedImage }
+        const filePart: LocalImageFilePart =
+          localPickedFile?.uri === editedImage ? localPickedFile : { uri: editedImage }
         resolvedImageUrl = await uploadProfileImage(filePart, authenticationStore.authToken)
       } else {
         resolvedImageUrl = editedImage
@@ -104,6 +104,7 @@ export function useProfileEditForm(
       Alert.alert(translate("profileScreen.imageUploadTitle"), detail)
       return
     }
+
     const payload: UpdateUserPayload = {
       name: editName.trim(),
       email: editEmail.trim(),
@@ -119,11 +120,14 @@ export function useProfileEditForm(
     setIsSaving(false)
 
     if (isMutationSuccess(response)) {
-      Alert.alert("Thành công", "Đã cập nhật thông tin cá nhân!")
+      Alert.alert(translate("common.success"), translate("profileScreen.updateSuccess"))
       setIsEditing(false)
       setEditPassword("")
     } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật.")
+      Alert.alert(
+        translate("common.error"),
+        response.data?.message || translate("profileScreen.updateFailed"),
+      )
     }
   }, [
     editName,

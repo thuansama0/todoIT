@@ -6,7 +6,7 @@ import { colors } from "app/theme"
 import { Feather } from "@expo/vector-icons"
 import { useStores } from "app/models"
 import type { AppStackScreenProps } from "app/navigators"
-
+import { translate } from "app/i18n"
 import { Category } from "app/services/api/categoryApi"
 import {
   $deleteContainer,
@@ -36,7 +36,7 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
 
     async function handleSaveChanges() {
       if (!name.trim()) {
-        Alert.alert("Thiếu thông tin", "Vui lòng nhập tên danh mục.")
+        Alert.alert(translate("common.missingInfo"), translate("editCategoryScreen.missingName"))
         return
       }
 
@@ -45,18 +45,21 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
       setIsLoading(false)
 
       if (response.ok && response.data?.success) {
-        Alert.alert("Thành công", "Đã cập nhật danh mục!")
+        Alert.alert(translate("common.success"), translate("editCategoryScreen.updateSuccess"))
         navigation.goBack()
       } else {
-        Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật danh mục.")
+        Alert.alert(
+          translate("common.error"),
+          response.data?.message || translate("editCategoryScreen.updateFailed"),
+        )
       }
     }
 
     async function handleDelete() {
-      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa danh mục này?", [
-        { text: "Hủy", style: "cancel" },
+      Alert.alert(translate("common.confirm"), translate("editCategoryScreen.deleteConfirm"), [
+        { text: translate("common.cancel"), style: "cancel" },
         {
-          text: "Xóa",
+          text: translate("common.delete"),
           style: "destructive",
           onPress: async () => {
             setIsLoading(true)
@@ -65,7 +68,7 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
               navigation.goBack()
             } else {
               setIsLoading(false)
-              Alert.alert("Lỗi", "Không thể xóa danh mục.")
+              Alert.alert(translate("common.error"), translate("editCategoryScreen.deleteFailed"))
             }
           },
         },
@@ -75,7 +78,7 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
     return (
       <Screen preset="scroll" safeAreaEdges={["top"]} style={$screenContainer}>
         <AppSectionHeader
-          title="Edit Category"
+          title={translate("editCategoryScreen.title")}
           showRefresh={false}
           leftIcon="x"
           onLeftPress={() => navigation.goBack()}
@@ -83,9 +86,9 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
 
         <View style={$formContainer}>
           <TextField
-            label="Category name *"
+            labelTx="editCategoryScreen.nameLabel"
             LabelTextProps={{ preset: "formLabel", style: $label }}
-            placeholder="e.g. Work, Shopping, Health"
+            placeholderTx="editCategoryScreen.namePlaceholder"
             value={name}
             onChangeText={setName}
             placeholderTextColor={colors.palette.neutral400}
@@ -93,19 +96,26 @@ export const EditCategoryScreen: FC<EditCategoryScreenProps> = observer(
 
           <View style={$switchRow}>
             <View style={$switchTextContainer}>
-              <Text style={$switchTitle} preset="body">
-                Public category
-              </Text>
-              <Text preset="caption">
-                {isPublic ? "Visible to all users" : "Only visible to you"}
-              </Text>
+              <Text style={$switchTitle} preset="body" tx="editCategoryScreen.publicLabel" />
+              <Text
+                preset="caption"
+                tx={
+                  isPublic
+                    ? "editCategoryScreen.publicHintPublic"
+                    : "editCategoryScreen.publicHintPrivate"
+                }
+              />
             </View>
 
             <Toggle variant="switch" value={isPublic} onValueChange={setIsPublic} />
           </View>
 
           <Button
-            text={isLoading ? "Saving..." : "Save Changes"}
+            text={
+              isLoading
+                ? translate("editCategoryScreen.saving")
+                : translate("editCategoryScreen.save")
+            }
             disabled={isLoading}
             style={[$submitButton, isLoading && $disabledButton]}
             textStyle={$submitButtonText}

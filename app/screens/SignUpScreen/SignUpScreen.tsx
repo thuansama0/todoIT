@@ -5,6 +5,8 @@ import { AppStackScreenProps } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { authApi } from "app/services/api/authApi"
 import { useStores } from "app/models"
+import { translate } from "app/i18n"
+import { MIN_PASSWORD_LENGTH } from "app/constants/auth"
 import { completeAuthSession } from "app/utils/completeAuthSession"
 import {
   $email,
@@ -33,7 +35,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
 
   async function onSignUp() {
     if (!username || !email || !password) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập đầy đủ tên, email và mật khẩu.")
+      Alert.alert(translate("common.missingInfo"), translate("signUpScreen.missingFields"))
       return
     }
 
@@ -55,7 +57,10 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
         accessToken,
       )
     } else {
-      Alert.alert("Đăng ký thất bại", response.data?.message || "Không thể tạo tài khoản.")
+      Alert.alert(
+        translate("signUpScreen.signUpFailed"),
+        response.data?.message || translate("signUpScreen.signUpFailedDefault"),
+      )
     }
   }
 
@@ -70,41 +75,44 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
           <Text text="✓" style={$logoCheck} />
         </View>
 
-        <Text text="Create account" preset="authTitle" style={$title} />
-        <Text text="Start organizing your life with Todoit" preset="body" style={$subtitle} />
+        <Text tx="signUpScreen.title" preset="authTitle" style={$title} />
+        <Text tx="signUpScreen.subtitle" preset="body" style={$subtitle} />
       </View>
       <TextField
-        label="Name *"
+        labelTx="signUpScreen.nameLabel"
         value={username}
         onChangeText={setUsername}
-        placeholder="Your full name"
+        placeholderTx="signUpScreen.namePlaceholder"
         style={$name}
       />
       <TextField
-        label="Email *"
+        labelTx="signUpScreen.emailLabel"
         value={email}
         onChangeText={setEmail}
-        placeholder="you@example.com"
+        placeholderTx="signUpScreen.emailPlaceholder"
         style={$email}
       />
       <TextField
-        label="Password *"
+        labelTx="signUpScreen.passwordLabel"
         value={password}
         onChangeText={setPassword}
-        placeholder="Min 6 characters"
+        placeholderTx="signUpScreen.passwordPlaceholder"
+        placeholderTxOptions={{ min: MIN_PASSWORD_LENGTH }}
         secureTextEntry
         style={$password}
       />
       <Button
-        text={isLoading ? "Đang tạo tài khoản..." : "Create Account"}
+        text={
+          isLoading ? translate("signUpScreen.signingUp") : translate("signUpScreen.signUp")
+        }
         onPress={onSignUp}
         disabled={isLoading}
         style={$signInButton}
         textStyle={$signInText}
       />
       <Text style={$footerText}>
-        Already have an account?
-        <Text text=" Sign In" preset="link" onPress={() => navigation.navigate("Login")} />
+        {translate("signUpScreen.hasAccount")}
+        <Text tx="signUpScreen.signInLink" preset="link" onPress={() => navigation.navigate("Login")} />
       </Text>
     </Screen>
   )

@@ -13,6 +13,7 @@ import { useProfileEditForm } from "app/utils/useProfileEditForm"
 import { useProfileLoadOnFocus } from "app/utils/useProfileLoadOnFocus"
 import { useProfileSession } from "app/utils/useProfileSession"
 import { MIN_PASSWORD_LENGTH } from "app/constants/auth"
+import { translate } from "app/i18n"
 import {
   $accountBtn,
   $accountSection,
@@ -95,7 +96,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
   return (
     <Screen preset="scroll" safeAreaEdges={["top"]} style={$screenContainer}>
-      <AppSectionHeader title="Profile" showRefresh={false} />
+      <AppSectionHeader title={translate("profileScreen.title")} showRefresh={false} />
 
       <View style={$contentWrapper}>
         <View style={$avatarSection}>
@@ -126,9 +127,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
               </Text>
             </>
           ) : (
-            <Text preset="caption" style={$tapToChangeText}>
-              Tap photo to change
-            </Text>
+            <Text preset="caption" style={$tapToChangeText} tx="profileScreen.tapPhotoToChange" />
           )}
         </View>
 
@@ -136,29 +135,27 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
           <>
             <TouchableOpacity style={$editProfileBtn} onPress={startEdit}>
               <Feather name="edit-2" size={16} color={colors.palette.primary700} />
-              <Text preset="body" style={$editProfileText}>
-                Edit Profile
-              </Text>
+              <Text preset="body" style={$editProfileText} tx="profileScreen.editProfile" />
             </TouchableOpacity>
           </>
         ) : (
           <View style={$formSection}>
             <TextField
-              label="Name *"
+              labelTx="profileScreen.nameLabel"
               containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editName}
               onChangeText={setEditName}
-              placeholder="Your name"
+              placeholderTx="profileScreen.namePlaceholder"
             />
 
             <TextField
-              label="Email *"
+              labelTx="profileScreen.emailLabel"
               containerStyle={$profileTextFieldContainer}
               LabelTextProps={{ preset: "formLabel", style: $label }}
               value={editEmail}
               onChangeText={setEditEmail}
-              placeholder="Your email"
+              placeholderTx="profileScreen.emailPlaceholder"
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -177,9 +174,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
 
             <View style={$actionRow}>
               <TouchableOpacity style={[$actionBtn, $cancelBtn]} onPress={cancelEdit}>
-                <Text preset="body" style={$cancelText}>
-                  Cancel
-                </Text>
+                <Text preset="body" style={$cancelText} tx="profileScreen.cancel" />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -190,9 +185,7 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
                 {isSaving ? (
                   <ActivityIndicator color={colors.palette.neutral100} />
                 ) : (
-                  <Text preset="body" style={$saveText}>
-                    Save
-                  </Text>
+                  <Text preset="body" style={$saveText} tx="profileScreen.save" />
                 )}
               </TouchableOpacity>
             </View>
@@ -200,20 +193,14 @@ export const ProfileScreen: FC<ProfileScreenProps> = observer(function ProfileSc
         )}
 
         <View style={$accountSection}>
-          <Text preset="caption" style={$sectionTitle}>
-            ACCOUNT
-          </Text>
+          <Text preset="caption" style={$sectionTitle} tx="profileScreen.accountSection" />
 
           <TouchableOpacity style={[$accountBtn, $signOutBtn]} onPress={handleSignOut}>
-            <Text preset="body" style={$signOutText}>
-              Sign Out
-            </Text>
+            <Text preset="body" style={$signOutText} tx="profileScreen.signOut" />
           </TouchableOpacity>
 
           <TouchableOpacity style={[$accountBtn, $deleteBtn]} onPress={handleDeleteAccount}>
-            <Text preset="body" style={$deleteText}>
-              Delete Account
-            </Text>
+            <Text preset="body" style={$deleteText} tx="profileScreen.deleteAccount" />
           </TouchableOpacity>
         </View>
       </View>

@@ -45,7 +45,7 @@ export const CategoryItem: FC<CategoryItemProps> = observer(function CategoryIte
             </TouchableOpacity>
           </View>
         ) : (
-          <Text style={$sharedText}>shared</Text>
+          <Text style={$sharedText} tx="common.shared" />
         )
       }
     />

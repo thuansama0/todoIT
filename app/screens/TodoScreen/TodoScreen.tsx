@@ -13,6 +13,7 @@ import { BottomTabScreenProps } from "@react-navigation/bottom-tabs"
 import { CompositeScreenProps } from "@react-navigation/native"
 import { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
+import { translate } from "app/i18n"
 import {
   $body,
   $fab,
@@ -46,20 +47,20 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
     const newStatus = !currentStatus
     const response = await todoStore.toggleTodoStatus(id, newStatus)
     if (!isMutationSuccess(response)) {
-      Alert.alert("Lỗi", "Không thể cập nhật trạng thái.")
+      Alert.alert(translate("common.error"), translate("todoScreen.toggleFailed"))
     }
   }
 
   function handleDelete(id: string) {
-    Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa?", [
-      { text: "Hủy", style: "cancel" },
+    Alert.alert(translate("common.confirm"), translate("todoScreen.deleteConfirm"), [
+      { text: translate("common.cancel"), style: "cancel" },
       {
-        text: "Xóa",
+        text: translate("common.delete"),
         style: "destructive",
         onPress: async () => {
           const response = await todoStore.deleteTodo(id)
           if (!isMutationSuccess(response)) {
-            Alert.alert("Lỗi", "Không thể xóa công việc.")
+            Alert.alert(translate("common.error"), translate("todoScreen.deleteFailed"))
           }
         },
       },
@@ -95,7 +96,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
                   title={item.title}
                   notes={item.content}
                   timeText={formatTodoDate(item.dueDate)}
-                  category={item.category?.name || "General"}
+                  category={item.category?.name || translate("common.generalCategory")}
                   isCompleted={item.isCompleted}
                   onToggle={() => handleToggleStatus(item.id, item.isCompleted)}
                   onDelete={() => handleDelete(item.id)}
@@ -128,7 +129,7 @@ export const TodoScreen: FC<TodoScreenProps> = observer(function TodoScreen({ na
     >
       {/* flex:1 để FlashList có cha có chiều cao (Android). */}
       <View style={$body}>
-        <AppSectionHeader title="My Todos" onRefresh={runTodoRefresh} />
+        <AppSectionHeader title={translate("todoScreen.title")} onRefresh={runTodoRefresh} />
         {renderTodoList()}
       </View>
       {renderAddButton()}

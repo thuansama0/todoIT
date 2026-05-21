@@ -3,6 +3,7 @@ import { Platform, StyleSheet, View } from "react-native"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { Ionicons } from "@expo/vector-icons"
 import { colors, typography } from "app/theme"
+import { translate } from "app/i18n"
 
 import { TodoScreen, ProfileScreen, NotificationsScreen, CategoriesScreen } from "../screens"
 
@@ -83,15 +84,15 @@ export function TabNavigator() {
       <Tab.Screen
         name="Categories"
         component={CategoriesScreen}
-        options={{ tabBarLabel: "Categories" }}
+        options={{ tabBarLabel: translate("tabs.categories") }}
       />
-      <Tab.Screen name="Todo" component={TodoScreen} options={{ tabBarLabel: "Todos" }} />
+      <Tab.Screen name="Todo" component={TodoScreen} options={{ tabBarLabel: translate("tabs.todos") }} />
       <Tab.Screen
         name="Notifications"
         component={NotificationsScreen}
-        options={{ tabBarLabel: "Notifications" }}
+        options={{ tabBarLabel: translate("tabs.notifications") }}
       />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: "Profile" }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: translate("tabs.profile") }} />
     </Tab.Navigator>
   )
 }

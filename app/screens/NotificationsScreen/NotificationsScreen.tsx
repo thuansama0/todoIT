@@ -14,6 +14,7 @@ import { useIsFocused } from "@react-navigation/native"
 import type { NativeStackScreenProps } from "@react-navigation/native-stack"
 import { Feather } from "@expo/vector-icons"
 import { observer } from "mobx-react-lite"
+import { translate } from "app/i18n"
 import {
   $btnRed,
   $markAllReadBtn,
@@ -66,20 +67,20 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
     async function handleMarkAllRead() {
       const response = await notificationStore.markAllRead()
       if (!isMutationSuccess(response)) {
-        Alert.alert("Lỗi", "Không thể đánh dấu đã đọc.")
+        Alert.alert(translate("common.error"), translate("notificationsScreen.markReadFailed"))
       }
     }
 
     function handleDeleteAll() {
-      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa sạch thông báo?", [
-        { text: "Hủy", style: "cancel" },
+      Alert.alert(translate("common.confirm"), translate("notificationsScreen.deleteAllConfirm"), [
+        { text: translate("common.cancel"), style: "cancel" },
         {
-          text: "Xóa",
+          text: translate("common.delete"),
           style: "destructive",
           onPress: async () => {
             const response = await notificationStore.deleteAllNotifications()
             if (!isDeleteMutationSuccess(response)) {
-              Alert.alert("Lỗi", "Không thể xóa thông báo.")
+              Alert.alert(translate("common.error"), translate("notificationsScreen.deleteFailed"))
             }
           },
         },
@@ -89,20 +90,23 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
     async function handleMarkRead(id: string) {
       const response = await notificationStore.markRead(id)
       if (!isMutationSuccess(response)) {
-        Alert.alert("Lỗi", "Không thể đánh dấu đã đọc.")
+        Alert.alert(translate("common.error"), translate("notificationsScreen.markReadFailed"))
       }
     }
 
     function handleDelete(id: string) {
-      Alert.alert("Xác nhận", "Bạn có muốn xóa thông báo này không?", [
-        { text: "Hủy", style: "cancel" },
+      Alert.alert(translate("common.confirm"), translate("notificationsScreen.deleteOneConfirm"), [
+        { text: translate("common.cancel"), style: "cancel" },
         {
-          text: "Xóa",
+          text: translate("common.delete"),
           style: "destructive",
           onPress: async () => {
             const response = await notificationStore.deleteNotification(id)
             if (!isDeleteMutationSuccess(response)) {
-              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa thông báo.")
+              Alert.alert(
+                translate("common.error"),
+                response?.data?.message || translate("notificationsScreen.deleteFailed"),
+              )
             }
           },
         },
@@ -115,8 +119,8 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
       // Dùng EmptyState của Ignite để thống nhất UI empty và tránh nhân đôi layout giữa các màn.
       return (
         <EmptyState
-          heading="No notifications"
-          content="You're all caught up"
+          headingTx="notificationsScreen.emptyHeading"
+          contentTx="notificationsScreen.emptyContent"
           button=""
           style={$emptyContainer}
           headingStyle={$emptyTitle}
@@ -135,17 +139,13 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
           {hasUnread && (
             <TouchableOpacity style={[$topBtn, $markAllReadBtn]} onPress={handleMarkAllRead}>
               <Feather name="check-circle" size={16} color={colors.palette.primary700} />
-              <Text preset="caption" style={[$topBtnText, $markAllReadText]}>
-                Mark all read
-              </Text>
+              <Text preset="caption" style={[$topBtnText, $markAllReadText]} tx="notificationsScreen.markAllRead" />
             </TouchableOpacity>
           )}
 
           <TouchableOpacity style={[$topBtn, $btnRed]} onPress={handleDeleteAll}>
             <Feather name="trash-2" size={16} color={colors.palette.angry500} />
-            <Text preset="caption" style={[$topBtnText, $topBtnRedText]}>
-              Delete all
-            </Text>
+            <Text preset="caption" style={[$topBtnText, $topBtnRedText]} tx="notificationsScreen.deleteAll" />
           </TouchableOpacity>
         </View>
       )
@@ -205,10 +205,12 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
         contentContainerStyle={$screenFill}
       >
         <AppSectionHeader
-          title="Notifications"
+          title={translate("notificationsScreen.title")}
           subtitle={
             notificationStore.unreadCount > 0
-              ? `${notificationStore.unreadCount} unread`
+              ? translate("notificationsScreen.unreadSubtitle", {
+                  count: notificationStore.unreadCount,
+                })
               : undefined
           }
           onRefresh={() => notificationStore.fetchNotifications()}

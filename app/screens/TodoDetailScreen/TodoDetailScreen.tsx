@@ -9,6 +9,7 @@ import { observer } from "mobx-react-lite"
 import { toPlainTodo } from "app/utils/todoMapper"
 import { formatTodoDate } from "app/utils/formatDate"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
+import { translate } from "app/i18n"
 import { formatReminderSettingLabel } from "app/utils/todoReminder"
 import {
   $actionBtn,
@@ -48,8 +49,8 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
 
     useEffect(() => {
       if (!id) {
-        Alert.alert("Lỗi", "Không tìm thấy công việc.", [
-          { text: "OK", onPress: () => navigation.goBack() },
+        Alert.alert(translate("common.error"), translate("todoDetailScreen.notFound"), [
+          { text: translate("common.ok"), onPress: () => navigation.goBack() },
         ])
         return
       }
@@ -64,22 +65,22 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
 
       const response = await todoStore.toggleTodoStatus(id, newStatus)
       if (!isMutationSuccess(response)) {
-        Alert.alert("Lỗi", "Không thể cập nhật trạng thái.")
+        Alert.alert(translate("common.error"), translate("todoDetailScreen.toggleFailed"))
       }
     }
 
     async function handleDelete() {
-      Alert.alert("Xác nhận", "Bạn có chắc chắn muốn xóa công việc này?", [
-        { text: "Hủy", style: "cancel" },
+      Alert.alert(translate("common.confirm"), translate("todoDetailScreen.deleteConfirm"), [
+        { text: translate("common.cancel"), style: "cancel" },
         {
-          text: "Xóa",
+          text: translate("common.delete"),
           style: "destructive",
           onPress: async () => {
             const response = await todoStore.deleteTodo(id)
             if (isMutationSuccess(response)) {
               navigation.goBack()
             } else {
-              Alert.alert("Lỗi", "Không thể xóa công việc.")
+              Alert.alert(translate("common.error"), translate("todoDetailScreen.deleteFailed"))
             }
           },
         },
@@ -108,7 +109,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
         contentContainerStyle={$content}
       >
         <AppSectionHeader
-          title="Todo Detail"
+          title={translate("todoDetailScreen.title")}
           showRefresh={false}
           leftIcon="back"
           onLeftPress={() => navigation.goBack()}
@@ -116,7 +117,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
             <TouchableOpacity
               onPress={() => navigation.navigate("EditTodo", { todoData: toPlainTodo(todo) })}
               accessibilityRole="button"
-              accessibilityLabel="Edit todo"
+              accessibilityLabel={translate("todoDetailScreen.editA11y")}
               style={$headerEditAction}
             >
               <Feather name="edit-2" size={22} color={colors.palette.primary700} />
@@ -138,16 +139,14 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
         </View>
 
         <Text preset="body" style={$notesText}>
-          {todo.content || "No description provided."}
+          {todo.content || translate("todoDetailScreen.noDescription")}
         </Text>
 
         <View style={$infoBox}>
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="clock" size={16} color={colors.palette.neutral500} />
-              <Text preset="caption" style={$infoLabel}>
-                Due date
-              </Text>
+              <Text preset="caption" style={$infoLabel} tx="todoDetailScreen.dueDate" />
             </View>
             <Text preset="body" style={$infoValue}>
               {formatTodoDate(todo.dueDate)}
@@ -159,9 +158,7 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="bell" size={16} color={colors.palette.neutral500} />
-              <Text preset="caption" style={$infoLabel}>
-                Reminder
-              </Text>
+              <Text preset="caption" style={$infoLabel} tx="todoDetailScreen.reminder" />
             </View>
             <Text preset="body" style={$infoValue}>
               {!todo.dueDate ? "—" : formatReminderSettingLabel(todo.reminderMinutes)}
@@ -173,12 +170,10 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
           <View style={$infoRow}>
             <View style={$infoIconText}>
               <Feather name="tag" size={16} color={colors.palette.neutral500} />
-              <Text preset="caption" style={$infoLabel}>
-                Category
-              </Text>
+              <Text preset="caption" style={$infoLabel} tx="todoDetailScreen.category" />
             </View>
             <Text preset="body" style={[$infoValue, $categoryValue]}>
-              {todo.category?.name || "None"}
+              {todo.category?.name || translate("todoDetailScreen.categoryNone")}
             </Text>
           </View>
 
@@ -191,15 +186,15 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
               ) : (
                 <Feather name="circle" size={16} color={colors.palette.neutral500} />
               )}
-              <Text preset="caption" style={$infoLabel}>
-                Status
-              </Text>
+              <Text preset="caption" style={$infoLabel} tx="todoDetailScreen.status" />
             </View>
             <Text
               preset="body"
               style={[$infoValue, todo.isCompleted ? $statusDone : $statusPending]}
             >
-              {todo.isCompleted ? "Completed" : "Pending"}
+              {todo.isCompleted
+                ? translate("todoDetailScreen.completed")
+                : translate("todoDetailScreen.pending")}
             </Text>
           </View>
         </View>
@@ -221,15 +216,15 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
                 todo.isCompleted ? $actionMarkUndoneText : $actionMarkDoneText,
               ]}
             >
-              {todo.isCompleted ? "Mark Undone" : "Mark Done"}
+              {todo.isCompleted
+                ? translate("todoDetailScreen.markUndone")
+                : translate("todoDetailScreen.markDone")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[$actionBtn, $actionDelete]} onPress={handleDelete}>
             <Feather name="trash-2" size={18} color={colors.palette.angry500} />
-            <Text preset="body" style={[$actionBtnText, $actionDeleteText]}>
-              Delete
-            </Text>
+            <Text preset="body" style={[$actionBtnText, $actionDeleteText]} tx="todoDetailScreen.deleteTodo" />
           </TouchableOpacity>
         </View>
       </Screen>

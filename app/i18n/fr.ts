@@ -1,36 +1,6 @@
-import { Translations } from "./en"
+import en, { Translations } from "./en"
 
-const fr: Translations = {
-  common: {
-    ok: "OK !",
-    cancel: "Annuler",
-    back: "Retour",
-  },
-  errorScreen: {
-    title: "Quelque chose s'est mal passé !",
-    friendlySubtitle:
-      "C'est l'écran que vos utilisateurs verront en production lorsqu'une erreur sera lancée. Vous voudrez personnaliser ce message (situé dans `app/i18n/fr.ts`) et probablement aussi la mise en page (`app/screens/ErrorScreen`). Si vous voulez le supprimer complètement, vérifiez `app/app.tsx` pour le composant <ErrorBoundary>.",
-    reset: "RÉINITIALISER L'APPLICATION",
-  },
-  emptyStateComponent: {
-    generic: {
-      heading: "Si vide... si triste",
-      content:
-        "Aucune donnée trouvée pour le moment. Essayez de cliquer sur le bouton pour rafraîchir ou recharger l'application.",
-      button: "Essayons à nouveau",
-    },
-  },
-  profileScreen: {
-    newPassword: "New password",
-    newPasswordPlaceholder: "Min {{min}} characters — leave blank to keep current",
-    passwordInvalidTitle: "Invalid password",
-    passwordInvalidMessage: "Password must be at least {{min}} characters.",
-    imageUploadTitle: "Upload error",
-    imageUploadFailed: "Could not upload the image. Please try again.",
-    imageUploadAuthError: "Session expired or invalid. Please sign out and sign in again, then try uploading.",
-    imageUploadBadRequest:
-      "The server could not read the image file. Try another photo or sign in again.",
-  },
-}
+/** Mirror en keys; override strings here when French copy is ready. */
+const fr: Translations = JSON.parse(JSON.stringify(en)) as Translations
 
 export default fr

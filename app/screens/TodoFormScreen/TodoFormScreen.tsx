@@ -14,6 +14,7 @@ import {
   parseDateTime,
 } from "app/utils/formatDate"
 import { DEFAULT_TODO_IMAGE_URL } from "app/config/media"
+import { translate } from "app/i18n"
 import { TODO_REMINDER_MINUTE_OPTIONS } from "app/constants/todo"
 import {
   $disabledButton,
@@ -83,7 +84,9 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     props.mode === "edit" ? props.initialTodo.category?.id || "" : "",
   )
   const [selectedCategoryName, setSelectedCategoryName] = useState(() =>
-    props.mode === "edit" ? props.initialTodo.category?.name || "No category" : "No category",
+    props.mode === "edit"
+      ? props.initialTodo.category?.name || translate("common.noCategory")
+      : translate("common.noCategory"),
   )
 
   useEffect(() => {
@@ -106,17 +109,17 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
   async function handleSubmit() {
     if (!title.trim()) {
       Alert.alert(
-        "Thiếu thông tin",
+        translate("common.missingInfo"),
         props.mode === "create"
-          ? "Vui lòng nhập tiêu đề (Title) cho công việc."
-          : "Vui lòng nhập tiêu đề (Title).",
+          ? translate("todoFormScreen.missingTitleCreate")
+          : translate("todoFormScreen.missingTitleEdit"),
       )
       return
     }
 
     if (props.mode === "create" && !categoryId) {
       // Bắt buộc chọn category lúc tạo mới để hỗ trợ phân nhóm/filter ngay từ đầu.
-      Alert.alert("Thiếu thông tin", "Vui lòng chọn danh mục cho công việc.")
+      Alert.alert(translate("common.missingInfo"), translate("todoFormScreen.missingCategory"))
       return
     }
 
@@ -129,7 +132,7 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
       if (!isNaN(parsedDate)) {
         finalDueDate = parsedDate
       } else {
-        Alert.alert("Sai định dạng", "Vui lòng nhập đúng dạng YYYY-MM-DD HH:mm.")
+        Alert.alert(translate("common.error"), translate("todoFormScreen.invalidDateFormat"))
         setIsLoading(false)
         return
       }
@@ -150,7 +153,10 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
       if (response.ok && response.data?.success) {
         navigation.goBack()
       } else {
-        Alert.alert("Lỗi", response.data?.message || "Không thể tạo Todo lúc này.")
+        Alert.alert(
+          translate("common.error"),
+          response.data?.message || translate("todoFormScreen.createFailed"),
+        )
       }
       return
     }
@@ -159,22 +165,28 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
     setIsLoading(false)
 
     if (response.ok && response.data?.success) {
-      Alert.alert("Thành công", "Đã cập nhật công việc!")
+      Alert.alert(translate("common.success"), translate("todoFormScreen.updateSuccess"))
       navigation.goBack()
     } else {
-      Alert.alert("Lỗi", response.data?.message || "Không thể cập nhật lúc này.")
+      Alert.alert(
+        translate("common.error"),
+        response.data?.message || translate("todoFormScreen.updateFailed"),
+      )
     }
   }
   //
-  const headerTitle = props.mode === "create" ? "New Todo" : "Edit Todo"
+  const headerTitle =
+    props.mode === "create"
+      ? translate("todoFormScreen.newTitle")
+      : translate("todoFormScreen.editTitle")
   const submitLabel =
     props.mode === "create"
       ? isLoading
-        ? "Creating..."
-        : "Create Todo"
+        ? translate("todoFormScreen.creating")
+        : translate("todoFormScreen.create")
       : isLoading
-      ? "Saving..."
-      : "Save Changes"
+      ? translate("todoFormScreen.saving")
+      : translate("todoFormScreen.save")
 
   return (
     <Screen
@@ -196,18 +208,18 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         showsVerticalScrollIndicator={false}
       >
         <TextField
-          label="Title *"
+          labelTx="todoFormScreen.titleLabel"
           LabelTextProps={{ preset: "formLabel", style: $label }}
-          placeholder="What needs to be done?"
+          placeholderTx="todoFormScreen.titlePlaceholder"
           value={title}
           onChangeText={setTitle}
           placeholderTextColor={colors.palette.neutral400}
         />
 
         <TextField
-          label="Notes"
+          labelTx="todoFormScreen.notesLabel"
           LabelTextProps={{ preset: "formLabel", style: $label }}
-          placeholder="Add any details..."
+          placeholderTx="todoFormScreen.notesPlaceholder"
           multiline
           value={content}
           onChangeText={setContent}
@@ -216,25 +228,23 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         />
 
         <View style={$dueDateRow}>
-          <Text preset="formLabel">Set due date</Text>
+          <Text preset="formLabel" tx="todoFormScreen.setDueDate" />
           <Toggle variant="switch" value={hasDueDate} onValueChange={handleToggleDueDate} />
         </View>
 
         {hasDueDate && (
           <View style={$dueDateWrap}>
             <TextField
-              label="Due Date (YYYY-MM-DD HH:mm)"
+              labelTx="todoFormScreen.dueDateLabel"
               LabelTextProps={{ preset: "formLabel", style: [$label, $labelNoTop] }}
-              placeholder="2026-04-22 14:30"
+              placeholderTx="todoFormScreen.dueDatePlaceholder"
               value={dueDateString}
               onChangeText={setDueDateString}
               placeholderTextColor={colors.palette.neutral400}
             />
 
             {/* Chip sync với TODO_REMINDER_MINUTE_OPTIONS + backend reminderMinutes */}
-            <Text style={$label} preset="formLabel">
-              Reminder before due
-            </Text>
+            <Text style={$label} preset="formLabel" tx="todoFormScreen.reminderLabel" />
             <View style={$reminderRow}>
               {TODO_REMINDER_MINUTE_OPTIONS.map(
                 (minute: (typeof TODO_REMINDER_MINUTE_OPTIONS)[number]) => (
@@ -247,7 +257,11 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
                       preset="caption"
                       style={reminderMinutes === minute && $reminderChipTextActive}
                     >
-                      {minute === 0 ? "Off" : minute >= 60 ? "1h" : `${minute}m`}
+                      {minute === 0
+                        ? translate("todoFormScreen.reminderOff")
+                        : minute >= 60
+                        ? translate("todoFormScreen.reminderOneHour")
+                        : translate("todoFormScreen.reminderMinutes", { minutes: minute })}
                     </Text>
                   </TouchableOpacity>
                 ),
@@ -256,9 +270,11 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
           </View>
         )}
 
-        <Text style={[$label, $labelSmallTop]} preset="formLabel">
-          {props.mode === "create" ? "Category *" : "Category"}
-        </Text>
+        <Text
+          style={[$label, $labelSmallTop]}
+          preset="formLabel"
+          tx={props.mode === "create" ? "todoFormScreen.categoryLabelCreate" : "todoFormScreen.categoryLabelEdit"}
+        />
         <TouchableOpacity
           style={[$dropdownButton, isDropdownOpen && $dropdownButtonOpen]}
           onPress={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -280,11 +296,11 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
                 style={[$dropdownItem, !categoryId && $dropdownItemActive]}
                 onPress={() => {
                   setCategoryId("")
-                  setSelectedCategoryName("No category")
+                  setSelectedCategoryName(translate("common.noCategory"))
                   setIsDropdownOpen(false)
                 }}
               >
-                <Text preset="body">No category</Text>
+                <Text preset="body" tx="common.noCategory" />
               </TouchableOpacity>
             )}
 
@@ -307,14 +323,10 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
           </View>
         )}
 
-        <Text style={[$label, $labelLargeTop]} preset="formLabel">
-          Image
-        </Text>
+        <Text style={[$label, $labelLargeTop]} preset="formLabel" tx="todoFormScreen.imageLabel" />
         <TouchableOpacity style={$imagePickerWrapper}>
           <Ionicons name="checkmark-circle-outline" size={24} color={colors.palette.primary700} />
-          <Text style={$imagePickerText} preset="caption">
-            Image selected (tap to change)
-          </Text>
+          <Text style={$imagePickerText} preset="caption" tx="todoFormScreen.imageSelected" />
         </TouchableOpacity>
       </ScrollView>
 

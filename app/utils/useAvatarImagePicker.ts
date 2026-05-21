@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import { Alert } from "react-native"
 import * as ImagePicker from "expo-image-picker"
+import { translate } from "app/i18n"
 
 export type PickedAvatarImage = {
   uri: string
@@ -26,7 +27,10 @@ export function useAvatarImagePicker(onPicked: (image: PickedAvatarImage) => voi
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     if (!permission.granted) {
-      Alert.alert("Cần quyền truy cập", "Vui lòng cho phép app truy cập thư viện ảnh.")
+      Alert.alert(
+        translate("avatarPicker.libraryPermissionTitle"),
+        translate("avatarPicker.libraryPermissionMessage"),
+      )
       return
     }
 
@@ -44,7 +48,10 @@ export function useAvatarImagePicker(onPicked: (image: PickedAvatarImage) => voi
     const permission = await ImagePicker.requestCameraPermissionsAsync()
 
     if (!permission.granted) {
-      Alert.alert("Cần quyền camera", "Vui lòng cho phép app sử dụng camera.")
+      Alert.alert(
+        translate("avatarPicker.cameraPermissionTitle"),
+        translate("avatarPicker.cameraPermissionMessage"),
+      )
       return
     }
 
@@ -58,11 +65,15 @@ export function useAvatarImagePicker(onPicked: (image: PickedAvatarImage) => voi
   }, [handleResult])
 
   const openImageSourcePicker = useCallback(() => {
-    Alert.alert("Đổi ảnh đại diện", "Chọn nguồn ảnh", [
-      { text: "Thư viện", onPress: pickImageFromLibrary },
-      { text: "Chụp ảnh", onPress: takePhoto },
-      { text: "Hủy", style: "cancel" },
-    ])
+    Alert.alert(
+      translate("avatarPicker.changeAvatarTitle"),
+      translate("avatarPicker.changeAvatarMessage"),
+      [
+        { text: translate("avatarPicker.library"), onPress: pickImageFromLibrary },
+        { text: translate("avatarPicker.takePhoto"), onPress: takePhoto },
+        { text: translate("common.cancel"), style: "cancel" },
+      ],
+    )
   }, [pickImageFromLibrary, takePhoto])
 
   return { openImageSourcePicker }

@@ -5,6 +5,7 @@ import { Button, Screen, Text, TextField } from "app/components"
 import { AppStackScreenProps } from "app/navigators"
 import { authApi } from "app/services/api/authApi"
 import { useStores } from "app/models"
+import { translate } from "app/i18n"
 import { completeAuthSession } from "app/utils/completeAuthSession"
 import {
   $ButtonText,
@@ -34,7 +35,10 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
 
   async function onLogin() {
     if (!email || !password) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập đầy đủ email và mật khẩu.")
+      Alert.alert(
+        translate("common.missingInfo"),
+        translate("loginScreen.missingCredentials"),
+      )
       return
     }
     setIsLoading(true)
@@ -56,15 +60,21 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
           accessToken,
         )
       } else {
-        Alert.alert("Thông báo", response.data.message || "Đăng nhập thất bại.")
+        Alert.alert(
+          translate("common.notice"),
+          response.data.message || translate("loginScreen.loginFailedDefault"),
+        )
       }
     } else {
       if (response.problem === "NETWORK_ERROR" || response.problem === "TIMEOUT_ERROR") {
-        Alert.alert("Lỗi kết nối", "Vui lòng kiểm tra lại mạng internet.")
+        Alert.alert(
+          translate("common.networkError"),
+          translate("common.checkInternet"),
+        )
       } else {
         Alert.alert(
-          "Đăng nhập thất bại",
-          response.data?.message || "Email hoặc mật khẩu không chính xác.",
+          translate("loginScreen.loginFailed"),
+          response.data?.message || translate("loginScreen.invalidCredentials"),
         )
       }
       if (__DEV__) {
@@ -83,44 +93,42 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
         <View style={$logoBox}>
           <Text text="✓" style={$logoCheck} />
         </View>
-        <Text text="Welcome back" preset="authTitle" style={$title} />
-        <Text text="Sign in to your Todoit account" preset="body" style={$subtitle} />
+        <Text tx="loginScreen.title" preset="authTitle" style={$title} />
+        <Text tx="loginScreen.subtitle" preset="body" style={$subtitle} />
       </View>
 
       <TextField
-        label="Email *"
+        labelTx="loginScreen.emailLabel"
         value={email}
         onChangeText={setEmail}
-        placeholder="you@example.com"
+        placeholderTx="loginScreen.emailPlaceholder"
         autoCapitalize="none"
         keyboardType="email-address"
         style={$fieldContainer}
       />
 
       <TextField
-        label="Password *"
+        labelTx="loginScreen.passwordLabel"
         value={password}
         onChangeText={setPassword}
-        placeholder="Enter your password"
+        placeholderTx="loginScreen.passwordPlaceholder"
         secureTextEntry
         style={$fieldContainer1}
       />
 
       <Button
-        text={isLoading ? "Đang đăng nhập..." : "Sign In"}
+        text={isLoading ? translate("loginScreen.signingIn") : translate("loginScreen.signIn")}
         onPress={onLogin}
         disabled={isLoading}
         style={[$loginButton, isLoading && $disabledButton]}
         textStyle={$ButtonText}
       />
 
-      <Text style={$footerText1} preset="caption">
-        "Demo: demo@todoit.app / password123"
-      </Text>
+      <Text style={$footerText1} preset="caption" tx="loginScreen.demoHint" />
 
       <Text style={$footerText} preset="caption">
-        Don't have an account?
-        <Text text=" Sign Up" preset="link" onPress={() => navigation.navigate("SignUp")} />
+        {translate("loginScreen.noAccount")}
+        <Text tx="loginScreen.signUpLink" preset="link" onPress={() => navigation.navigate("SignUp")} />
       </Text>
     </Screen>
   )

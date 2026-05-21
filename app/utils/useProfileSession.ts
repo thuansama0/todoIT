@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native"
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { AppStackParamList } from "app/navigators"
 import { useStores } from "app/models"
+import { translate } from "app/i18n"
 import { remove } from "app/utils/storage"
 
 export function useProfileSession() {
@@ -24,10 +25,10 @@ export function useProfileSession() {
   }, [authenticationStore, categoryStore, navigation, notificationStore, profileStore, todoStore])
 
   const handleSignOut = useCallback(() => {
-    Alert.alert("Đăng xuất", "Bạn muốn đăng xuất khỏi ứng dụng?", [
-      { text: "Hủy", style: "cancel" },
+    Alert.alert(translate("profileScreen.signOutTitle"), translate("profileScreen.signOutMessage"), [
+      { text: translate("common.cancel"), style: "cancel" },
       {
-        text: "Đăng xuất",
+        text: translate("profileScreen.signOut"),
         style: "destructive",
         onPress: async () => {
           await finishSession()
@@ -38,12 +39,12 @@ export function useProfileSession() {
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
-      "CẢNH BÁO",
-      "Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này không? Hành động này không thể hoàn tác.",
+      translate("profileScreen.deleteAccountTitle"),
+      translate("profileScreen.deleteAccountMessage"),
       [
-        { text: "Hủy", style: "cancel" },
+        { text: translate("common.cancel"), style: "cancel" },
         {
-          text: "Xóa vĩnh viễn",
+          text: translate("profileScreen.deleteAccountConfirm"),
           style: "destructive",
           onPress: async () => {
             const response = await profileStore.deleteAccount()
@@ -51,7 +52,10 @@ export function useProfileSession() {
             if (response?.ok && response?.data?.success !== false) {
               await finishSession()
             } else {
-              Alert.alert("Lỗi", response?.data?.message || "Không thể xóa tài khoản lúc này.")
+              Alert.alert(
+                translate("common.error"),
+                response?.data?.message || translate("profileScreen.deleteAccountFailed"),
+              )
             }
           },
         },
