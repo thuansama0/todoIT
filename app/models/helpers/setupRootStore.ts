@@ -18,37 +18,37 @@ export async function setupRootStore(rootStore: RootStore, options?: { skipResto
   if (!options?.skipRestore) {
     try {
       restoredState = ((await storage.load(ROOT_STATE_STORAGE_KEY)) ?? {}) as RootStoreSnapshot
-    const restoredNotificationItems = restoredState?.notificationStore?.items ?? []
-    const notificationUnreadFromList = Array.isArray(restoredNotificationItems)
-      ? restoredNotificationItems.filter((n: { isRead?: boolean }) => n && !n.isRead).length
-      : 0
-    const snapshotToApply = {
-      ...(restoredState ?? {}),
-      authenticationStore: restoredState?.authenticationStore ?? {},
-      categoryStore: {
-        items: restoredState?.categoryStore?.items ?? [],
-        isLoading: false,
-        // Không ép false — tránh mở app/Todo tab là GET lại dù đã có snapshot (giống cảm giác “chỉ load lần đầu”).
-        isLoaded: restoredState?.categoryStore?.isLoaded ?? false,
-      },
-      todoStore: {
-        items: restoredState?.todoStore?.items ?? [],
-        isLoading: false,
-        isLoaded: restoredState?.todoStore?.isLoaded ?? false,
-      },
-      notificationStore: {
-        items: Array.isArray(restoredNotificationItems) ? restoredNotificationItems : [],
-        // unreadCount persist có thể lệch items (0 thông báo nhưng badge 1); luôn suy ra từ items.
-        unreadCount: notificationUnreadFromList,
-        isLoading: false,
-        isLoaded: false,
-      },
-      profileStore: {
-        profile: restoredState?.profileStore?.profile,
-        isLoading: false,
-        isLoaded: !!restoredState?.profileStore?.profile,
-      },
-    } as RootStoreSnapshot
+      const restoredNotificationItems = restoredState?.notificationStore?.items ?? []
+      const notificationUnreadFromList = Array.isArray(restoredNotificationItems)
+        ? restoredNotificationItems.filter((n: { isRead?: boolean }) => n && !n.isRead).length
+        : 0
+      const snapshotToApply = {
+        ...(restoredState ?? {}),
+        authenticationStore: restoredState?.authenticationStore ?? {},
+        categoryStore: {
+          items: restoredState?.categoryStore?.items ?? [],
+          isLoading: false,
+          // Không ép false — tránh mở app/Todo tab là GET lại dù đã có snapshot (giống cảm giác “chỉ load lần đầu”).
+          isLoaded: restoredState?.categoryStore?.isLoaded ?? false,
+        },
+        todoStore: {
+          items: restoredState?.todoStore?.items ?? [],
+          isLoading: false,
+          isLoaded: restoredState?.todoStore?.isLoaded ?? false,
+        },
+        notificationStore: {
+          items: Array.isArray(restoredNotificationItems) ? restoredNotificationItems : [],
+          // unreadCount persist có thể lệch items (0 thông báo nhưng badge 1); luôn suy ra từ items.
+          unreadCount: notificationUnreadFromList,
+          isLoading: false,
+          isLoaded: false,
+        },
+        profileStore: {
+          profile: restoredState?.profileStore?.profile,
+          isLoading: false,
+          isLoaded: !!restoredState?.profileStore?.profile,
+        },
+      } as RootStoreSnapshot
       applySnapshot(rootStore, snapshotToApply)
     } catch (e) {
       if (__DEV__) {

@@ -17,7 +17,10 @@ export class Api {
     this.config = config
 
     if (__DEV__ && !this.config.url?.trim()) {
-      logDev("api", "EXPO_PUBLIC_API_URL is empty — API calls will fail until .env / EAS env is set")
+      logDev(
+        "api",
+        "EXPO_PUBLIC_API_URL is empty — API calls will fail until .env / EAS env is set",
+      )
     }
 
     this.apisauce = create({

@@ -86,13 +86,21 @@ export function TabNavigator() {
         component={CategoriesScreen}
         options={{ tabBarLabel: translate("tabs.categories") }}
       />
-      <Tab.Screen name="Todo" component={TodoScreen} options={{ tabBarLabel: translate("tabs.todos") }} />
+      <Tab.Screen
+        name="Todo"
+        component={TodoScreen}
+        options={{ tabBarLabel: translate("tabs.todos") }}
+      />
       <Tab.Screen
         name="Notifications"
         component={NotificationsScreen}
         options={{ tabBarLabel: translate("tabs.notifications") }}
       />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: translate("tabs.profile") }} />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ tabBarLabel: translate("tabs.profile") }}
+      />
     </Tab.Navigator>
   )
 }

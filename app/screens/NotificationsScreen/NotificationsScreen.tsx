@@ -139,13 +139,21 @@ export const NotificationsScreen: FC<NotificationsScreenProps> = observer(
           {hasUnread && (
             <TouchableOpacity style={[$topBtn, $markAllReadBtn]} onPress={handleMarkAllRead}>
               <Feather name="check-circle" size={16} color={colors.palette.primary700} />
-              <Text preset="caption" style={[$topBtnText, $markAllReadText]} tx="notificationsScreen.markAllRead" />
+              <Text
+                preset="caption"
+                style={[$topBtnText, $markAllReadText]}
+                tx="notificationsScreen.markAllRead"
+              />
             </TouchableOpacity>
           )}
 
           <TouchableOpacity style={[$topBtn, $btnRed]} onPress={handleDeleteAll}>
             <Feather name="trash-2" size={16} color={colors.palette.angry500} />
-            <Text preset="caption" style={[$topBtnText, $topBtnRedText]} tx="notificationsScreen.deleteAll" />
+            <Text
+              preset="caption"
+              style={[$topBtnText, $topBtnRedText]}
+              tx="notificationsScreen.deleteAll"
+            />
           </TouchableOpacity>
         </View>
       )

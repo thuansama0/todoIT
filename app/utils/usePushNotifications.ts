@@ -339,7 +339,6 @@ export const usePushNotifications = () => {
         }
       }
     })().catch(() => undefined)
-
     ;(async () => {
       try {
         const last = await Notifications.getLastNotificationResponseAsync()

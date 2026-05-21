@@ -273,7 +273,11 @@ export const TodoFormScreen: FC<TodoFormScreenProps> = observer(function TodoFor
         <Text
           style={[$label, $labelSmallTop]}
           preset="formLabel"
-          tx={props.mode === "create" ? "todoFormScreen.categoryLabelCreate" : "todoFormScreen.categoryLabelEdit"}
+          tx={
+            props.mode === "create"
+              ? "todoFormScreen.categoryLabelCreate"
+              : "todoFormScreen.categoryLabelEdit"
+          }
         />
         <TouchableOpacity
           style={[$dropdownButton, isDropdownOpen && $dropdownButtonOpen]}

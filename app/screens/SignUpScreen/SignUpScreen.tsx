@@ -102,9 +102,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
         style={$password}
       />
       <Button
-        text={
-          isLoading ? translate("signUpScreen.signingUp") : translate("signUpScreen.signUp")
-        }
+        text={isLoading ? translate("signUpScreen.signingUp") : translate("signUpScreen.signUp")}
         onPress={onSignUp}
         disabled={isLoading}
         style={$signInButton}
@@ -112,7 +110,11 @@ export const SignUpScreen: FC<SignUpScreenProps> = observer(function SignUpScree
       />
       <Text style={$footerText}>
         {translate("signUpScreen.hasAccount")}
-        <Text tx="signUpScreen.signInLink" preset="link" onPress={() => navigation.navigate("Login")} />
+        <Text
+          tx="signUpScreen.signInLink"
+          preset="link"
+          onPress={() => navigation.navigate("Login")}
+        />
       </Text>
     </Screen>
   )

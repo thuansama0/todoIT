@@ -21,7 +21,9 @@ export async function getAccessToken(preferred?: string | null): Promise<string 
 }
 
 /** Sau khi restore MST — giữ AsyncStorage khớp authToken (apisauce + fetch upload). */
-export async function syncAccessTokenToStorage(authToken: string | null | undefined): Promise<void> {
+export async function syncAccessTokenToStorage(
+  authToken: string | null | undefined,
+): Promise<void> {
   const token = normalizeAccessToken(authToken)
   if (token) {
     await saveString("accessToken", token)

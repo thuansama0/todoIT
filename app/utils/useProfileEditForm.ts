@@ -94,7 +94,12 @@ export function useProfileEditForm(
     } catch (e) {
       setIsSaving(false)
       const code = e instanceof Error ? e.message : ""
-      if (code && code !== "AUTH_REQUIRED" && code !== "AUTH_INVALID" && code !== "UPLOAD_BAD_REQUEST") {
+      if (
+        code &&
+        code !== "AUTH_REQUIRED" &&
+        code !== "AUTH_INVALID" &&
+        code !== "UPLOAD_BAD_REQUEST"
+      ) {
         logUploadError("UNEXPECTED", code)
       }
       let detail = translate("profileScreen.imageUploadFailed")

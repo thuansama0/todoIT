@@ -57,10 +57,10 @@ function dedupeMergedNotifications(
       prev.id.startsWith("local-") && !item.id.startsWith("local-")
         ? item
         : item.id.startsWith("local-") && !prev.id.startsWith("local-")
-          ? prev
-          : prev.sentAt >= item.sentAt
-            ? prev
-            : item
+        ? prev
+        : prev.sentAt >= item.sentAt
+        ? prev
+        : item
     byKey.set(key, {
       ...preferServer,
       id: preferServer.id,
@@ -158,7 +158,10 @@ export const NotificationStoreModel = types
       return response
     })
 
-    const removeNotificationFromStore = (id: string, target?: { title: string; content: string; sentAt: number }) => {
+    const removeNotificationFromStore = (
+      id: string,
+      target?: { title: string; content: string; sentAt: number },
+    ) => {
       const contentKey = target
         ? notificationContentKey(target.title, target.content, target.sentAt)
         : null
@@ -235,9 +238,7 @@ export const NotificationStoreModel = types
       userId?: string,
       sentAtMs?: number,
     ) {
-      const duplicate = store.items.some(
-        (item) => item.title === title && item.content === content,
-      )
+      const duplicate = store.items.some((item) => item.title === title && item.content === content)
       if (duplicate) {
         return { ok: true, data: { success: true, message: "duplicate skipped" } }
       }

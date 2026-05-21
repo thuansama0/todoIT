@@ -25,16 +25,20 @@ export function useProfileSession() {
   }, [authenticationStore, categoryStore, navigation, notificationStore, profileStore, todoStore])
 
   const handleSignOut = useCallback(() => {
-    Alert.alert(translate("profileScreen.signOutTitle"), translate("profileScreen.signOutMessage"), [
-      { text: translate("common.cancel"), style: "cancel" },
-      {
-        text: translate("profileScreen.signOut"),
-        style: "destructive",
-        onPress: async () => {
-          await finishSession()
+    Alert.alert(
+      translate("profileScreen.signOutTitle"),
+      translate("profileScreen.signOutMessage"),
+      [
+        { text: translate("common.cancel"), style: "cancel" },
+        {
+          text: translate("profileScreen.signOut"),
+          style: "destructive",
+          onPress: async () => {
+            await finishSession()
+          },
         },
-      },
-    ])
+      ],
+    )
   }, [finishSession])
 
   const handleDeleteAccount = useCallback(() => {

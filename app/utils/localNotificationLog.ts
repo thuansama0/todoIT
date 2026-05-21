@@ -76,7 +76,10 @@ export async function purgeNotificationFromLocalLog(options: {
       : null
   const merged = current.filter((item) => {
     if (options.id && item.id === options.id) return false
-    if (contentKey && notificationContentKey(item.title, item.content, item.sentAt) === contentKey) {
+    if (
+      contentKey &&
+      notificationContentKey(item.title, item.content, item.sentAt) === contentKey
+    ) {
       return false
     }
     return true

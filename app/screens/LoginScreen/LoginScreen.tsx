@@ -36,10 +36,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
 
   async function onLogin() {
     if (!email || !password) {
-      Alert.alert(
-        translate("common.missingInfo"),
-        translate("loginScreen.missingCredentials"),
-      )
+      Alert.alert(translate("common.missingInfo"), translate("loginScreen.missingCredentials"))
       return
     }
     setIsLoading(true)
@@ -68,10 +65,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
       }
     } else {
       if (response.problem === "NETWORK_ERROR" || response.problem === "TIMEOUT_ERROR") {
-        Alert.alert(
-          translate("common.networkError"),
-          translate("common.checkInternet"),
-        )
+        Alert.alert(translate("common.networkError"), translate("common.checkInternet"))
       } else {
         Alert.alert(
           translate("loginScreen.loginFailed"),
@@ -80,7 +74,6 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
       }
       if (__DEV__) {
         logApisauceResponse("auth", response)
-        console.tron.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data)
       }
     }
   }
@@ -130,7 +123,11 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
 
       <Text style={$footerText} preset="caption">
         {translate("loginScreen.noAccount")}
-        <Text tx="loginScreen.signUpLink" preset="link" onPress={() => navigation.navigate("SignUp")} />
+        <Text
+          tx="loginScreen.signUpLink"
+          preset="link"
+          onPress={() => navigation.navigate("SignUp")}
+        />
       </Text>
     </Screen>
   )

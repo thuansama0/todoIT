@@ -89,8 +89,7 @@ const en = {
     signOutTitle: "Sign out",
     signOutMessage: "Do you want to sign out?",
     deleteAccountTitle: "Warning",
-    deleteAccountMessage:
-      "Permanently delete this account? This cannot be undone.",
+    deleteAccountMessage: "Permanently delete this account? This cannot be undone.",
     deleteAccountConfirm: "Delete permanently",
     deleteAccountFailed: "Could not delete account right now.",
   },

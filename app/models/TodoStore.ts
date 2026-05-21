@@ -90,10 +90,7 @@ export const TodoStoreModel = types
       yield fetchTodos()
     })
 
-    const createTodo = flow(function* createTodo(
-      payload: CreateTodoPayload,
-      reminderMinutes = 0,
-    ) {
+    const createTodo = flow(function* createTodo(payload: CreateTodoPayload, reminderMinutes = 0) {
       const response = yield todoApi.createTodo(payload)
       if (!isMutationSuccess(response)) {
         return response as TodoMutationResult

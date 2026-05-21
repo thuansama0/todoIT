@@ -23,7 +23,10 @@ function guessMimeAndName(uri: string): { name: string; type: string } {
   if (lower.endsWith(".png")) return { name: base, type: "image/png" }
   if (lower.endsWith(".webp")) return { name: base, type: "image/webp" }
   if (lower.endsWith(".heic") || lower.endsWith(".heif"))
-    return { name: base.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg"), type: "image/jpeg" }
+    return {
+      name: base.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg"),
+      type: "image/jpeg",
+    }
   if (base.includes(".")) return { name: base, type: "image/jpeg" }
   return { name: "photo.jpg", type: "image/jpeg" }
 }

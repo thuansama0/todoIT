@@ -224,7 +224,11 @@ export const TodoDetailScreen: FC<AppStackScreenProps<"TodoDetail">> = observer(
 
           <TouchableOpacity style={[$actionBtn, $actionDelete]} onPress={handleDelete}>
             <Feather name="trash-2" size={18} color={colors.palette.angry500} />
-            <Text preset="body" style={[$actionBtnText, $actionDeleteText]} tx="todoDetailScreen.deleteTodo" />
+            <Text
+              preset="body"
+              style={[$actionBtnText, $actionDeleteText]}
+              tx="todoDetailScreen.deleteTodo"
+            />
           </TouchableOpacity>
         </View>
       </Screen>

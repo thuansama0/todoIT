@@ -80,7 +80,11 @@ export const NewCategoryScreen: FC<NewCategoryScreenProps> = observer(function N
             <Text style={$switchTitle} preset="body" tx="newCategoryScreen.publicLabel" />
             <Text
               preset="caption"
-              tx={isPublic ? "newCategoryScreen.publicHintPublic" : "newCategoryScreen.publicHintPrivate"}
+              tx={
+                isPublic
+                  ? "newCategoryScreen.publicHintPublic"
+                  : "newCategoryScreen.publicHintPrivate"
+              }
             />
           </View>
 
