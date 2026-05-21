@@ -7,6 +7,7 @@ import { authApi } from "app/services/api/authApi"
 import { useStores } from "app/models"
 import { translate } from "app/i18n"
 import { completeAuthSession } from "app/utils/completeAuthSession"
+import { logApisauceResponse } from "app/utils/logDev"
 import {
   $ButtonText,
   $disabledButton,
@@ -78,7 +79,8 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen({
         )
       }
       if (__DEV__) {
-        console.tron.log("Chi tiết lỗi Sign-in:", response.problem, response.data)
+        logApisauceResponse("auth", response)
+        console.tron.log?.("Chi tiết lỗi Sign-in:", response.problem, response.data)
       }
     }
   }

@@ -9,6 +9,7 @@ import { translate } from "app/i18n"
 import { isLocalPickedImageUri } from "app/utils/imageUri"
 import { isMutationSuccess } from "app/utils/isMutationSuccess"
 import { getPasswordValidationError } from "app/utils/passwordValidation"
+import { logDev, logUploadError } from "app/utils/logDev"
 
 function normalizeImageUri(uri?: string | null) {
   if (!uri) return ""
@@ -52,7 +53,7 @@ export function useProfileEditForm(
     setEditPassword("")
   }, [])
 
-  const cancelEdit = useCallback(() => {
+  const cancelEdit = useCallbacnk(() => {
     setIsEditing(false)
     if (profileStore.profile) {
       setEditName(profileStore.profile.name)
@@ -93,6 +94,9 @@ export function useProfileEditForm(
     } catch (e) {
       setIsSaving(false)
       const code = e instanceof Error ? e.message : ""
+      if (code && code !== "AUTH_REQUIRED" && code !== "AUTH_INVALID" && code !== "UPLOAD_BAD_REQUEST") {
+        logUploadError("UNEXPECTED", code)
+      }
       let detail = translate("profileScreen.imageUploadFailed")
       if (code === "AUTH_REQUIRED" || code === "AUTH_INVALID") {
         detail = translate("profileScreen.imageUploadAuthError")
@@ -120,6 +124,9 @@ export function useProfileEditForm(
     setIsSaving(false)
 
     if (isMutationSuccess(response)) {
+      if (__DEV__) {
+        logDev("profile", "PUT /user OK", { hasImageUrl: !!payload.imageUrl })
+      }
       Alert.alert(translate("common.success"), translate("profileScreen.updateSuccess"))
       setIsEditing(false)
       setEditPassword("")
